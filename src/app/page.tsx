@@ -18,6 +18,228 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   );
 }
 
+function DeviceCompatibility() {
+  const devices = [
+    { icon: "📱", name: "iPhone", models: "XS, XS Max, XR, 11, 12, 13, 14, 15, SE (2020+)", supported: true },
+    { icon: "📱", name: "Samsung", models: "Galaxy S20, S21, S22, S23, S24, Fold, Flip series", supported: true },
+    { icon: "📱", name: "Google Pixel", models: "Pixel 3, 4, 5, 6, 7, 8 series", supported: true },
+    { icon: "📱", name: "Other Android", models: "Most phones with eSIM support", supported: true },
+    { icon: "💻", name: "iPad", models: "iPad Pro, Air, Mini with cellular", supported: true },
+    { icon: "🖥️", name: "Laptops", models: "Windows 11 PCs with eSIM", supported: false },
+  ];
+
+  return (
+    <section className="py-24 bg-slate-950">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <FadeIn>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Device Compatibility</h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              eSIM works with most modern smartphones. Check if your device supports eSIM technology.
+            </p>
+          </div>
+        </FadeIn>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {devices.map((device, index) => (
+            <FadeIn key={index} delay={index * 0.1}>
+              <motion.div 
+                className={`bg-slate-900 border rounded-2xl p-6 ${device.supported ? 'border-slate-700 hover:border-sky-500/50' : 'border-slate-800 opacity-60'}`}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="text-3xl">{device.icon}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-semibold text-white">{device.name}</h3>
+                      {device.supported && (
+                        <span className="bg-green-500/20 text-green-400 text-xs px-2 py-0.5 rounded-full">Supported</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-400">{device.models}</p>
+                  </div>
+                </div>
+              </motion.div>
+            </FadeIn>
+          ))}
+        </div>
+
+        <FadeIn delay={0.3}>
+          <div className="mt-12 bg-slate-900/50 border border-slate-700 rounded-2xl p-8 text-center">
+            <p className="text-slate-300 mb-4">Not sure if your device supports eSIM?</p>
+            <a href="#" className="inline-flex items-center gap-2 text-sky-400 hover:text-sky-300 font-medium">
+              Check full compatibility list
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}
+
+function Comparison() {
+  return (
+    <section className="py-24 bg-slate-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <FadeIn>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Why Choose SimPal?</h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              Compare SimPal with traditional roaming and see how much you can save
+            </p>
+          </div>
+        </FadeIn>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <FadeIn delay={0}>
+            <motion.div 
+              className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8"
+              whileHover={{ y: -5 }}
+            >
+              <h3 className="text-xl font-bold text-white mb-6">SimPal eSIM</h3>
+              <ul className="space-y-4">
+                {[
+                  "Up to 80% cheaper",
+                  "Instant activation",
+                  "No contract required",
+                  "190+ countries",
+                  "24/7 support",
+                  "No hidden fees"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-300">
+                    <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <motion.div 
+              className="bg-sky-500/10 border-2 border-sky-500 rounded-2xl p-8 relative"
+              whileHover={{ y: -5 }}
+            >
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sky-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                RECOMMENDED
+              </div>
+              <h3 className="text-xl font-bold text-white mb-6">Traditional Roaming</h3>
+              <ul className="space-y-4">
+                {[
+                  "Expensive daily fees",
+                  "Activation in 24-48 hours",
+                  "Long-term contracts",
+                  "Limited coverage",
+                  "Limited support",
+                  "Surprise charges"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-400">
+                    <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </FadeIn>
+
+          <FadeIn delay={0.2}>
+            <motion.div 
+              className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8"
+              whileHover={{ y: -5 }}
+            >
+              <h3 className="text-xl font-bold text-white mb-6">Local SIM Cards</h3>
+              <ul className="space-y-4">
+                {[
+                  "Requires physical store",
+                  "Language barrier",
+                  "Only works in one country",
+                  "Complex setup",
+                  "Limited data options",
+                  "Phone number issues"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-400">
+                    <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </FadeIn>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Coverage() {
+  const regions = [
+    { name: "Europe", countries: "35+", flag: "🇪🇺", color: "bg-blue-500/20" },
+    { name: "Asia", countries: "40+", flag: "🌏", color: "bg-red-500/20" },
+    { name: "Americas", countries: "30+", flag: "🌎", color: "bg-green-500/20" },
+    { name: "Middle East", countries: "15+", flag: "🕌", color: "bg-purple-500/20" },
+    { name: "Africa", countries: "50+", flag: "🌍", color: "bg-yellow-500/20" },
+    { name: "Oceania", countries: "10+", flag: "🦘", color: "bg-pink-500/20" },
+  ];
+
+  const topCountries = [
+    "🇺🇸 United States", "🇬🇧 United Kingdom", "🇫🇷 France", "🇩🇪 Germany",
+    "🇮🇹 Italy", "🇪🇸 Spain", "🇯🇵 Japan", "🇰🇷 South Korea", "🇦🇺 Australia",
+    "🇨🇦 Canada", "🇹🇭 Thailand", "🇻🇳 Vietnam", "🇸🇬 Singapore", "🇦🇪 UAE"
+  ];
+
+  return (
+    <section className="py-24 bg-slate-800/30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <FadeIn>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Global Coverage</h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              Stay connected in over 190 countries and territories worldwide
+            </p>
+          </div>
+        </FadeIn>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+          {regions.map((region, index) => (
+            <FadeIn key={index} delay={index * 0.1}>
+              <motion.div 
+                className={`${region.color} border border-slate-700 rounded-xl p-4 text-center hover:border-sky-500/50 transition-all cursor-pointer`}
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className="text-3xl mb-2">{region.flag}</div>
+                <h3 className="font-semibold text-white">{region.name}</h3>
+                <p className="text-sm text-slate-400">{region.countries} countries</p>
+              </motion.div>
+            </FadeIn>
+          ))}
+        </div>
+
+        <FadeIn delay={0.3}>
+          <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-8">
+            <h3 className="text-xl font-bold text-white mb-4 text-center">Popular Destinations</h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              {topCountries.map((country, index) => (
+                <span key={index} className="bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-sky-500/20 hover:text-sky-300 transition-colors cursor-pointer">
+                  {country}
+                </span>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}
+
 function Testimonials() {
   const testimonials = [
     {
@@ -47,6 +269,34 @@ function Testimonials() {
       text: "Perfect for digital nomads! I've used SimPal in over 20 countries. The coverage is amazing and prices are unbeatable.",
       rating: 5,
       flag: "🇦🇺"
+    },
+    {
+      name: "Carlos R.",
+      location: "Spain",
+      text: "The unlimited Japan plan was a game changer. Streamed Netflix and navigated Google Maps without any issues. Highly recommend!",
+      rating: 5,
+      flag: "🇪🇸"
+    },
+    {
+      name: "Min-Ji K.",
+      location: "South Korea",
+      text: "Finally a service that actually works in Korea. Used it for 3 weeks and never had connectivity issues. Will use again!",
+      rating: 5,
+      flag: "🇰🇷"
+    },
+    {
+      name: "Ahmed M.",
+      location: "UAE",
+      text: "Great coverage in Dubai and Abu Dhabi. The 5G speeds are incredible. Much better than my home carrier's roaming.",
+      rating: 5,
+      flag: "🇦🇪"
+    },
+    {
+      name: "Emma W.",
+      location: "Canada",
+      text: "Crossed from US to Canada and the North America plan kept me connected the entire time. Seamless transition!",
+      rating: 5,
+      flag: "🇨🇦"
     },
   ];
 
@@ -96,12 +346,14 @@ function TrustBadges() {
     { emoji: "📱", value: "500K+", label: "Happy Users" },
     { emoji: "⚡", value: "5 min", label: "Setup Time" },
     { emoji: "💬", value: "24/7", label: "Support" },
+    { emoji: "⭐", value: "4.9/5", label: "User Rating" },
+    { emoji: "💰", value: "80%", label: "Savings" },
   ];
 
   return (
     <section className="py-16 bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           {badges.map((badge, index) => (
             <FadeIn key={index} delay={index * 0.1}>
               <motion.div 
@@ -209,6 +461,18 @@ function FAQ() {
       q: "What happens if I run out of data?",
       a: "You can purchase additional data top-ups anytime through our app or website. The process is instant and you'll be back online immediately."
     },
+    {
+      q: "How do I get a refund?",
+      a: "We offer a 7-day refund policy for unused plans. Contact our support team within 7 days of purchase if you're not satisfied."
+    },
+    {
+      q: "Will eSIM work on my cruise ship?",
+      a: "eSIM requires cellular network coverage on land. For cruises, we recommend checking if your destination has cellular coverage or considering satellite-based options."
+    },
+    {
+      q: "Can I use eSIM for hotspot/tethering?",
+      a: "Yes! Most of our plans support hotspot sharing. Check the plan details to confirm hotspot is included before purchasing."
+    },
   ];
 
   return (
@@ -250,6 +514,36 @@ function FAQ() {
   );
 }
 
+function Partners() {
+  const networks = [
+    "AT&T", "T-Mobile", "Vodafone", "Orange", "Telefonica", 
+    "Deutsche Telekom", "Singtel", "Telstra", "Docomo", "SK Telecom"
+  ];
+
+  return (
+    <section className="py-16 bg-slate-950">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <FadeIn>
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-bold text-white mb-2">Trusted Networks Worldwide</h2>
+            <p className="text-slate-500">We partner with top carriers to bring you the best coverage</p>
+          </div>
+        </FadeIn>
+        
+        <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+          {networks.map((network, index) => (
+            <FadeIn key={index} delay={index * 0.05}>
+              <div className="text-xl font-bold text-slate-500 hover:text-white transition-colors cursor-pointer">
+                {network}
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
@@ -261,7 +555,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       <main>
-        {/* Hero Section */}
         <section className="relative pt-32 pb-20 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-sky-900/20 via-slate-900 to-indigo-900/20" />
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNHoiIGZpbGw9IiMyMDIzYjYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-30" />
@@ -358,10 +651,12 @@ export default function Home() {
         </section>
 
         <TrustBadges />
+        <Coverage />
         <WhyChoose />
+        <Comparison />
+        <DeviceCompatibility />
         <Testimonials />
 
-        {/* How It Works */}
         <section id="how-it-works" className="py-24 bg-slate-800/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeIn>
@@ -406,12 +701,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Plans Section */}
         <PlansSection />
-
+        <Partners />
         <FAQ />
 
-        {/* CTA Section */}
         <section className="py-24">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <FadeIn>
