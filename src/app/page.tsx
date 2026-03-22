@@ -19,6 +19,7 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 }
 
 function DeviceCompatibility() {
+  const { t } = useI18n();
   const devices = [
     { icon: "📱", name: "iPhone", models: "XS, XS Max, XR, 11, 12, 13, 14, 15, SE (2020+)", supported: true },
     { icon: "📱", name: "Samsung", models: "Galaxy S20, S21, S22, S23, S24, Fold, Flip series", supported: true },
@@ -33,9 +34,9 @@ function DeviceCompatibility() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Device Compatibility</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">{t("device.title")}</h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              eSIM works with most modern smartphones. Check if your device supports eSIM technology.
+              {t("device.subtitle")}
             </p>
           </div>
         </FadeIn>
@@ -181,6 +182,7 @@ function Comparison() {
 }
 
 function Coverage() {
+  const { t } = useI18n();
   const regions = [
     { name: "Europe", countries: "35+", flag: "🇪🇺", color: "bg-blue-500/20" },
     { name: "Asia", countries: "40+", flag: "🌏", color: "bg-red-500/20" },
@@ -201,9 +203,9 @@ function Coverage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Global Coverage</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">{t("coverage.title")}</h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Stay connected in over 190 countries and territories worldwide
+              {t("coverage.subtitle")}
             </p>
           </div>
         </FadeIn>
@@ -241,6 +243,7 @@ function Coverage() {
 }
 
 function Testimonials() {
+  const { t } = useI18n();
   const testimonials = [
     {
       name: "Sarah M.",
@@ -305,9 +308,9 @@ function Testimonials() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">What Travelers Say</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">{t("testimonials.title")}</h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Join hundreds of thousands of happy travelers who stay connected with SimPal
+              {t("testimonials.subtitle")}
             </p>
           </div>
         </FadeIn>
@@ -341,6 +344,7 @@ function Testimonials() {
 }
 
 function TrustBadges() {
+  const { t } = useI18n();
   const badges = [
     { emoji: "🌍", value: "190+", label: "Countries" },
     { emoji: "📱", value: "500K+", label: "Happy Users" },
@@ -374,6 +378,7 @@ function TrustBadges() {
 }
 
 function WhyChoose() {
+  const { t } = useI18n();
   const features = [
     {
       icon: "⚡",
@@ -412,9 +417,9 @@ function WhyChoose() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Why Choose SimPal?</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">{t("whyChoose.title")}</h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              We&apos;re revolutionizing how travelers stay connected abroad
+              {t("whyChoose.subtitle")}
             </p>
           </div>
         </FadeIn>
@@ -440,6 +445,7 @@ function WhyChoose() {
 }
 
 function FAQ() {
+  const { t } = useI18n();
   const faqs = [
     {
       q: "What is an eSIM?",
@@ -480,8 +486,8 @@ function FAQ() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
-            <p className="text-slate-400 text-lg">Everything you need to know about SimPal eSIM</p>
+            <h2 className="text-4xl font-bold text-white mb-4">{t("faq.title")}</h2>
+            <p className="text-slate-400 text-lg">{t("faq.subtitle")}</p>
           </div>
         </FadeIn>
         
@@ -714,10 +720,10 @@ export default function Home() {
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <h2 className="text-4xl font-bold text-white mb-4">
-                  Ready to Stay Connected?
+                  {t("cta.title")}
                 </h2>
                 <p className="text-slate-300 text-lg mb-8 max-w-xl mx-auto">
-                  Join 500,000+ travelers who stay connected without the roaming bill shock.
+                  {t("cta.subtitle")}
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <motion.a
