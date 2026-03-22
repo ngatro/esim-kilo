@@ -1,10 +1,10 @@
-# Active Context: Next.js Starter Template
+# Active Context: SimPal eSIM Marketplace
 
 ## Current State
 
-**App Status**: ✅ SimPal — eSIM Travel Data Marketplace
+**App Status**: ✅ SimPal — eSIM Travel Data Marketplace with i18n, Auth, Cart & Admin
 
-A full-featured eSIM marketplace built on Next.js 16. Users can browse travel eSIM data plans by region, search by destination, view plan details, and proceed to purchase.
+A full-featured eSIM marketplace built on Next.js 16 with internationalization, user authentication, shopping cart, and admin dashboard.
 
 ## Recently Completed
 
@@ -23,67 +23,58 @@ A full-featured eSIM marketplace built on Next.js 16. Users can browse travel eS
 - [x] FAQ accordion section
 - [x] Plan detail page at `/plans/[id]` with sticky checkout card
 - [x] CTA banner on home page
+- [x] **i18n support** - English & Vietnamese with next-intl
+- [x] **User authentication** - Login/Register with bcrypt password hashing
+- [x] **Database** - Drizzle ORM with SQLite (users, orders, cart items)
+- [x] **Shopping cart** - Add/remove items, quantity management
+- [x] **Checkout** - Order creation flow
+- [x] **User orders** - View order history
+- [x] **Admin dashboard** - Plan management page
 
 ## Current Structure
 
 | File/Directory | Purpose | Status |
 |----------------|---------|--------|
-| `src/app/page.tsx` | Home page (all sections) | ✅ Ready |
-| `src/app/layout.tsx` | Root layout (SimPal metadata) | ✅ Ready |
-| `src/app/globals.css` | Global styles | ✅ Ready |
-| `src/app/plans/[id]/page.tsx` | Plan detail + checkout page | ✅ Ready |
-| `src/lib/esim-data.ts` | Plan data, types, helpers | ✅ Ready |
-| `src/components/layout/Header.tsx` | Sticky nav header | ✅ Ready |
-| `src/components/layout/Footer.tsx` | Footer with links | ✅ Ready |
-| `src/components/sections/Hero.tsx` | Hero with CTA + stats | ✅ Ready |
-| `src/components/sections/HowItWorks.tsx` | 4-step onboarding | ✅ Ready |
-| `src/components/sections/PlansSection.tsx` | Region filter + plan grid | ✅ Ready |
-| `src/components/sections/FAQ.tsx` | Accordion FAQ | ✅ Ready |
-| `src/components/ui/PlanCard.tsx` | Individual plan card | ✅ Ready |
-| `.kilocode/` | AI context & recipes | ✅ Ready |
+| `src/app/[locale]/page.tsx` | Home page (all sections) | ✅ Ready |
+| `src/app/[locale]/login/page.tsx` | Login page | ✅ Ready |
+| `src/app/[locale]/register/page.tsx` | Registration page | ✅ Ready |
+| `src/app/[locale]/cart/page.tsx` | Shopping cart page | ✅ Ready |
+| `src/app/[locale]/checkout/page.tsx` | Checkout page | ✅ Ready |
+| `src/app/[locale]/orders/page.tsx` | User orders page | ✅ Ready |
+| `src/app/[locale]/admin/page.tsx` | Admin dashboard | ✅ Ready |
+| `src/app/[locale]/admin/plans/page.tsx` | Admin plan management | ✅ Ready |
+| `src/app/api/auth/` | Auth API routes | ✅ Ready |
+| `src/app/api/orders/route.ts` | Orders API | ✅ Ready |
+| `src/db/schema.ts` | Database schema | ✅ Ready |
+| `src/lib/auth.ts` | Auth utilities | ✅ Ready |
+| `src/components/providers/AuthProvider.tsx` | Auth context | ✅ Ready |
+| `src/components/providers/CartProvider.tsx` | Cart context | ✅ Ready |
+| `src/components/ui/LanguageSwitcher.tsx` | Language switcher | ✅ Ready |
+| `messages/` | Translation files | ✅ Ready |
+
+## Database Schema
+
+- **users**: id, name, email, password, role, createdAt
+- **orders**: id, userId, totalAmount, status, createdAt
+- **orderItems**: id, orderId, planId, planName, price, quantity
+- **cartItems**: id, userId, planId, planName, price, quantity, createdAt
 
 ## Current Focus
 
-SimPal marketplace is live. Potential next steps:
-1. Add real payment integration (Stripe)
-2. Add user auth for order history
-3. Add database for persisting orders
+- Add real payment integration (Stripe)
+- Add email notifications
 
 ## Quick Start Guide
 
+### Routes use locale:
+- `/en/` - English
+- `/vi/` - Vietnamese
+
 ### To add a new page:
-
-Create a file at `src/app/[route]/page.tsx`:
-```tsx
-export default function NewPage() {
-  return <div>New page content</div>;
-}
-```
-
-### To add components:
-
-Create `src/components/` directory and add components:
-```tsx
-// src/components/ui/Button.tsx
-export function Button({ children }: { children: React.ReactNode }) {
-  return <button className="px-4 py-2 bg-blue-600 text-white rounded">{children}</button>;
-}
-```
-
-### To add a database:
-
-Follow `.kilocode/recipes/add-database.md`
+Create a file at `src/app/[locale]/[route]/page.tsx`
 
 ### To add API routes:
-
-Create `src/app/api/[route]/route.ts`:
-```tsx
-import { NextResponse } from "next/server";
-
-export async function GET() {
-  return NextResponse.json({ message: "Hello" });
-}
-```
+Create `src/app/api/[route]/route.ts`
 
 ## Available Recipes
 
@@ -91,15 +82,10 @@ export async function GET() {
 |--------|------|----------|
 | Add Database | `.kilocode/recipes/add-database.md` | Data persistence with Drizzle + SQLite |
 
-## Pending Improvements
-
-- [ ] Add more recipes (auth, email, etc.)
-- [ ] Add example components
-- [ ] Add testing setup recipe
-
 ## Session History
 
 | Date | Changes |
 |------|---------|
 | Initial | Template created with base setup |
-| 2026-03-22 | Built SimPal eSIM travel marketplace — full home page, plan browsing, detail page |
+| 2026-03-22 | Built SimPal eSIM travel marketplace |
+| 2026-03-22 | Added i18n (English/Vietnamese), auth, cart, admin dashboard |
