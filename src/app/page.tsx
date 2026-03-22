@@ -1,5 +1,5 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+"use client";
+
 import { useI18n } from "@/components/providers/I18nProvider";
 import Link from "next/link";
 
@@ -165,7 +165,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <Header />
       <main>
         {/* Hero Section */}
         <section className="relative pt-32 pb-20 overflow-hidden">
@@ -370,7 +369,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }
