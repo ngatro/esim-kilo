@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BLOG_POSTS, BLOG_CATEGORIES, getFeaturedPosts, type BlogPost } from "@/lib/blog-data";
+import { BLOG_POSTS, BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-data";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
@@ -19,6 +20,7 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 }
 
 function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boolean }) {
+  const { t } = useI18n();
   const category = BLOG_CATEGORIES.find(c => c.id === post.category);
   
   return (
@@ -35,7 +37,7 @@ function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boole
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent" />
           <span className="absolute top-4 left-4 bg-sky-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-            {category?.emoji} {category?.label}
+            {category?.emoji} {t(`blog.categories.${post.category}`)}
           </span>
         </div>
         
@@ -53,9 +55,9 @@ function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boole
               <span className="text-sm text-slate-400">{post.author}</span>
             </div>
             <div className="flex items-center gap-3 text-xs text-slate-500">
-              <span>{new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
               <span>•</span>
-              <span>{post.readTime} min read</span>
+              <span>{post.readTime} {t("blog.readTime")}</span>
             </div>
           </div>
         </div>
@@ -65,6 +67,7 @@ function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boole
 }
 
 export default function BlogPage() {
+  const { t } = useI18n();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -76,33 +79,30 @@ export default function BlogPage() {
     return matchCategory && matchSearch;
   });
 
-  const featuredPosts = getFeaturedPosts();
+  const featuredPosts = BLOG_POSTS.filter(p => p.featured);
   const nonFeaturedPosts = filteredPosts.filter(p => !p.featured);
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       <main>
-        {/* Hero */}
         <section className="relative pt-24 pb-16 bg-gradient-to-b from-sky-900/20 to-slate-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeIn>
               <div className="text-center">
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  SimPal <span className="text-sky-400">Blog</span>
+                  {t("blog.title")}
                 </h1>
                 <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-                  Travel tips, eSIM guides, and latest news to keep you connected worldwide
+                  {t("blog.subtitle")}
                 </p>
               </div>
             </FadeIn>
           </div>
         </section>
 
-        {/* Search & Filter */}
         <section className="py-8 bg-slate-900 border-b border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              {/* Categories */}
               <div className="flex flex-wrap gap-2 justify-center">
                 <button
                   onClick={() => setActiveCategory("all")}
@@ -112,7 +112,7 @@ export default function BlogPage() {
                       : "bg-slate-800 text-slate-400 hover:text-white border border-slate-700"
                   }`}
                 >
-                  All Posts
+                  {t("blog.categories.all")}
                 </button>
                 {BLOG_CATEGORIES.map(category => (
                   <button
@@ -124,16 +124,15 @@ export default function BlogPage() {
                         : "bg-slate-800 text-slate-400 hover:text-white border border-slate-700"
                     }`}
                   >
-                    {category.emoji} {category.label}
+                    {category.emoji} {t(`blog.categories.${category.id}`)}
                   </button>
                 ))}
               </div>
 
-              {/* Search */}
               <div className="relative w-full md:w-64">
                 <input
                   type="text"
-                  placeholder="Search articles..."
+                  placeholder={t("blog.searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2 pl-10 focus:outline-none focus:border-sky-500"
@@ -146,11 +145,10 @@ export default function BlogPage() {
           </div>
         </section>
 
-        {/* Featured Posts */}
         {activeCategory === "all" && searchQuery === "" && featuredPosts.length > 0 && (
           <section className="py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl font-bold text-white mb-6">Featured Articles</h2>
+              <h2 className="text-2xl font-bold text-white mb-6">{t("blog.featured")}</h2>
               <div className="grid grid-cols-1 gap-6">
                 {featuredPosts.slice(0, 2).map((post, index) => (
                   <FadeIn key={post.id} delay={index * 0.1}>
@@ -162,11 +160,10 @@ export default function BlogPage() {
           </section>
         )}
 
-        {/* All Posts */}
         <section className="py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              {activeCategory === "all" ? "Latest Articles" : BLOG_CATEGORIES.find(c => c.id === activeCategory)?.label}
+              {activeCategory === "all" ? t("blog.latest") : t(`blog.categories.${activeCategory}`)}
             </h2>
             
             {filteredPosts.length > 0 ? (
@@ -192,13 +189,12 @@ export default function BlogPage() {
           </div>
         </section>
 
-        {/* Newsletter */}
         <section className="py-16 bg-slate-800/30">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <FadeIn>
-              <h2 className="text-3xl font-bold text-white mb-4">Stay Updated</h2>
+              <h2 className="text-3xl font-bold text-white mb-4">{t("cta.title")}</h2>
               <p className="text-slate-400 mb-6">
-                Subscribe to our newsletter for the latest travel tips and eSIM deals
+                {t("cta.subtitle")}
               </p>
               <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                 <input
