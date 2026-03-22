@@ -4,6 +4,12 @@ import "./globals.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/components/providers/CartProvider";
+import { UIProvider } from "@/components/providers/UIProvider";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import LoginModal from "@/components/ui/LoginModal";
+import RegisterModal from "@/components/ui/RegisterModal";
+import CartModal from "@/components/ui/CartModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,14 +32,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <I18nProvider>
           <AuthProvider>
             <CartProvider>
-              {children}
+              <UIProvider>
+                <Header />
+                <main>{children}</main>
+                <Footer />
+                <LoginModal />
+                <RegisterModal />
+                <CartModal />
+              </UIProvider>
             </CartProvider>
           </AuthProvider>
         </I18nProvider>

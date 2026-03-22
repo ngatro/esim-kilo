@@ -167,13 +167,14 @@ interface I18nContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: string) => string;
+  isReady: boolean;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>("en");
-  const [mounted, setMounted] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     try {
@@ -184,17 +185,17 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     } catch {
       // ignore
     }
-    setMounted(true);
+    setIsReady(true);
   }, []);
 
   useEffect(() => {
-    if (mounted) {
+    if (isReady) {
       localStorage.setItem("locale", locale);
     }
-  }, [locale, mounted]);
+  }, [locale, isReady]);
 
   function t(key: string): string {
-    const currentLocale = mounted ? locale : "en";
+    const currentLocale = isReady ? locale : "en";
     const keys = key.split(".");
     let result: unknown = translations[currentLocale];
     for (const k of keys) {
@@ -206,7 +207,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <I18nContext.Provider value={{ locale, setLocale, t }}>
+    <I18nContext.Provider value={{ locale, setLocale, t, isReady }}>
       {children}
     </I18nContext.Provider>
   );

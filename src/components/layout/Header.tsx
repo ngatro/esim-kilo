@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCart } from "@/components/providers/CartProvider";
+import { useUI } from "@/components/providers/UIProvider";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 import { useState, useEffect } from "react";
 
 export default function Header() {
   const { user, logout, loading: authLoading } = useAuth();
   const { items } = useCart();
+  const { openLogin, openCart } = useUI();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -18,7 +20,7 @@ export default function Header() {
   const cartCount = mounted ? items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-2xl">📡</span>
@@ -42,7 +44,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
           
-          <Link href="/cart" className="relative text-slate-300 hover:text-white">
+          <button onClick={openCart} className="relative text-slate-300 hover:text-white">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -51,7 +53,7 @@ export default function Header() {
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
 
           {mounted && !authLoading && (
             user ? (
@@ -65,14 +67,12 @@ export default function Header() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                  Login
-                </Link>
-                <Link href="/register" className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-                  Register
-                </Link>
-              </div>
+              <button 
+                onClick={openLogin}
+                className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              >
+                Login
+              </button>
             )
           )}
         </div>
