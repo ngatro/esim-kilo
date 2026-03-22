@@ -8,17 +8,11 @@ import fr from "@/messages/fr.json";
 
 export type Locale = "en" | "vi" | "de" | "fr";
 
-type NestedKeyOf<T> = T extends object
-  ? { [K in keyof T]: K extends string ? (T[K] extends object ? `${K}.${NestedKeyOf<T[K]>}` : K) : never }[keyof T]
-  : never;
-
-export type TranslationKey = NestedKeyOf<typeof en>;
-
-const translations: Record<Locale, typeof en> = {
-  en,
-  vi,
-  de,
-  fr,
+const translations: Record<Locale, Record<string, unknown>> = {
+  en: en as Record<string, unknown>,
+  vi: vi as Record<string, unknown>,
+  de: de as Record<string, unknown>,
+  fr: fr as Record<string, unknown>,
 };
 
 export const SUPPORTED_LOCALES: { code: Locale; label: string; flag: string }[] = [
@@ -79,7 +73,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = (key: string): string => {
     const currentLocale = isReady ? locale : "en";
-    return getNestedValue(translations[currentLocale] as unknown as Record<string, unknown>, key);
+    return getNestedValue(translations[currentLocale], key);
   };
 
   return (
