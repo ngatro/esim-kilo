@@ -15,7 +15,6 @@ export default function Home() {
         <PlansSection />
         <FAQ />
 
-        {/* CTA Banner */}
         <section className="py-24">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="bg-gradient-to-br from-sky-600/20 to-indigo-600/20 border border-sky-500/20 rounded-3xl p-12">

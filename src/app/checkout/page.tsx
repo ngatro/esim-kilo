@@ -14,10 +14,10 @@ export default function CheckoutPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-slate-900 py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Please Login to Checkout</h1>
-          <Link href="/login" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+          <h1 className="text-3xl font-bold text-white mb-4">Please Login to Checkout</h1>
+          <Link href="/login" className="inline-block bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700">
             Login
           </Link>
         </div>
@@ -27,10 +27,10 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-slate-900 py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
-          <Link href="/" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+          <h1 className="text-3xl font-bold text-white mb-4">Your cart is empty</h1>
+          <Link href="/" className="inline-block bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700">
             Continue Shopping
           </Link>
         </div>
@@ -67,22 +67,22 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-slate-900 py-12">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold text-white mb-8">Checkout</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Order Summary</h2>
+            <div className="bg-slate-800 rounded-lg shadow-sm p-6">
               {items.map((item) => (
-                <div key={item.id} className="flex justify-between py-2">
+                <div key={item.id} className="flex justify-between py-2 text-slate-300">
                   <span>{item.planName} x {item.quantity}</span>
                   <span>${item.price * item.quantity}</span>
                 </div>
               ))}
               <div className="border-t pt-4 mt-4">
-                <div className="flex justify-between text-xl font-bold">
+                <div className="flex justify-between text-xl font-bold text-white">
                   <span>Total</span>
                   <span>${total}</span>
                 </div>
@@ -91,13 +91,13 @@ export default function CheckoutPage() {
           </div>
           
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Payment</h2>
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <p className="text-gray-600 mb-4">Demo mode - no real payment required</p>
+            <h2 className="text-xl font-semibold text-white mb-4">Payment</h2>
+            <div className="bg-slate-800 rounded-lg shadow-sm p-6">
+              <p className="text-slate-400 mb-4">Demo mode - no real payment required</p>
               <button
                 onClick={handleCheckout}
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                className="w-full bg-sky-600 text-white py-3 rounded-lg hover:bg-sky-700 disabled:bg-slate-600"
               >
                 {loading ? "Processing..." : "Complete Order"}
               </button>
