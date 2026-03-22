@@ -17,7 +17,10 @@
     "search": "Tìm kiếm",
     "searchPlaceholder": "Tìm theo điểm đến...",
     "readMore": "Xem thêm",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "noHiddenFees": "Không phí ẩn",
+    "instantDelivery": "Giao hàng tức thì",
+    "refundPolicy": "Chính sách hoàn tiền 7 ngày"
   },
   "hero": {
     "title": "Luôn kết nối mọi nơi",
@@ -25,19 +28,22 @@
     "cta": "Bắt đầu",
     "countries": "Quốc gia",
     "operators": "Nhà mạng",
-    "plans": "Gói dữ liệu"
+    "plans": "Gói dữ liệu",
+    "browsePlans": "Xem gói",
+    "howItWorks": "Cách hoạt động",
+    "nowServing": "Phục vụ 190+ quốc gia"
   },
   "howItWorks": {
     "title": "Cách hoạt động",
-    "subtitle": "Quy trình 4 bước đơn giản để kết nối",
+    "subtitle": "Kết nối chỉ trong 4 bước đơn giản",
     "step1": "Chọn gói",
-    "step1Desc": "Chọn gói eSIM hoàn hảo cho điểm đến của bạn",
-    "step2": "Nhận mã QR",
-    "step2Desc": "Nhận mã QR ngay lập tức qua email",
-    "step3": "Cài đặt eSIM",
-    "step3Desc": "Cài đặt eSIM trên thiết bị của bạn",
-    "step4": "Luôn kết nối",
-    "step4Desc": "Tận hưởng kết nối internet liên tục khi ở nước ngoài"
+    "step1Desc": "Duyệt các gói và chọn eSIM hoàn hảo cho điểm đến của bạn",
+    "step2": "Mua hàng",
+    "step2Desc": "Hoàn tất đơn hàng an toàn bằng thẻ tín dụng hoặc PayPal",
+    "step3": "Nhận QR",
+    "step3Desc": "Nhận mã kích hoạt eSIM qua email trong vài phút",
+    "step4": "Kích hoạt",
+    "step4Desc": "Quét mã QR để cài đặt eSIM và bắt đầu sử dụng dữ liệu"
   },
   "plans": {
     "title": "Các gói dữ liệu có sẵn",
@@ -49,14 +55,19 @@
     "buyNow": "Mua ngay",
     "days": "ngày",
     "gb": "GB",
-    "unlimited": "Không giới hạn"
+    "unlimited": "Không giới hạn",
+    "data": "Dữ liệu",
+    "validity": "Thời hạn",
+    "speed": "Tốc độ",
+    "getThisPlan": "Chọn gói này",
+    "viewAllPlans": "Xem tất cả gói"
   },
   "cart": {
     "title": "Giỏ hàng",
     "empty": "Giỏ hàng trống",
     "continueShopping": "Tiếp tục mua sắm",
     "proceedCheckout": "Tiến hành thanh toán",
-    "clearCart": "Xóa Giỏ"
+    "clearCart": "Xóa giỏ"
   },
   "auth": {
     "signIn": "Đăng nhập vào tài khoản",
@@ -84,6 +95,9 @@
     "latest": "Bài viết mới nhất",
     "readTime": "phút đọc",
     "searchPlaceholder": "Tìm bài viết...",
+    "subscribe": "Đăng ký",
+    "subscribeDesc": "Cập nhật những mẹo du lịch và ưu đãi eSIM mới nhất",
+    "emailPlaceholder": "Nhập email của bạn",
     "categories": {
       "all": "Tất cả",
       "travel": "Mẹo du lịch",
@@ -101,20 +115,51 @@
   "coverage": {
     "title": "Phạm vi toàn cầu",
     "subtitle": "Kết nối ở hơn 190 quốc gia và vùng lãnh thổ trên toàn thế giới",
-    "popular": "Điểm đến phổ biến"
+    "popular": "Điểm đến phổ biến",
+    "regions": {
+      "europe": "Châu Âu",
+      "asia": "Châu Á",
+      "americas": "Châu Mỹ",
+      "middleEast": "Trung Đông",
+      "africa": "Châu Phi",
+      "oceania": "Châu Đại Dương"
+    },
+    "countries": "quốc gia"
   },
   "device": {
     "title": "Tương thích thiết bị",
-    "subtitle": "eSIM hoạt động với hầu hết các smartphone hiện đại. Kiểm tra xem thiết bị của bạn có hỗ trợ công nghệ eSIM không.",
+    "subtitle": "eSIM hoạt động với hầu hết smartphone hiện đại. Kiểm tra xem thiết bị của bạn có hỗ trợ công nghệ eSIM không.",
     "supported": "Hỗ trợ",
-    "notSupported": "Không hỗ trợ"
+    "notSupported": "Không hỗ trợ",
+    "notSure": "Không chắc thiết bị của bạn có hỗ trợ eSIM?",
+    "checkList": "Xem danh sách tương thích đầy đủ"
   },
   "comparison": {
     "title": "Tại sao chọn SimPal?",
     "subtitle": "So sánh SimPal với roaming truyền thống và xem bạn có thể tiết kiệm bao nhiêu",
     "simpal": "eSIM SimPal",
     "roaming": "Roaming truyền thống",
-    "local": "SIM địa phương"
+    "local": "SIM địa phương",
+    "features": {
+      "cheaper": "Tiết kiệm đến 80%",
+      "instant": "Kích hoạt tức thì",
+      "noContract": "Không cần hợp đồng",
+      "countries": "190+ quốc gia",
+      "support": "Hỗ trợ 24/7",
+      "noFees": "Không phí ẩn",
+      "expensive": "Phí hàng ngày cao",
+      "slow": "Kích hoạt trong 24-48 giờ",
+      "contract": "Hợp đồng dài hạn",
+      "limited": "Phạm vi hạn chế",
+      "limitedSupport": "Hỗ trợ hạn chế",
+      "surprise": "Phí bất ngờ",
+      "store": "Cần đến cửa hàng",
+      "language": "Rào cản ngôn ngữ",
+      "oneCountry": "Chỉ hoạt động ở một quốc gia",
+      "complex": "Thiết lập phức tạp",
+      "limitedData": "Gói dữ liệu hạn chế",
+      "number": "Vấn đề số điện thoại"
+    }
   },
   "trust": {
     "countries": "Quốc gia",
@@ -124,13 +169,69 @@
     "rating": "Đánh giá",
     "savings": "Tiết kiệm"
   },
+  "whyChoose": {
+    "title": "Tại sao chọn SimPal?",
+    "subtitle": "Chúng tôi đang cách mạng hóa cách du khách kết nối khi ở nước ngoài",
+    "features": {
+      "instant": {
+        "title": "Kích hoạt tức thì",
+        "desc": "Nhận mã QR eSIM qua email trong vài phút sau khi mua. Bắt đầu sử dụng dữ liệu ngay."
+      },
+      "save": {
+        "title": "Tiết kiệm đến 80%",
+        "desc": "Tránh phí roaming đắt đỏ từ nhà mạng. Sử dụng dữ liệu giá rẻ cho mọi chuyến đi."
+      },
+      "secure": {
+        "title": "Thanh toán an toàn",
+        "desc": "Thông tin thanh toán của bạn được mã hóa và bảo mật. Chúng tôi sử dụng tiêu chuẩn bảo mật cao cấp."
+      },
+      "global": {
+        "title": "Phạm vi toàn cầu",
+        "desc": "Kết nối tại 190+ quốc gia trên toàn thế giới với các đối tác mạng đáng tin cậy."
+      },
+      "easy": {
+        "title": "Cài đặt dễ dàng",
+        "desc": "Cài đặt qua mã QR đơn giản. Không cần SIM vật lý."
+      },
+      "noContract": {
+        "title": "Không hợp đồng",
+        "desc": "Trả tiền theo lần sử dụng. Không phí hàng tháng, cam kết hay phí ẩn."
+      }
+    }
+  },
   "faq": {
     "title": "Câu hỏi thường gặp",
-    "subtitle": "Tất cả những gì bạn cần biết về eSIM SimPal"
+    "subtitle": "Tất cả những gì bạn cần biết về eSIM SimPal",
+    "questions": {
+      "whatIsEsim": "eSIM là gì?",
+      "whatIsEsimAns": "eSIM (SIM nhúng) là SIM kỹ thuật số cho phép bạn kích hoạt gói di động mà không cần SIM vật lý. Nó được tích hợp sẵn trong thiết bị và có thể được lập trình từ xa.",
+      "howToKnow": "Làm sao biết điện thoại có hỗ trợ eSIM?",
+      "howToKnowAns": "Hầu hết smartphone hiện đại đều hỗ trợ eSIM. Kiểm tra cài đặt điện thoại hoặc tìm kiếm trực tuyến với tên thiết bị + 'hỗ trợ eSIM'. iPhone XS trở lên, Google Pixel 3 trở lên và nhiều thiết bị Samsung Galaxy đều hỗ trợ eSIM.",
+      "activationTime": "Kích hoạt eSIM mất bao lâu?",
+      "activationTimeAns": "Sau khi nhận mã QR qua email, kích hoạt chỉ mất 5-10 phút. Chỉ cần quét mã QR trong cài đặt điện thoại và dữ liệu của bạn đã sẵn sàng sử dụng.",
+      "keepOriginal": "Tôi có thể giữ SIM gốc không?",
+      "keepOriginalAns": "Có! eSIM hoạt động cùng với SIM vật lý. Bạn có thể có hai số điện thoại hoặc sử dụng số thường cho cuộc gọi/tin nhắn trong khi dùng SimPal cho dữ liệu.",
+      "runOutData": "Chuyện gì xảy ra nếu hết dữ liệu?",
+      "runOutDataAns": "Bạn có thể mua thêm dữ liệu bất kỳ lúc nào qua ứng dụng hoặc website của chúng tôi. Quá trình tức thì và bạn sẽ trực tuyến ngay lập tức.",
+      "refund": "Làm sao để hoàn tiền?",
+      "refundAns": "Chúng tôi cung cấp chính sách hoàn tiền 7 ngày cho các gói chưa sử dụng. Liên hệ đội hỗ trợ trong vòng 7 ngày sau khi mua nếu bạn không hài lòng.",
+      "cruiseShip": "eSIM có hoạt động trên tàu cruise không?",
+      "cruiseShipAns": "eSIM yêu cầu tín hiệu mạng di động trên đất liền. Đối với cruise, chúng tôi khuyên bạn nên kiểm tra xem điểm đến có tín hiệu di động hoặc xem xét các giải pháp vệ tinh.",
+      "hotspot": "Tôi có thể dùng eSIM cho hotspot không?",
+      "hotspotAns": "Có! Hầu hết các gói của chúng tôi đều hỗ trợ chia sẻ hotspot. Kiểm tra chi tiết gói để xác nhận trước khi mua."
+    }
   },
   "cta": {
     "title": "Sẵn sàng để kết nối?",
     "subtitle": "Tham gia cùng hơn 500.000+ du khách luôn kết nối mà không phải lo về phí roaming.",
     "button": "Tìm gói của bạn"
+  },
+  "testimonials": {
+    "title": "Du khách nói gì",
+    "subtitle": "Tham gia cùng hàng trăm ngàn du khách hài lòng với SimPal"
+  },
+  "partners": {
+    "title": "Mạng đáng tin cậy trên toàn thế giới",
+    "subtitle": "Chúng tôi hợp tác với các nhà mạng hàng đầu để mang đến cho bạn phạm vi phủ sóng tốt nhất"
   }
 }
