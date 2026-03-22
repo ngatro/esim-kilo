@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useUI } from "@/components/providers/UIProvider";
@@ -55,25 +56,27 @@ export default function Header() {
             )}
           </button>
 
-          {mounted && !authLoading && (
-            user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-slate-300">{user.name}</span>
-                <button
-                  onClick={() => logout()}
-                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={openLogin}
-                className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          {mounted && !authLoading && user && (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-slate-300">{user.name}</span>
+              <button
+                onClick={() => logout()}
+                className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
               >
-                Login
+                Logout
               </button>
-            )
+            </div>
+          )}
+
+          {mounted && !authLoading && !user && (
+            <motion.button 
+              onClick={openLogin}
+              className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Login
+            </motion.button>
           )}
         </div>
       </div>
