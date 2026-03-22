@@ -4,11 +4,18 @@ import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
+import { useState, useEffect } from "react";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const { items } = useCart();
-  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const cartCount = mounted ? items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
   return (
     <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
@@ -24,10 +31,10 @@ export default function Header() {
           <Link href="/" className="hover:text-white transition-colors">Home</Link>
           <Link href="/#plans" className="hover:text-white transition-colors">Plans</Link>
           <Link href="/#how-it-works" className="hover:text-white transition-colors">How It Works</Link>
-          {user && (
+          {mounted && user && (
             <Link href="/orders" className="hover:text-white transition-colors">My Orders</Link>
           )}
-          {user?.role === "admin" && (
+          {mounted && user?.role === "admin" && (
             <Link href="/admin" className="hover:text-white transition-colors">Admin</Link>
           )}
         </nav>
@@ -46,25 +53,27 @@ export default function Header() {
             )}
           </Link>
 
-          {user ? (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-slate-300">{user.name}</span>
-              <button
-                onClick={() => logout()}
-                className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                Login
-              </Link>
-              <Link href="/register" className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-                Register
-              </Link>
-            </div>
+          {mounted && !authLoading && (
+            user ? (
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-slate-300">{user.name}</span>
+                <button
+                  onClick={() => logout()}
+                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                  Login
+                </Link>
+                <Link href="/register" className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+                  Register
+                </Link>
+              </div>
+            )
           )}
         </div>
       </div>

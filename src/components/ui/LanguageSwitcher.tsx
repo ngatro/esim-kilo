@@ -1,11 +1,16 @@
 "use client";
 
 import { useI18n } from "@/components/providers/I18nProvider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function LanguageSwitcher() {
   const { locale, setLocale } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLanguageChange = (newLocale: "en" | "vi") => {
     setIsOpen(false);
@@ -13,6 +18,14 @@ export default function LanguageSwitcher() {
   };
 
   const currentLabel = locale === "vi" ? "VN" : "EN";
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-md text-white text-sm font-medium">
+        EN
+      </div>
+    );
+  }
 
   return (
     <div className="relative">

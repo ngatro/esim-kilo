@@ -140,7 +140,7 @@ const translations: Record<Locale, Translations> = {
       empty: "Giỏ hàng trống",
       continueShopping: "Tiếp tục mua sắm",
       proceedCheckout: "Tiến hành thanh toán",
-      clearCart: "Xóa giỏ",
+      clearCart: "Xóa Giỏ",
     },
     auth: {
       signIn: "Đăng nhập vào tài khoản",
@@ -171,28 +171,36 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-function getInitialLocale(): Locale {
-  if (typeof window === "undefined") return "en";
-  try {
-    const saved = localStorage.getItem("locale") as Locale;
-    return saved === "vi" ? "vi" : "en";
-  } catch {
-    return "en";
-  }
-}
-
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(getInitialLocale);
+  const [locale, setLocale] = useState<Locale>("en");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("locale", locale);
-  }, [locale]);
+    try {
+      const saved = localStorage.getItem("locale");
+      if (saved === "vi" || saved === "en") {
+        setLocale(saved);
+      }
+    } catch {
+      // ignore
+    }
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("locale", locale);
+    }
+  }, [locale, mounted]);
 
   function t(key: string): string {
+    const currentLocale = mounted ? locale : "en";
     const keys = key.split(".");
-    let result: any = translations[locale];
+    let result: unknown = translations[currentLocale];
     for (const k of keys) {
-      result = result?.[k];
+      if (result && typeof result === "object") {
+        result = (result as Record<string, unknown>)[k];
+      }
     }
     return typeof result === "string" ? result : key;
   }
