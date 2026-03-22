@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-type Locale = "en" | "vi";
+export type Locale = "en" | "vi" | "de" | "fr";
 
 interface Translations {
   [key: string]: string | Translations;
@@ -20,12 +20,15 @@ const translations: Record<Locale, Translations> = {
       checkout: "Checkout",
       orders: "My Orders",
       admin: "Admin",
+      blog: "Blog",
       total: "Total",
       price: "Price",
       quantity: "Quantity",
       remove: "Remove",
       search: "Search",
       searchPlaceholder: "Search by destination...",
+      readMore: "Read More",
+      back: "Back",
     },
     hero: {
       title: "Stay Connected Anywhere",
@@ -83,6 +86,28 @@ const translations: Record<Locale, Translations> = {
       managePlans: "Manage Plans",
       manageOrders: "Manage Orders",
       manageUsers: "Manage Users",
+      manageBlog: "Manage Blog",
+    },
+    blog: {
+      title: "Blog",
+      subtitle: "Travel tips, eSIM guides, and latest news",
+      featured: "Featured",
+      latest: "Latest Articles",
+      readTime: "min read",
+      searchPlaceholder: "Search articles...",
+      categories: {
+        all: "All Posts",
+        travel: "Travel Tips",
+        esim: "eSIM Guide",
+        tech: "Technology",
+        deals: "Deals & Offers",
+        news: "News",
+      },
+    },
+    footer: {
+      description: "Stay connected anywhere in the world with affordable eSIM data plans for 190+ countries.",
+      copyright: "All rights reserved.",
+      madeFor: "Made for travelers. Powered by global networks.",
     },
   },
   vi: {
@@ -96,12 +121,15 @@ const translations: Record<Locale, Translations> = {
       checkout: "Thanh toán",
       orders: "Đơn hàng",
       admin: "Quản trị",
+      blog: "Blog",
       total: "Tổng cộng",
       price: "Giá",
       quantity: "Số lượng",
       remove: "Xóa",
       search: "Tìm kiếm",
       searchPlaceholder: "Tìm theo điểm đến...",
+      readMore: "Xem thêm",
+      back: "Quay lại",
     },
     hero: {
       title: "Luôn kết nối mọi nơi",
@@ -159,6 +187,230 @@ const translations: Record<Locale, Translations> = {
       managePlans: "Quản lý gói",
       manageOrders: "Quản lý đơn hàng",
       manageUsers: "Quản lý người dùng",
+      manageBlog: "Quản lý blog",
+    },
+    blog: {
+      title: "Blog",
+      subtitle: "Mẹo du lịch, hướng dẫn eSIM và tin tức mới nhất",
+      featured: "Nổi bật",
+      latest: "Bài viết mới nhất",
+      readTime: "phút đọc",
+      searchPlaceholder: "Tìm bài viết...",
+      categories: {
+        all: "Tất cả",
+        travel: "Mẹo du lịch",
+        esim: "Hướng dẫn eSIM",
+        tech: "Công nghệ",
+        deals: "Khuyến mãi",
+        news: "Tin tức",
+      },
+    },
+    footer: {
+      description: "Luôn kết nối ở bất kỳ đâu trên thế giới với các gói dữ liệu eSIM giá rẻ cho hơn 190 quốc gia.",
+      copyright: "Tất cả các quyền.",
+      madeFor: "Dành cho du khách. Được cung cấp bởi các mạng toàn cầu.",
+    },
+  },
+  de: {
+    common: {
+      home: "Startseite",
+      plans: "Tarife",
+      cart: "Warenkorb",
+      login: "Anmelden",
+      register: "Registrieren",
+      logout: "Abmelden",
+      checkout: "Zur Kasse",
+      orders: "Meine Bestellungen",
+      admin: "Admin",
+      blog: "Blog",
+      total: "Gesamt",
+      price: "Preis",
+      quantity: "Menge",
+      remove: "Entfernen",
+      search: "Suchen",
+      searchPlaceholder: "Nach Reiseziel suchen...",
+      readMore: "Mehr lesen",
+      back: "Zurück",
+    },
+    hero: {
+      title: "Bleiben Sie überall verbunden",
+      subtitle: "Erschwingliche eSIM-Datentarife für internationale Reisen",
+      cta: "Loslegen",
+      countries: "Länder",
+      operators: "Anbieter",
+      plans: "Tarife",
+    },
+    howItWorks: {
+      title: "So funktioniert es",
+      subtitle: "Einfacher 4-Schritt-Prozess zur Verbindung",
+      step1: "Tarif wählen",
+      step1Desc: "Wählen Sie den perfekten eSIM-Tarif für Ihr Reiseziel",
+      step2: "QR-Code erhalten",
+      step2Desc: "Erhalten Sie Ihren QR-Code sofort per E-Mail",
+      step3: "eSIM installieren",
+      step3Desc: "Installieren Sie die eSIM auf Ihrem Gerät",
+      step4: "Verbunden bleiben",
+      step4Desc: "Genießen Sie nahtlose Internetverbindung im Ausland",
+    },
+    plans: {
+      title: "Verfügbare Tarife",
+      subtitle: "Durchsuchen Sie unsere umfangreiche Sammlung von eSIM-Datentarifen",
+      filterByRegion: "Nach Region filtern",
+      allRegions: "Alle Regionen",
+      viewDetails: "Details anzeigen",
+      addToCart: "In den Warenkorb",
+      buyNow: "Jetzt kaufen",
+      days: "Tage",
+      gb: "GB",
+      unlimited: "Unbegrenzt",
+    },
+    cart: {
+      title: "Warenkorb",
+      empty: "Ihr Warenkorb ist leer",
+      continueShopping: "Weiter einkaufen",
+      proceedCheckout: "Zur Kasse gehen",
+      clearCart: "Warenkorb leeren",
+    },
+    auth: {
+      signIn: "In Ihr Konto einloggen",
+      signUp: "Konto erstellen",
+      email: "E-Mail-Adresse",
+      password: "Passwort",
+      name: "Vollständiger Name",
+      confirmPassword: "Passwort bestätigen",
+      submitLogin: "Anmelden",
+      submitRegister: "Konto erstellen",
+      noAccount: "Noch kein Konto?",
+      hasAccount: "Bereits ein Konto?",
+    },
+    admin: {
+      dashboard: "Admin-Dashboard",
+      managePlans: "Tarife verwalten",
+      manageOrders: "Bestellungen verwalten",
+      manageUsers: "Benutzer verwalten",
+      manageBlog: "Blog verwalten",
+    },
+    blog: {
+      title: "Blog",
+      subtitle: "Reisetipps, eSIM-Anleitungen und aktuelle Nachrichten",
+      featured: "Empfohlen",
+      latest: "Neueste Artikel",
+      readTime: "Min. Lesezeit",
+      searchPlaceholder: "Artikel suchen...",
+      categories: {
+        all: "Alle Beiträge",
+        travel: "Reisetipps",
+        esim: "eSIM Anleitung",
+        tech: "Technologie",
+        deals: "Angebote",
+        news: "Nachrichten",
+      },
+    },
+    footer: {
+      description: "Bleiben Sie überall auf der Welt verbunden mit erschwinglichen eSIM-Datentarifen für über 190 Länder.",
+      copyright: "Alle Rechte vorbehalten.",
+      madeFor: "Gemacht für Reisende. Angetrieben von globalen Netzwerken.",
+    },
+  },
+  fr: {
+    common: {
+      home: "Accueil",
+      plans: "Forfaits",
+      cart: "Panier",
+      login: "Connexion",
+      register: "S'inscrire",
+      logout: "Déconnexion",
+      checkout: "Paiement",
+      orders: "Mes commandes",
+      admin: "Admin",
+      blog: "Blog",
+      total: "Total",
+      price: "Prix",
+      quantity: "Quantité",
+      remove: "Supprimer",
+      search: "Rechercher",
+      searchPlaceholder: "Rechercher par destination...",
+      readMore: "Lire la suite",
+      back: "Retour",
+    },
+    hero: {
+      title: "Restez connecté partout",
+      subtitle: "Forfaits de données eSIM abordables pour les voyages internationaux",
+      cta: "Commencer",
+      countries: "Pays",
+      operators: "Opérateurs",
+      plans: "Forfaits",
+    },
+    howItWorks: {
+      title: "Comment ça marche",
+      subtitle: "Processus simple en 4 étapes pour se connecter",
+      step1: "Choisir un forfait",
+      step1Desc: "Sélectionnez le forfait eSIM parfait pour votre destination",
+      step2: "Recevoir le code QR",
+      step2Desc: "Recevez votre code QR instantanément par e-mail",
+      step3: "Installer l'eSIM",
+      step3Desc: "Installez l'eSIM sur votre appareil",
+      step4: "Rester connecté",
+      step4Desc: "Profitez d'une connexion Internet fluide à l'étranger",
+    },
+    plans: {
+      title: "Forfaits disponibles",
+      subtitle: "Parcourez notre vaste collection de forfaits de données eSIM",
+      filterByRegion: "Filtrer par région",
+      allRegions: "Toutes les régions",
+      viewDetails: "Voir les détails",
+      addToCart: "Ajouter au panier",
+      buyNow: "Acheter maintenant",
+      days: "jours",
+      gb: "Go",
+      unlimited: "Illimité",
+    },
+    cart: {
+      title: "Panier",
+      empty: "Votre panier est vide",
+      continueShopping: "Continuer les achats",
+      proceedCheckout: "Passer à la caisse",
+      clearCart: "Vider le panier",
+    },
+    auth: {
+      signIn: "Connectez-vous à votre compte",
+      signUp: "Créer un compte",
+      email: "Adresse e-mail",
+      password: "Mot de passe",
+      name: "Nom complet",
+      confirmPassword: "Confirmer le mot de passe",
+      submitLogin: "Se connecter",
+      submitRegister: "Créer un compte",
+      noAccount: "Pas encore de compte?",
+      hasAccount: "Déjà un compte?",
+    },
+    admin: {
+      dashboard: "Tableau de bord Admin",
+      managePlans: "Gérer les forfaits",
+      manageOrders: "Gérer les commandes",
+      manageUsers: "Gérer les utilisateurs",
+      manageBlog: "Gérer le blog",
+    },
+    blog: {
+      title: "Blog",
+      subtitle: "Conseils de voyage, guides eSIM et dernières nouvelles",
+      featured: "À la une",
+      latest: "Derniers articles",
+      readTime: "min de lecture",
+      searchPlaceholder: "Rechercher des articles...",
+      categories: {
+        all: "Tous les articles",
+        travel: "Conseils voyage",
+        esim: "Guide eSIM",
+        tech: "Technologie",
+        deals: "Offres",
+        news: "Actualités",
+      },
+    },
+    footer: {
+      description: "Restez connecté n'importe où dans le monde avec des forfaits de données eSIM abordables pour plus de 190 pays.",
+      copyright: "Tous droits réservés.",
+      madeFor: "Fait pour les voyageurs. Propulsé par les réseaux mondiaux.",
     },
   },
 };
@@ -172,15 +424,17 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
+const SUPPORTED_LOCALES: Locale[] = ["en", "vi", "de", "fr"];
+
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>("en");
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("locale");
-      if (saved === "vi" || saved === "en") {
-        setLocale(saved);
+      if (saved && SUPPORTED_LOCALES.includes(saved as Locale)) {
+        setLocaleState(saved as Locale);
       }
     } catch {
       // ignore
@@ -188,11 +442,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setIsReady(true);
   }, []);
 
-  useEffect(() => {
-    if (isReady) {
-      localStorage.setItem("locale", locale);
+  const setLocale = (newLocale: Locale) => {
+    if (SUPPORTED_LOCALES.includes(newLocale)) {
+      setLocaleState(newLocale);
+      try {
+        localStorage.setItem("locale", newLocale);
+      } catch {
+        // ignore
+      }
     }
-  }, [locale, isReady]);
+  };
 
   function t(key: string): string {
     const currentLocale = isReady ? locale : "en";
@@ -220,3 +479,10 @@ export function useI18n() {
   }
   return context;
 }
+
+export const SUPPORTED_LANGUAGES = [
+  { code: "en" as Locale, label: "English", flag: "🇺🇸" },
+  { code: "vi" as Locale, label: "Tiếng Việt", flag: "🇻🇳" },
+  { code: "de" as Locale, label: "Deutsch", flag: "🇩🇪" },
+  { code: "fr" as Locale, label: "Français", flag: "🇫🇷" },
+];
