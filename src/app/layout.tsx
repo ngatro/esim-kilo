@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Next.js Template",
-  description: "A minimal Next.js starter template",
+  title: "SimPal — Travel eSIM Marketplace",
+  description: "Stay connected worldwide. Browse and activate affordable eSIM data plans for 190+ countries.",
 };
 
 export default function RootLayout({
