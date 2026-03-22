@@ -1,0 +1,136 @@
+{
+  "common": {
+    "home": "Accueil",
+    "plans": "Forfaits",
+    "cart": "Panier",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "logout": "Déconnexion",
+    "checkout": "Paiement",
+    "orders": "Mes commandes",
+    "admin": "Admin",
+    "blog": "Blog",
+    "total": "Total",
+    "price": "Prix",
+    "quantity": "Quantité",
+    "remove": "Supprimer",
+    "search": "Rechercher",
+    "searchPlaceholder": "Rechercher par destination...",
+    "readMore": "Lire la suite",
+    "back": "Retour"
+  },
+  "hero": {
+    "title": "Restez connecté partout",
+    "subtitle": "Forfaits de données eSIM abordables pour les voyages internationaux",
+    "cta": "Commencer",
+    "countries": "Pays",
+    "operators": "Opérateurs",
+    "plans": "Forfaits"
+  },
+  "howItWorks": {
+    "title": "Comment ça marche",
+    "subtitle": "Processus simple en 4 étapes pour se connecter",
+    "step1": "Choisir un forfait",
+    "step1Desc": "Sélectionnez le forfait eSIM parfait pour votre destination",
+    "step2": "Recevoir le code QR",
+    "step2Desc": "Recevez votre code QR instantanément par e-mail",
+    "step3": "Installer l'eSIM",
+    "step3Desc": "Installez l'eSIM sur votre appareil",
+    "step4": "Rester connecté",
+    "step4Desc": "Profitez d'une connexion Internet fluide à l'étranger"
+  },
+  "plans": {
+    "title": "Forfaits disponibles",
+    "subtitle": "Parcourez notre vaste collection de forfaits de données eSIM",
+    "filterByRegion": "Filtrer par région",
+    "allRegions": "Toutes les régions",
+    "viewDetails": "Voir les détails",
+    "addToCart": "Ajouter au panier",
+    "buyNow": "Acheter maintenant",
+    "days": "jours",
+    "gb": "Go",
+    "unlimited": "Illimité"
+  },
+  "cart": {
+    "title": "Panier",
+    "empty": "Votre panier est vide",
+    "continueShopping": "Continuer les achats",
+    "proceedCheckout": "Passer à la caisse",
+    "clearCart": "Vider le panier"
+  },
+  "auth": {
+    "signIn": "Connectez-vous à votre compte",
+    "signUp": "Créer un compte",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "name": "Nom complet",
+    "confirmPassword": "Confirmer le mot de passe",
+    "submitLogin": "Se connecter",
+    "submitRegister": "Créer un compte",
+    "noAccount": "Pas encore de compte?",
+    "hasAccount": "Déjà un compte?"
+  },
+  "admin": {
+    "dashboard": "Tableau de bord Admin",
+    "managePlans": "Gérer les forfaits",
+    "manageOrders": "Gérer les commandes",
+    "manageUsers": "Gérer les utilisateurs",
+    "manageBlog": "Gérer le blog"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Conseils de voyage, guides eSIM et dernières nouvelles",
+    "featured": "À la une",
+    "latest": "Derniers articles",
+    "readTime": "min de lecture",
+    "searchPlaceholder": "Rechercher des articles...",
+    "categories": {
+      "all": "Tous les articles",
+      "travel": "Conseils voyage",
+      "esim": "Guide eSIM",
+      "tech": "Technologie",
+      "deals": "Offres",
+      "news": "Actualités"
+    }
+  },
+  "footer": {
+    "description": "Restez connecté n'importe où dans le monde avec des forfaits de données eSIM abordables pour plus de 190 pays.",
+    "copyright": "Tous droits réservés.",
+    "madeFor": "Fait pour les voyageurs. Propulsé par les réseaux mondiaux."
+  },
+  "coverage": {
+    "title": "Couverture mondiale",
+    "subtitle": "Restez connecté dans plus de 190 pays et territoires à travers le monde",
+    "popular": "Destinations populaires"
+  },
+  "device": {
+    "title": "Compatibilité des appareils",
+    "subtitle": "eSIM fonctionne avec la plupart des smartphones modernes. Vérifiez si votre appareil prend en charge la technologie eSIM.",
+    "supported": "Pris en charge",
+    "notSupported": "Non pris en charge"
+  },
+  "comparison": {
+    "title": "Pourquoi choisir SimPal?",
+    "subtitle": "Comparez SimPal avec l'itinérance traditionnelle et voyez combien vous pouvez économisez",
+    "simpal": "eSIM SimPal",
+    "roaming": "Itinérance traditionnelle",
+    "local": "SIM locales"
+  },
+  "trust": {
+    "countries": "Pays",
+    "users": "Utilisateurs satisfaits",
+    "setup": "Temps de configuration",
+    "support": "Support",
+    "rating": "Note",
+    "savings": "Économies"
+  },
+  "faq": {
+    "title": "Questions fréquemment posées",
+    "subtitle": "Tout ce que vous devez savoir sur l'eSIM SimPal"
+  },
+  "cta": {
+    "title": "Prêt à rester connecté?",
+    "subtitle": "Rejoignez plus de 500 000 voyageurs qui restent connectés sans les frais d'itinérance.",
+    "button": "Trouvez votre forfait"
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useI18n, SUPPORTED_LANGUAGES, type Locale } from "@/components/providers/I18nProvider";
+import { useI18n, SUPPORTED_LOCALES, type Locale } from "@/components/providers/I18nProvider";
 
 export default function LanguageSwitcher() {
   const { locale, setLocale } = useI18n();
@@ -35,7 +35,7 @@ export default function LanguageSwitcher() {
     };
   }, [isOpen]);
 
-  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === locale) || SUPPORTED_LANGUAGES[0];
+  const currentLang = SUPPORTED_LOCALES.find(l => l.code === locale) || SUPPORTED_LOCALES[0];
 
   if (!mounted) {
     return (
@@ -76,7 +76,7 @@ export default function LanguageSwitcher() {
             transition={{ duration: 0.15 }}
             className="absolute right-0 mt-2 w-40 bg-slate-800 rounded-xl shadow-lg py-1 border border-slate-700 overflow-hidden z-50"
           >
-            {SUPPORTED_LANGUAGES.map((lang) => (
+            {SUPPORTED_LOCALES.map((lang) => (
               <motion.button
                 key={lang.code}
                 onClick={() => handleLanguageChange(lang.code)}

@@ -1,0 +1,136 @@
+{
+  "common": {
+    "home": "Trang chủ",
+    "plans": "Gói dữ liệu",
+    "cart": "Giỏ hàng",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
+    "checkout": "Thanh toán",
+    "orders": "Đơn hàng",
+    "admin": "Quản trị",
+    "blog": "Blog",
+    "total": "Tổng cộng",
+    "price": "Giá",
+    "quantity": "Số lượng",
+    "remove": "Xóa",
+    "search": "Tìm kiếm",
+    "searchPlaceholder": "Tìm theo điểm đến...",
+    "readMore": "Xem thêm",
+    "back": "Quay lại"
+  },
+  "hero": {
+    "title": "Luôn kết nối mọi nơi",
+    "subtitle": "Gói dữ liệu eSIM giá rẻ cho du lịch quốc tế",
+    "cta": "Bắt đầu",
+    "countries": "Quốc gia",
+    "operators": "Nhà mạng",
+    "plans": "Gói dữ liệu"
+  },
+  "howItWorks": {
+    "title": "Cách hoạt động",
+    "subtitle": "Quy trình 4 bước đơn giản để kết nối",
+    "step1": "Chọn gói",
+    "step1Desc": "Chọn gói eSIM hoàn hảo cho điểm đến của bạn",
+    "step2": "Nhận mã QR",
+    "step2Desc": "Nhận mã QR ngay lập tức qua email",
+    "step3": "Cài đặt eSIM",
+    "step3Desc": "Cài đặt eSIM trên thiết bị của bạn",
+    "step4": "Luôn kết nối",
+    "step4Desc": "Tận hưởng kết nối internet liên tục khi ở nước ngoài"
+  },
+  "plans": {
+    "title": "Các gói dữ liệu có sẵn",
+    "subtitle": "Duyệt bộ sưu tập rộng lớn các gói dữ liệu eSIM",
+    "filterByRegion": "Lọc theo khu vực",
+    "allRegions": "Tất cả khu vực",
+    "viewDetails": "Xem chi tiết",
+    "addToCart": "Thêm vào giỏ",
+    "buyNow": "Mua ngay",
+    "days": "ngày",
+    "gb": "GB",
+    "unlimited": "Không giới hạn"
+  },
+  "cart": {
+    "title": "Giỏ hàng",
+    "empty": "Giỏ hàng trống",
+    "continueShopping": "Tiếp tục mua sắm",
+    "proceedCheckout": "Tiến hành thanh toán",
+    "clearCart": "Xóa Giỏ"
+  },
+  "auth": {
+    "signIn": "Đăng nhập vào tài khoản",
+    "signUp": "Tạo tài khoản",
+    "email": "Địa chỉ email",
+    "password": "Mật khẩu",
+    "name": "Họ và tên",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "submitLogin": "Đăng nhập",
+    "submitRegister": "Tạo tài khoản",
+    "noAccount": "Bạn chưa có tài khoản?",
+    "hasAccount": "Bạn đã có tài khoản?"
+  },
+  "admin": {
+    "dashboard": "Bảng điều khiển",
+    "managePlans": "Quản lý gói",
+    "manageOrders": "Quản lý đơn hàng",
+    "manageUsers": "Quản lý người dùng",
+    "manageBlog": "Quản lý blog"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Mẹo du lịch, hướng dẫn eSIM và tin tức mới nhất",
+    "featured": "Nổi bật",
+    "latest": "Bài viết mới nhất",
+    "readTime": "phút đọc",
+    "searchPlaceholder": "Tìm bài viết...",
+    "categories": {
+      "all": "Tất cả",
+      "travel": "Mẹo du lịch",
+      "esim": "Hướng dẫn eSIM",
+      "tech": "Công nghệ",
+      "deals": "Khuyến mãi",
+      "news": "Tin tức"
+    }
+  },
+  "footer": {
+    "description": "Luôn kết nối ở bất kỳ đâu trên thế giới với các gói dữ liệu eSIM giá rẻ cho hơn 190 quốc gia.",
+    "copyright": "Tất cả các quyền.",
+    "madeFor": "Dành cho du khách. Được cung cấp bởi các mạng toàn cầu."
+  },
+  "coverage": {
+    "title": "Phạm vi toàn cầu",
+    "subtitle": "Kết nối ở hơn 190 quốc gia và vùng lãnh thổ trên toàn thế giới",
+    "popular": "Điểm đến phổ biến"
+  },
+  "device": {
+    "title": "Tương thích thiết bị",
+    "subtitle": "eSIM hoạt động với hầu hết các smartphone hiện đại. Kiểm tra xem thiết bị của bạn có hỗ trợ công nghệ eSIM không.",
+    "supported": "Hỗ trợ",
+    "notSupported": "Không hỗ trợ"
+  },
+  "comparison": {
+    "title": "Tại sao chọn SimPal?",
+    "subtitle": "So sánh SimPal với roaming truyền thống và xem bạn có thể tiết kiệm bao nhiêu",
+    "simpal": "eSIM SimPal",
+    "roaming": "Roaming truyền thống",
+    "local": "SIM địa phương"
+  },
+  "trust": {
+    "countries": "Quốc gia",
+    "users": "Người dùng hài lòng",
+    "setup": "Thời gian cài đặt",
+    "support": "Hỗ trợ",
+    "rating": "Đánh giá",
+    "savings": "Tiết kiệm"
+  },
+  "faq": {
+    "title": "Câu hỏi thường gặp",
+    "subtitle": "Tất cả những gì bạn cần biết về eSIM SimPal"
+  },
+  "cta": {
+    "title": "Sẵn sàng để kết nối?",
+    "subtitle": "Tham gia cùng hơn 500.000+ du khách luôn kết nối mà không phải lo về phí roaming.",
+    "button": "Tìm gói của bạn"
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "common": {
+    "home": "Startseite",
+    "plans": "Tarife",
+    "cart": "Warenkorb",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "checkout": "Zur Kasse",
+    "orders": "Meine Bestellungen",
+    "admin": "Admin",
+    "blog": "Blog",
+    "total": "Gesamt",
+    "price": "Preis",
+    "quantity": "Menge",
+    "remove": "Entfernen",
+    "search": "Suchen",
+    "searchPlaceholder": "Nach Reiseziel suchen...",
+    "readMore": "Mehr lesen",
+    "back": "Zurück"
+  },
+  "hero": {
+    "title": "Bleiben Sie überall verbunden",
+    "subtitle": "Erschwingliche eSIM-Datentarife für internationale Reisen",
+    "cta": "Loslegen",
+    "countries": "Länder",
+    "operators": "Anbieter",
+    "plans": "Tarife"
+  },
+  "howItWorks": {
+    "title": "So funktioniert es",
+    "subtitle": "Einfacher 4-Schritt-Prozess zur Verbindung",
+    "step1": "Tarif wählen",
+    "step1Desc": "Wählen Sie den perfekten eSIM-Tarif für Ihr Reiseziel",
+    "step2": "QR-Code erhalten",
+    "step2Desc": "Erhalten Sie Ihren QR-Code sofort per E-Mail",
+    "step3": "eSIM installieren",
+    "step3Desc": "Installieren Sie die eSIM auf Ihrem Gerät",
+    "step4": "Verbunden bleiben",
+    "step4Desc": "Genießen Sie nahtlose Internetverbindung im Ausland"
+  },
+  "plans": {
+    "title": "Verfügbare Tarife",
+    "subtitle": "Durchsuchen Sie unsere umfangreiche Sammlung von eSIM-Datentarifen",
+    "filterByRegion": "Nach Region filtern",
+    "allRegions": "Alle Regionen",
+    "viewDetails": "Details anzeigen",
+    "addToCart": "In den Warenkorb",
+    "buyNow": "Jetzt kaufen",
+    "days": "Tage",
+    "gb": "GB",
+    "unlimited": "Unbegrenzt"
+  },
+  "cart": {
+    "title": "Warenkorb",
+    "empty": "Ihr Warenkorb ist leer",
+    "continueShopping": "Weiter einkaufen",
+    "proceedCheckout": "Zur Kasse gehen",
+    "clearCart": "Warenkorb leeren"
+  },
+  "auth": {
+    "signIn": "In Ihr Konto einloggen",
+    "signUp": "Konto erstellen",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "name": "Vollständiger Name",
+    "confirmPassword": "Passwort bestätigen",
+    "submitLogin": "Anmelden",
+    "submitRegister": "Konto erstellen",
+    "noAccount": "Noch kein Konto?",
+    "hasAccount": "Bereits ein Konto?"
+  },
+  "admin": {
+    "dashboard": "Admin-Dashboard",
+    "managePlans": "Tarife verwalten",
+    "manageOrders": "Bestellungen verwalten",
+    "manageUsers": "Benutzer verwalten",
+    "manageBlog": "Blog verwalten"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Reisetipps, eSIM-Anleitungen und aktuelle Nachrichten",
+    "featured": "Empfohlen",
+    "latest": "Neueste Artikel",
+    "readTime": "Min. Lesezeit",
+    "searchPlaceholder": "Artikel suchen...",
+    "categories": {
+      "all": "Alle Beiträge",
+      "travel": "Reisetipps",
+      "esim": "eSIM Anleitung",
+      "tech": "Technologie",
+      "deals": "Angebote",
+      "news": "Nachrichten"
+    }
+  },
+  "footer": {
+    "description": "Bleiben Sie überall auf der Welt verbunden mit erschwinglichen eSIM-Datentarifen für über 190 Länder.",
+    "copyright": "Alle Rechte vorbehalten.",
+    "madeFor": "Gemacht für Reisende. Angetrieben von globalen Netzwerken."
+  },
+  "coverage": {
+    "title": "Globale Abdeckung",
+    "subtitle": "Bleiben Sie in über 190 Ländern und Territorien weltweit verbunden",
+    "popular": "Beliebte Reiseziele"
+  },
+  "device": {
+    "title": "Gerätekompatibilität",
+    "subtitle": "eSIM funktioniert mit den meisten modernen Smartphones. Überprüfen Sie, ob Ihr Gerät eSIM-Technologie unterstützt.",
+    "supported": "Unterstützt",
+    "notSupported": "Nicht unterstützt"
+  },
+  "comparison": {
+    "title": "Warum SimPal wählen?",
+    "subtitle": "Vergleichen Sie SimPal mit traditionellem Roaming und sehen Sie, wie viel Sie sparen können",
+    "simpal": "SimPal eSIM",
+    "roaming": "Traditionelles Roaming",
+    "local": "Lokale SIM-Karten"
+  },
+  "trust": {
+    "countries": "Länder",
+    "users": "Zufriedene Nutzer",
+    "setup": "Einrichtungszeit",
+    "support": "Support",
+    "rating": "Bewertung",
+    "savings": "Ersparnis"
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "subtitle": "Alles, was Sie über SimPal eSIM wissen müssen"
+  },
+  "cta": {
+    "title": "Bereit zum Verbinden?",
+    "subtitle": "Schließen Sie sich über 500.000+ Reisenden an, die verbunden bleiben ohne Roaming-Gebühren.",
+    "button": "Finden Sie Ihren Tarif"
+  }
+}

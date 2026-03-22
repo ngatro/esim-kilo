@@ -1,0 +1,136 @@
+{
+  "common": {
+    "home": "Home",
+    "plans": "Plans",
+    "cart": "Cart",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "checkout": "Checkout",
+    "orders": "My Orders",
+    "admin": "Admin",
+    "blog": "Blog",
+    "total": "Total",
+    "price": "Price",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "search": "Search",
+    "searchPlaceholder": "Search by destination...",
+    "readMore": "Read More",
+    "back": "Back"
+  },
+  "hero": {
+    "title": "Stay Connected Anywhere",
+    "subtitle": "Affordable eSIM data plans for international travel",
+    "cta": "Get Started",
+    "countries": "Countries",
+    "operators": "Operators",
+    "plans": "Plans"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Simple 4-step process to get connected",
+    "step1": "Choose Plan",
+    "step1Desc": "Select the perfect eSIM plan for your destination",
+    "step2": "Receive QR Code",
+    "step2Desc": "Get your QR code instantly via email",
+    "step3": "Install eSIM",
+    "step3Desc": "Install the eSIM on your device",
+    "step4": "Stay Connected",
+    "step4Desc": "Enjoy seamless internet connection abroad"
+  },
+  "plans": {
+    "title": "Available Plans",
+    "subtitle": "Browse our extensive collection of eSIM data plans",
+    "filterByRegion": "Filter by Region",
+    "allRegions": "All Regions",
+    "viewDetails": "View Details",
+    "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
+    "days": "days",
+    "gb": "GB",
+    "unlimited": "Unlimited"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "continueShopping": "Continue Shopping",
+    "proceedCheckout": "Proceed to Checkout",
+    "clearCart": "Clear Cart"
+  },
+  "auth": {
+    "signIn": "Sign in to your account",
+    "signUp": "Create your account",
+    "email": "Email address",
+    "password": "Password",
+    "name": "Full name",
+    "confirmPassword": "Confirm Password",
+    "submitLogin": "Sign in",
+    "submitRegister": "Create account",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "admin": {
+    "dashboard": "Admin Dashboard",
+    "managePlans": "Manage Plans",
+    "manageOrders": "Manage Orders",
+    "manageUsers": "Manage Users",
+    "manageBlog": "Manage Blog"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Travel tips, eSIM guides, and latest news",
+    "featured": "Featured",
+    "latest": "Latest Articles",
+    "readTime": "min read",
+    "searchPlaceholder": "Search articles...",
+    "categories": {
+      "all": "All Posts",
+      "travel": "Travel Tips",
+      "esim": "eSIM Guide",
+      "tech": "Technology",
+      "deals": "Deals & Offers",
+      "news": "News"
+    }
+  },
+  "footer": {
+    "description": "Stay connected anywhere in the world with affordable eSIM data plans for 190+ countries.",
+    "copyright": "All rights reserved.",
+    "madeFor": "Made for travelers. Powered by global networks."
+  },
+  "coverage": {
+    "title": "Global Coverage",
+    "subtitle": "Stay connected in over 190 countries and territories worldwide",
+    "popular": "Popular Destinations"
+  },
+  "device": {
+    "title": "Device Compatibility",
+    "subtitle": "eSIM works with most modern smartphones. Check if your device supports eSIM technology.",
+    "supported": "Supported",
+    "notSupported": "Not Supported"
+  },
+  "comparison": {
+    "title": "Why Choose SimPal?",
+    "subtitle": "Compare SimPal with traditional roaming and see how much you can save",
+    "simpal": "SimPal eSIM",
+    "roaming": "Traditional Roaming",
+    "local": "Local SIM Cards"
+  },
+  "trust": {
+    "countries": "Countries",
+    "users": "Happy Users",
+    "setup": "Setup Time",
+    "support": "Support",
+    "rating": "User Rating",
+    "savings": "Savings"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about SimPal eSIM"
+  },
+  "cta": {
+    "title": "Ready to Stay Connected?",
+    "subtitle": "Join 500,000+ travelers who stay connected without the roaming bill shock.",
+    "button": "Find Your Plan"
+  }
+}
