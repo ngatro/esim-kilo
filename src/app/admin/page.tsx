@@ -32,7 +32,15 @@ export default function AdminDashboardPage() {
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-white mb-8">Admin Dashboard</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-slate-800 rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-white mb-2">Blog Management</h3>
+            <p className="text-slate-400 text-sm mb-4">Create and manage blog posts</p>
+            <Link href="/admin/blog" className="text-sky-400 hover:text-sky-300">
+              Manage Blog →
+            </Link>
+          </div>
+          
           <div className="bg-slate-800 rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-semibold text-white mb-2">Plans Management</h3>
             <p className="text-slate-400 text-sm mb-4">Manage eSIM data plans</p>
