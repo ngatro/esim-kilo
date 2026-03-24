@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EsimPlan, formatData } from "@/lib/esim-data";
+import { useI18n } from "../providers/I18nProvider";
 
 interface PlanCardProps {
   plan: EsimPlan;
@@ -7,6 +8,7 @@ interface PlanCardProps {
 
 export default function PlanCard({ plan }: PlanCardProps) {
   const isUnlimited = plan.dataGb >= 999;
+  const { t } = useI18n();
 
   return (
     <div
@@ -28,12 +30,12 @@ export default function PlanCard({ plan }: PlanCardProps) {
           <span className="text-3xl">{plan.flag}</span>
           <h3 className="text-lg font-semibold text-white mt-1">{plan.destination}</h3>
           {plan.coverageCountries > 1 && (
-            <p className="text-xs text-slate-500 mt-0.5">{plan.coverageCountries} countries</p>
+            <p className="text-xs text-slate-500 mt-0.5">{plan.coverageCountries} {t("hero.countries")}</p>
           )}
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-white">${plan.priceUsd.toFixed(2)}</p>
-          <p className="text-xs text-slate-500">one-time</p>
+          <p className="text-xs text-slate-500">{t("plans.oneTime")}</p>
         </div>
       </div>
 
@@ -43,17 +45,17 @@ export default function PlanCard({ plan }: PlanCardProps) {
           <p className={`font-bold ${isUnlimited ? "text-base" : "text-xl"} text-sky-400`}>
             {formatData(plan.dataGb)}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Data</p>
+          <p className="text-xs text-slate-500 mt-0.5">{t("plans.data")}</p>
         </div>
         <div className="bg-slate-900/60 rounded-xl p-3 text-center">
           <p className="text-xl font-bold text-sky-400">{plan.validityDays}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Days</p>
+          <p className="text-xs text-slate-500 mt-0.5">{t("plans.days")}</p>
         </div>
         <div className="bg-slate-900/60 rounded-xl p-3 text-center">
           <p className="text-sm font-bold text-sky-400 leading-tight">
             {plan.speeds[0].replace(" LTE", "")}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Speed</p>
+          <p className="text-xs text-slate-500 mt-0.5">{t("plans.speed")}</p>
         </div>
       </div>
 
@@ -61,7 +63,7 @@ export default function PlanCard({ plan }: PlanCardProps) {
       <ul className="space-y-1.5 mb-6 flex-1">
         {plan.features.slice(0, 3).map((feature) => (
           <li key={feature} className="flex items-center gap-2 text-sm text-slate-400">
-            <svg className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-3.5 h-3.5 text-sky-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
             {feature}
@@ -78,7 +80,7 @@ export default function PlanCard({ plan }: PlanCardProps) {
             : "bg-slate-700 hover:bg-slate-600 text-white group-hover:bg-sky-500 group-hover:text-white"
         }`}
       >
-        Get This Plan
+       {t("plans.getThisPlan")}
       </Link>
     </div>
   );

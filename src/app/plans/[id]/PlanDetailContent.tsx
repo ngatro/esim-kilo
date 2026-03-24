@@ -57,7 +57,7 @@ export default function PlanDetailContent({ plan }: PlanDetailContentProps) {
               </div>
 
               <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-6">
-                <h2 className="text-lg font-semibold text-white mb-4">Network Speeds</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">{t("plans.netSpeed")}</h2>
                 <div className="flex flex-wrap gap-2">
                   {plan.speeds.map((speed) => (
                     <span key={speed} className="bg-sky-500/10 border border-sky-500/20 text-sky-400 text-sm font-medium px-3 py-1.5 rounded-lg">
@@ -68,11 +68,11 @@ export default function PlanDetailContent({ plan }: PlanDetailContentProps) {
               </div>
 
               <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-6">
-                <h2 className="text-lg font-semibold text-white mb-4">What&apos;s Included</h2>
+                <h2 className="text-lg font-semibold text-white mb-4">{t("plans.whatIncluded")}</h2>
                 <ul className="space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-3 text-slate-300">
-                      <svg className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-sky-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       {feature}
@@ -90,7 +90,7 @@ export default function PlanDetailContent({ plan }: PlanDetailContentProps) {
               >
                 <div className="flex items-baseline justify-between mb-1">
                   <p className="text-4xl font-bold text-white">${plan.priceUsd.toFixed(2)}</p>
-                  <p className="text-sm text-slate-500">one-time</p>
+                  <p className="text-sm text-slate-500">{t("plans.oneTime")}</p>
                 </div>
                 <p className="text-slate-500 text-sm mb-6">
                   {isUnlimited ? `${t("plans.unlimited")} data` : `${plan.dataGb} GB data`} · {plan.validityDays} {t("plans.days")}

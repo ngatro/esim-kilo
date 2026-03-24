@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { REGIONS, ESIM_PLANS, Region } from "@/lib/esim-data";
 import PlanCard from "@/components/ui/PlanCard";
+import { useI18n } from "../providers/I18nProvider";
 
 export default function PlansSection() {
+  const { t } = useI18n();
   const [activeRegion, setActiveRegion] = useState<Region | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -21,9 +23,9 @@ export default function PlansSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4">Browse eSIM Plans</h2>
+          <h2 className="text-4xl font-bold text-white mb-4">{t("plans.title")}</h2>
           <p className="text-slate-400 text-lg max-w-xl mx-auto">
-            Instant data for every journey. Filter by region or search for your destination.
+            {t("plans.subtitle")}
           </p>
         </div>
 
@@ -41,7 +43,7 @@ export default function PlansSection() {
             </svg>
             <input
               type="text"
-              placeholder="Search destination (e.g. Japan, Europe…)"
+              placeholder={t("plans.searchDesc")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-sky-500 transition-colors"
@@ -59,7 +61,7 @@ export default function PlansSection() {
                 : "bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:border-slate-600"
             }`}
           >
-            All Regions
+            {t("plans.allRegions")}
           </button>
           {REGIONS.map((region) => (
             <button
@@ -87,12 +89,12 @@ export default function PlansSection() {
         ) : (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">🔍</p>
-            <p className="text-slate-400 text-lg">No plans found for &ldquo;{searchQuery}&rdquo;</p>
+            <p className="text-slate-400 text-lg">{t("plans.noResults")} &ldquo;{searchQuery}&rdquo;</p>
             <button
               onClick={() => setSearchQuery("")}
               className="mt-4 text-sky-400 hover:text-sky-300 text-sm underline"
             >
-              Clear search
+              {t("plans.clearSearch")}
             </button>
           </div>
         )}

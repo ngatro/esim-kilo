@@ -1,62 +1,102 @@
+import { motion } from "framer-motion";
+import { useI18n } from "@/components/providers/I18nProvider";
+
 export default function Hero() {
+  const { t } = useI18n();
+
   return (
-    <section className="relative pt-32 pb-24 overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-sky-600/10 rounded-full blur-3xl" />
-        <div className="absolute top-20 left-1/4 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-3xl" />
-      </div>
+    <section className="relative pt-32 pb-20 overflow-hidden">
+          <div className="absolute inset-0 bg-linear-to-br from-sky-900/20 via-slate-900 to-indigo-900/20" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNHoiIGZpbGw9IiMyMDIzYjYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-30" />
+          
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div 
+              className="text-center max-w-4xl mx-auto"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <motion.div 
+                className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-full px-4 py-2 mb-6"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-sky-400 text-sm font-medium">{t("hero.nowServing")}</span>
+              </motion.div>
+              
+              <motion.h1 
+                className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                {t("hero.title.stayConnected")}
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-sky-400 to-indigo-400"> {t("hero.title.anywhere")} </span>
+                {t("hero.title.youGo")}
+              </motion.h1>
+              
+              <motion.p 
+                className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                {t("hero.subtitle")}
+              </motion.p>
+              
+              <motion.div 
+                className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <motion.a
+                  href="#plans"
+                  className="w-full sm:w-auto bg-sky-500 hover:bg-sky-400 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-all shadow-lg shadow-sky-500/25"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {t("hero.browsePlans")}
+                </motion.a>
+                <motion.a
+                  href="#how-it-works"
+                  className="w-full sm:w-auto px-8 py-4 rounded-xl text-lg font-medium text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {t("hero.howItWorks")}
+                </motion.a>
+              </motion.div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 text-sky-400 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-          190+ Countries Covered
-        </div>
-
-        {/* Headline */}
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight mb-6">
-          Travel Data,{" "}
-          <span className="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
-            No Borders
-          </span>
-        </h1>
-
-        <p className="max-w-2xl mx-auto text-xl text-slate-400 leading-relaxed mb-10">
-          Instant eSIM activation. Affordable data plans. Stay connected the moment you land — no physical SIM, no roaming surprises.
-        </p>
-
-        {/* CTA buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <a
-            href="#plans"
-            className="w-full sm:w-auto bg-sky-500 hover:bg-sky-400 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-lg shadow-sky-900/30"
-          >
-            Browse Plans
-          </a>
-          <a
-            href="#how-it-works"
-            className="w-full sm:w-auto border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors"
-          >
-            How It Works
-          </a>
-        </div>
-
-        {/* Trust stats */}
-        <div className="flex flex-wrap justify-center gap-8 sm:gap-16 text-center">
-          {[
-            { value: "190+", label: "Countries" },
-            { value: "500K+", label: "Travelers Served" },
-            { value: "Instant", label: "Activation" },
-            { value: "24/7", label: "Support" },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <p className="text-3xl font-bold text-white">{stat.value}</p>
-              <p className="text-sm text-slate-500 mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+              <motion.div 
+                className="flex flex-wrap items-center justify-center gap-8 text-slate-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>{t("common.noHiddenFees")}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>{t("common.instantDelivery")}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>{t("common.refundPolicy")}</span>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section> 
   );
 }
