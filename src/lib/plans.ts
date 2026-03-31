@@ -1,5 +1,4 @@
 import { prisma } from "./prisma";
-import type { Prisma } from "@prisma/client";
 
 export interface PlanFilters {
   regionId?: string;
@@ -7,51 +6,50 @@ export interface PlanFilters {
   destination?: string;
   minData?: number;
   maxData?: number;
-  minValidity?: number;
-  maxValidity?: number;
+  minDuration?: number;
+  maxDuration?: number;
   minPrice?: number;
   maxPrice?: number;
   networkType?: string;
+  dataType?: number;
   isPopular?: boolean;
   isBestSeller?: boolean;
   isHot?: boolean;
 }
 
 export async function getPlans(filters: PlanFilters = {}) {
-  const where: Prisma.PlanWhereInput = { isActive: true };
+  const where: Record<string, unknown> = { isActive: true };
 
   if (filters.regionId) where.regionId = filters.regionId;
   if (filters.countryId) where.countryId = filters.countryId;
   if (filters.destination) where.destination = { contains: filters.destination, mode: "insensitive" };
-  if (filters.networkType) where.networkType = { contains: filters.networkType, mode: "insensitive" };
+  if (filters.networkType) where.speed = { contains: filters.networkType };
+  if (filters.dataType) where.dataType = filters.dataType;
   if (filters.isPopular !== undefined) where.isPopular = filters.isPopular;
   if (filters.isBestSeller !== undefined) where.isBestSeller = filters.isBestSeller;
   if (filters.isHot !== undefined) where.isHot = filters.isHot;
 
   if (filters.minData || filters.maxData) {
     where.dataAmount = {};
-    if (filters.minData) where.dataAmount.gte = filters.minData;
-    if (filters.maxData) where.dataAmount.lte = filters.maxData;
+    if (filters.minData) (where.dataAmount as Record<string, unknown>).gte = filters.minData;
+    if (filters.maxData) (where.dataAmount as Record<string, unknown>).lte = filters.maxData;
   }
 
-  if (filters.minValidity || filters.maxValidity) {
-    where.validityDays = {};
-    if (filters.minValidity) where.validityDays.gte = filters.minValidity;
-    if (filters.maxValidity) where.validityDays.lte = filters.maxValidity;
+  if (filters.minDuration || filters.maxDuration) {
+    where.durationDays = {};
+    if (filters.minDuration) (where.durationDays as Record<string, unknown>).gte = filters.minDuration;
+    if (filters.maxDuration) (where.durationDays as Record<string, unknown>).lte = filters.maxDuration;
   }
 
   if (filters.minPrice || filters.maxPrice) {
     where.priceUsd = {};
-    if (filters.minPrice) where.priceUsd.gte = filters.minPrice;
-    if (filters.maxPrice) where.priceUsd.lte = filters.maxPrice;
+    if (filters.minPrice) (where.priceUsd as Record<string, unknown>).gte = filters.minPrice;
+    if (filters.maxPrice) (where.priceUsd as Record<string, unknown>).lte = filters.maxPrice;
   }
 
   return prisma.plan.findMany({
     where,
-    include: {
-      region: true,
-      country: true,
-    },
+    include: { region: true, country: true },
     orderBy: [
       { isBestSeller: "desc" },
       { isPopular: "desc" },
@@ -65,9 +63,7 @@ export async function getPlans(filters: PlanFilters = {}) {
 export async function getPopularPlans(limit = 8) {
   return prisma.plan.findMany({
     where: { isActive: true, isPopular: true },
-    include: {
-      region: true,
-    },
+    include: { region: true },
     orderBy: { priority: "desc" },
     take: limit,
   });
@@ -76,51 +72,24 @@ export async function getPopularPlans(limit = 8) {
 export async function getBestSellerPlans(limit = 8) {
   return prisma.plan.findMany({
     where: { isActive: true, isBestSeller: true },
-    include: {
-      region: true,
-    },
+    include: { region: true },
     orderBy: { priority: "desc" },
     take: limit,
   });
-}
-
-export async function getHotPlans(limit = 8) {
-  return prisma.plan.findMany({
-    where: { isActive: true, isHot: true },
-    include: {
-      region: true,
-    },
-    orderBy: { priority: "desc" },
-    take: limit,
-  });
-}
-
-export async function getPlansByRegion(regionId: string) {
-  return getPlans({ regionId });
-}
-
-export async function getPlansByCountry(countryId: string) {
-  return getPlans({ countryId });
 }
 
 export async function getPlanById(id: string) {
   return prisma.plan.findUnique({
     where: { id },
-    include: {
-      region: true,
-      country: true,
-    },
+    include: { region: true, country: true },
   });
 }
 
-export async function getAllDestinations() {
-  const plans = await prisma.plan.findMany({
-    where: { isActive: true },
-    select: { destination: true },
-    distinct: ["destination"],
-    orderBy: { destination: "asc" },
+export async function getPlanByPackageCode(packageCode: string) {
+  return prisma.plan.findUnique({
+    where: { packageCode },
+    include: { region: true, country: true },
   });
-  return plans.map((p: { destination: string }) => p.destination);
 }
 
 export async function getRegions() {
@@ -128,6 +97,7 @@ export async function getRegions() {
     orderBy: { name: "asc" },
     include: {
       countries: true,
+      _count: { select: { plans: { where: { isActive: true } } } },
     },
   });
 }
@@ -165,10 +135,7 @@ export async function getBestPlans(options: {
       isActive: true,
       destination: { contains: destination, mode: "insensitive" },
     },
-    include: {
-      region: true,
-      country: true,
-    },
+    include: { region: true, country: true },
   });
 
   if (plans.length === 0) return [];
@@ -183,20 +150,21 @@ export async function getBestPlans(options: {
       score -= 30;
     }
 
-    if (daysNeeded && plan.validityDays >= daysNeeded) {
+    if (daysNeeded && plan.durationDays >= daysNeeded) {
       score += 10;
-    } else if (daysNeeded && plan.validityDays < daysNeeded) {
+    } else if (daysNeeded && plan.durationDays < daysNeeded) {
       score -= 10;
     }
 
     if (preferCheapest) {
-      const minPrice = Math.min(...plans.map((p: { priceUsd: number }) => p.priceUsd));
-      const maxPrice = Math.max(...plans.map((p: { priceUsd: number }) => p.priceUsd));
-      const priceRange = maxPrice - minPrice || 1;
-      score += ((maxPrice - plan.priceUsd) / priceRange) * 30;
+      const prices = plans.map((p: { priceUsd: number }) => p.priceUsd);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      const range = maxPrice - minPrice || 1;
+      score += ((maxPrice - plan.priceUsd) / range) * 30;
     }
 
-    if (preferBetterNetwork && plan.networkType?.includes("5G")) {
+    if (preferBetterNetwork && plan.speed?.includes("5G")) {
       score += 15;
     }
 
@@ -208,7 +176,5 @@ export async function getBestPlans(options: {
     return { ...plan, score };
   });
 
-  return scoredPlans
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+  return scoredPlans.sort((a, b) => b.score - a.score).slice(0, 5);
 }
