@@ -8,18 +8,26 @@ import { useI18n } from "@/components/providers/I18nProvider";
 interface Plan {
   id: string;
   name: string;
+  slug: string | null;
+  packageCode: string;
+  description: string | null;
   destination: string;
+  dataType: number;
   dataAmount: number;
-  validityDays: number;
+  durationDays: number;
+  durationUnit: string;
   priceUsd: number;
-  coverageCountries: number;
+  speed: string | null;
   networkType: string | null;
+  coverageCount: number;
+  locationCode: string | null;
+  locations: unknown;
+  supportTopUp: boolean;
+  isActive: boolean;
   isPopular: boolean;
   isBestSeller: boolean;
   isHot: boolean;
   badge: string | null;
-  features: unknown;
-  speeds: unknown;
   region: { id: string; name: string; emoji: string } | null;
   country: { id: string; name: string; emoji: string } | null;
 }
@@ -32,15 +40,13 @@ interface Region {
   _count: { plans: number };
 }
 
-function formatData(gb: number): string {
-  if (gb >= 999) return "Unlimited";
-  return `${gb}GB`;
+function getTypeLabel(dataType: number): string {
+  return dataType === 2 ? "Day Pass" : "Fixed";
 }
 
 function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const isUnlimited = plan.dataAmount >= 999;
-  const pricePerDay = (plan.priceUsd / plan.validityDays).toFixed(2);
-  const features = Array.isArray(plan.features) ? plan.features : [];
+  const pricePerDay = (plan.priceUsd / plan.durationDays).toFixed(2);
 
   return (
     <motion.div
@@ -52,19 +58,13 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
       {(plan.isBestSeller || plan.isHot || plan.isPopular) && (
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-1.5">
           {plan.isBestSeller && (
-            <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
-              BEST SELLER
-            </span>
+            <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">BEST SELLER</span>
           )}
           {plan.isHot && (
-            <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
-              HOT
-            </span>
+            <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">HOT</span>
           )}
           {plan.isPopular && !plan.isBestSeller && (
-            <span className="bg-gradient-to-r from-sky-500 to-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
-              POPULAR
-            </span>
+            <span className="bg-gradient-to-r from-sky-500 to-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">POPULAR</span>
           )}
         </div>
       )}
@@ -76,9 +76,9 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
               <span className="text-2xl">{plan.country?.emoji || plan.region?.emoji || "🌍"}</span>
               <h3 className="text-lg font-semibold text-white">{plan.destination}</h3>
             </div>
-            {plan.coverageCountries > 1 && (
-              <p className="text-slate-500 text-xs">{plan.coverageCountries} countries</p>
-            )}
+            <p className="text-slate-500 text-xs">
+              {plan.coverageCount} {plan.coverageCount > 1 ? "countries" : "country"} · {getTypeLabel(plan.dataType)}
+            </p>
           </div>
         </div>
 
@@ -88,7 +88,7 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
             <p className="text-[10px] text-slate-500 uppercase tracking-wider">{isUnlimited ? "Unlimited" : "GB"}</p>
           </div>
           <div className="bg-slate-900/50 rounded-xl p-3 text-center">
-            <p className="text-xl font-bold text-white">{plan.validityDays}</p>
+            <p className="text-xl font-bold text-white">{plan.durationDays}</p>
             <p className="text-[10px] text-slate-500 uppercase tracking-wider">Days</p>
           </div>
           <div className="bg-slate-900/50 rounded-xl p-3 text-center">
@@ -97,16 +97,12 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
           </div>
         </div>
 
-        {features.length > 0 && (
-          <div className="space-y-1.5 mb-5">
-            {(features as string[]).slice(0, 3).map((f, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-slate-400">
-                <svg className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                {f}
-              </div>
-            ))}
+        {plan.speed && (
+          <div className="flex items-center gap-2 mb-5">
+            <span className="bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-medium px-2.5 py-1 rounded-lg">{plan.speed}</span>
+            {plan.supportTopUp && (
+              <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium px-2.5 py-1 rounded-lg">Top-Up</span>
+            )}
           </div>
         )}
 
@@ -162,7 +158,7 @@ export default function PlansPage() {
       if (selectedCountry) params.set("countryId", selectedCountry);
       if (searchQuery) params.set("search", searchQuery);
       if (networkFilter) params.set("networkType", networkFilter);
-
+      if (sortBy) params.set("sortBy", sortBy);
       if (priceRange) {
         const [min, max] = priceRange.split("-");
         if (min) params.set("minPrice", min);
@@ -177,7 +173,7 @@ export default function PlansPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedRegion, selectedCountry, searchQuery, networkFilter, priceRange]);
+  }, [selectedRegion, selectedCountry, searchQuery, networkFilter, sortBy, priceRange]);
 
   useEffect(() => {
     fetch("/api/regions")
@@ -205,16 +201,6 @@ export default function PlansPage() {
     }
   }
 
-  const sortedPlans = [...plans].sort((a, b) => {
-    switch (sortBy) {
-      case "price-low": return a.priceUsd - b.priceUsd;
-      case "price-high": return b.priceUsd - a.priceUsd;
-      case "data": return b.dataAmount - a.dataAmount;
-      case "validity": return b.validityDays - a.validityDays;
-      default: return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0) || (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0) || a.priceUsd - b.priceUsd;
-    }
-  });
-
   const currentRegion = regions.find((r) => r.id === selectedRegion);
   const countries = currentRegion?.countries || [];
 
@@ -228,6 +214,7 @@ export default function PlansPage() {
             <p className="text-slate-500 text-sm mt-1">{plans.length} plans available</p>
           </div>
 
+          {/* Filters */}
           <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 mb-8">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[200px]">
@@ -236,8 +223,8 @@ export default function PlansPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search destination..."
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-sky-500 transition-colors"
+                  placeholder="Japan, Europe, Global..."
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-sky-500"
                 />
               </div>
 
@@ -246,7 +233,7 @@ export default function PlansPage() {
                 <select
                   value={selectedRegion}
                   onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCountry(""); }}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500"
                 >
                   <option value="all">All Regions</option>
                   {regions.map((r) => (
@@ -261,7 +248,7 @@ export default function PlansPage() {
                   <select
                     value={selectedCountry}
                     onChange={(e) => setSelectedCountry(e.target.value)}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500"
                   >
                     <option value="">All Countries</option>
                     {countries.map((c) => (
@@ -276,11 +263,12 @@ export default function PlansPage() {
                 <select
                   value={networkFilter}
                   onChange={(e) => setNetworkFilter(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500"
                 >
                   <option value="">All</option>
                   <option value="5G">5G</option>
                   <option value="4G">4G LTE</option>
+                  <option value="3G">3G</option>
                 </select>
               </div>
 
@@ -289,7 +277,7 @@ export default function PlansPage() {
                 <select
                   value={priceRange}
                   onChange={(e) => setPriceRange(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500"
                 >
                   <option value="">Any Price</option>
                   <option value="0-10">Under $10</option>
@@ -304,32 +292,23 @@ export default function PlansPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500"
                 >
                   <option value="best">Best Match</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
                   <option value="data">Most Data</option>
-                  <option value="validity">Longest Validity</option>
+                  <option value="duration">Longest Duration</option>
                 </select>
               </div>
-
-              {plans.length === 0 && !loading && (
-                <button
-                  onClick={syncPlans}
-                  disabled={syncing}
-                  className="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
-                >
-                  {syncing ? "Syncing..." : "Sync Plans from eSIM Access"}
-                </button>
-              )}
             </div>
           </div>
 
+          {/* Region Quick Filters */}
           <div className="flex flex-wrap gap-2 mb-6">
             <button
-              onClick={() => { setSelectedRegion("all"); setSelectedCountry(""); setSearchQuery(""); setNetworkFilter(""); setPriceRange(""); setSortBy("best"); }}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${selectedRegion === "all" && !searchQuery ? "bg-sky-500/20 border-sky-500/40 text-sky-400" : "border-slate-700 text-slate-400 hover:border-slate-500"}`}
+              onClick={() => { setSelectedRegion("all"); setSelectedCountry(""); }}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${selectedRegion === "all" ? "bg-sky-500/20 border-sky-500/40 text-sky-400" : "border-slate-700 text-slate-400 hover:border-slate-500"}`}
             >
               All
             </button>
@@ -344,6 +323,7 @@ export default function PlansPage() {
             ))}
           </div>
 
+          {/* Plans Grid */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {[...Array(6)].map((_, i) => (
@@ -358,7 +338,7 @@ export default function PlansPage() {
                 </div>
               ))}
             </div>
-          ) : sortedPlans.length === 0 ? (
+          ) : plans.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-4xl mb-4">📦</p>
               <h3 className="text-xl font-semibold text-white mb-2">No plans found</h3>
@@ -374,7 +354,7 @@ export default function PlansPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               <AnimatePresence>
-                {sortedPlans.map((plan, index) => (
+                {plans.map((plan, index) => (
                   <PlanCard key={plan.id} plan={plan} index={index} />
                 ))}
               </AnimatePresence>
