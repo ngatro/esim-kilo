@@ -6,21 +6,51 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/components/providers/I18nProvider";
 
+interface Operator {
+  networkType: string;
+  operatorName: string;
+}
+
+interface LocationNetwork {
+  locationCode: string;
+  locationLogo: string;
+  locationName: string;
+  operatorList: Operator[];
+}
+
 interface Plan {
   id: string;
   name: string;
+  slug: string | null;
+  packageCode: string;
+  description: string | null;
   destination: string;
+  dataType: number;
+  dataVolume: string;
   dataAmount: number;
-  validityDays: number;
+  durationDays: number;
+  durationUnit: string;
+  priceRaw: number;
   priceUsd: number;
-  coverageCountries: number;
+  currencyCode: string;
+  speed: string | null;
   networkType: string | null;
+  locationCode: string | null;
+  locations: unknown;
+  coverageCount: number;
+  smsStatus: number;
+  activeType: number;
+  supportTopUp: boolean;
+  unusedValidTime: number;
+  ipExport: string | null;
+  fupPolicy: string | null;
+  locationNetworkList: unknown;
+  isActive: boolean;
   isPopular: boolean;
   isBestSeller: boolean;
   isHot: boolean;
   badge: string | null;
-  features: unknown;
-  speeds: unknown;
+  priority: number;
   region: { id: string; name: string; emoji: string } | null;
   country: { id: string; name: string; emoji: string } | null;
 }
@@ -28,6 +58,10 @@ interface Plan {
 function formatData(gb: number): string {
   if (gb >= 999) return "Unlimited";
   return `${gb}GB`;
+}
+
+function getTypeLabel(dataType: number): string {
+  return dataType === 2 ? "Day Pass" : "Fixed Data";
 }
 
 export default function PlanDetailContent() {
@@ -39,12 +73,13 @@ export default function PlanDetailContent() {
   useEffect(() => {
     async function fetchPlan() {
       try {
-        const res = await fetch(`/api/plans?search=${params.id}`);
-        const data = await res.json();
-        const found = (data.plans || []).find((p: Plan) => p.id === params.id);
-        setPlan(found || null);
-      } catch {
-        setPlan(null);
+        const res = await fetch(`/api/plans/${params.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPlan(data.plan);
+        }
+      } catch (error) {
+        console.error("Failed to fetch plan:", error);
       } finally {
         setLoading(false);
       }
@@ -73,9 +108,9 @@ export default function PlanDetailContent() {
   }
 
   const isUnlimited = plan.dataAmount >= 999;
-  const pricePerDay = (plan.priceUsd / plan.validityDays).toFixed(2);
-  const features = Array.isArray(plan.features) ? plan.features : [];
-  const speeds = Array.isArray(plan.speeds) ? plan.speeds : [];
+  const pricePerDay = (plan.priceUsd / plan.durationDays).toFixed(2);
+  const locations = Array.isArray(plan.locations) ? plan.locations : [];
+  const networkList: LocationNetwork[] = Array.isArray(plan.locationNetworkList) ? plan.locationNetworkList as LocationNetwork[] : [];
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -91,6 +126,7 @@ export default function PlanDetailContent() {
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
             <div className="lg:col-span-3 space-y-8">
+              {/* Header */}
               <div>
                 <div className="flex items-center gap-4 mb-3">
                   <span className="text-6xl">{plan.country?.emoji || plan.region?.emoji || "🌍"}</span>
@@ -104,22 +140,21 @@ export default function PlanDetailContent() {
                     {plan.isPopular && (
                       <span className="bg-gradient-to-r from-sky-500 to-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">POPULAR</span>
                     )}
-                    {plan.badge && (
-                      <span className="bg-slate-700 text-white text-xs font-semibold px-3 py-1 rounded-full">{plan.badge}</span>
-                    )}
+                    <span className="bg-slate-700 text-white text-xs font-semibold px-3 py-1 rounded-full">{getTypeLabel(plan.dataType)}</span>
                   </div>
                 </div>
-                <h1 className="text-4xl font-bold text-white">{plan.destination} eSIM</h1>
-                {plan.coverageCountries > 1 && (
-                  <p className="text-slate-400 mt-1">{plan.coverageCountries} countries covered</p>
-                )}
+                <h1 className="text-4xl font-bold text-white">{plan.name}</h1>
+                {plan.description && <p className="text-slate-400 mt-2">{plan.description}</p>}
+                <p className="text-slate-500 text-sm mt-1">Package: {plan.packageCode} · {plan.coverageCount} {plan.coverageCount > 1 ? "countries" : "country"}</p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              {/* Stats */}
+              <div className="grid grid-cols-4 gap-4">
                 {[
-                  { label: t("plans.data"), value: formatData(plan.dataAmount), color: "text-sky-400" },
-                  { label: t("plans.validity"), value: `${plan.validityDays} ${t("plans.days")}`, color: "text-white" },
-                  { label: "Cost/day", value: `$${pricePerDay}`, color: "text-emerald-400" },
+                  { label: "Data", value: isUnlimited ? "∞" : `${plan.dataAmount}GB`, color: "text-sky-400" },
+                  { label: "Duration", value: `${plan.durationDays} ${plan.durationUnit === "DAY" ? "Days" : plan.durationUnit}`, color: "text-white" },
+                  { label: "Cost/Day", value: `$${pricePerDay}`, color: "text-emerald-400" },
+                  { label: "Network", value: plan.speed || "4G", color: "text-purple-400" },
                 ].map((stat) => (
                   <div key={stat.label} className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 text-center">
                     <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
@@ -128,47 +163,70 @@ export default function PlanDetailContent() {
                 ))}
               </div>
 
-              {speeds.length > 0 && (
+              {/* Coverage Countries */}
+              {locations.length > 0 && (
                 <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-6">
-                  <h2 className="text-lg font-semibold text-white mb-4">Network Speeds</h2>
+                  <h2 className="text-lg font-semibold text-white mb-4">Coverage ({locations.length} {locations.length > 1 ? "countries" : "country"})</h2>
                   <div className="flex flex-wrap gap-2">
-                    {(speeds as string[]).map((speed) => (
-                      <span key={speed} className="bg-sky-500/10 border border-sky-500/20 text-sky-400 text-sm font-medium px-3 py-1.5 rounded-lg">
-                        {speed}
+                    {(locations as string[]).map((loc) => (
+                      <span key={loc} className="bg-sky-500/10 border border-sky-500/20 text-sky-400 text-sm font-medium px-3 py-1.5 rounded-lg">
+                        {loc}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-6">
-                <h2 className="text-lg font-semibold text-white mb-4">What&apos;s Included</h2>
-                <ul className="space-y-3">
-                  {(features as string[]).map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-slate-300">
-                      <svg className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {plan.country && (
+              {/* Network Operators */}
+              {networkList.length > 0 && (
                 <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-6">
-                  <h2 className="text-lg font-semibold text-white mb-3">Coverage</h2>
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl">{plan.country.emoji}</span>
-                    <div>
-                      <p className="text-white font-medium">{plan.country.name}</p>
-                      <p className="text-slate-500 text-sm">Full nationwide coverage via local carriers</p>
-                    </div>
+                  <h2 className="text-lg font-semibold text-white mb-4">Network Operators</h2>
+                  <div className="space-y-4">
+                    {networkList.map((loc) => (
+                      <div key={loc.locationCode} className="flex items-start gap-4">
+                        <div className="flex items-center gap-2 min-w-[120px]">
+                          {loc.locationLogo && (
+                            <img src={`https://esimaccess.com${loc.locationLogo}`} alt={loc.locationName} className="w-6 h-4 rounded object-cover" />
+                          )}
+                          <span className="text-white text-sm font-medium">{loc.locationName}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {loc.operatorList?.map((op) => (
+                            <span key={`${loc.locationCode}-${op.operatorName}`} className="bg-slate-700/50 text-slate-300 text-xs px-2.5 py-1 rounded-lg">
+                              {op.operatorName} ({op.networkType})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
+
+              {/* Extra Info */}
+              <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-6">
+                <h2 className="text-lg font-semibold text-white mb-4">Plan Details</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: "Package Code", value: plan.packageCode },
+                    { label: "Type", value: getTypeLabel(plan.dataType) },
+                    { label: "Data Volume", value: `${plan.dataAmount}GB` },
+                    { label: "Duration", value: `${plan.durationDays} ${plan.durationUnit === "DAY" ? "Days" : plan.durationUnit}` },
+                    { label: "SMS", value: plan.smsStatus === 2 ? "Supported" : "Not Supported" },
+                    { label: "Top-Up", value: plan.supportTopUp ? "Supported" : "Not Supported" },
+                    { label: "IP Export", value: plan.ipExport || "Not specified" },
+                    { label: "Unused Valid Time", value: `${plan.unusedValidTime} days` },
+                  ].map((item) => (
+                    <div key={item.label} className="flex justify-between py-2 border-b border-slate-700/30 last:border-0">
+                      <span className="text-slate-500 text-sm">{item.label}</span>
+                      <span className="text-white text-sm font-medium">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
+            {/* Price Sidebar */}
             <div className="lg:col-span-2">
               <motion.div
                 className="sticky top-24 bg-slate-800/70 border border-slate-700/60 rounded-3xl p-7 shadow-2xl"
@@ -180,7 +238,7 @@ export default function PlanDetailContent() {
                   <p className="text-sm text-slate-500">one-time</p>
                 </div>
                 <p className="text-slate-500 text-sm mb-6">
-                  {isUnlimited ? "Unlimited data" : `${plan.dataAmount}GB data`} · {plan.validityDays} days
+                  {isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`} · {plan.durationDays} days
                 </p>
 
                 <Link href={`/checkout?planId=${plan.id}`}>
@@ -197,8 +255,9 @@ export default function PlanDetailContent() {
                   {[
                     { icon: "⚡", text: "Instant QR delivery" },
                     { icon: "🔒", text: "Secure checkout" },
-                    { icon: "💰", text: "7-day refund policy" },
+                    { icon: "💰", text: `${plan.unusedValidTime}-day refund window` },
                     { icon: "📱", text: "Works on all eSIM devices" },
+                    ...(plan.supportTopUp ? [{ icon: "🔄", text: "Supports Top-Up" }] : []),
                   ].map((item) => (
                     <div key={item.text} className="flex items-center gap-3 text-sm text-slate-400">
                       <span>{item.icon}</span>
