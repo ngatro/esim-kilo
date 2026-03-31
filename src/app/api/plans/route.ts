@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { getPackageList } from "@/lib/esim-access";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
-
 // Convert bytes to GB
 function bytesToGB(bytes: number): number {
   return Math.round((bytes / (1024 * 1024 * 1024)) * 10) / 10;

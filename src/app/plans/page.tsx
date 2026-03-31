@@ -3,31 +3,23 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 interface Plan {
   id: string;
   name: string;
-  slug: string | null;
-  packageCode: string;
-  description: string | null;
   destination: string;
-  dataType: number;
   dataAmount: number;
-  durationDays: number;
-  durationUnit: string;
+  validityDays: number;
   priceUsd: number;
-  speed: string | null;
+  coverageCountries: number;
   networkType: string | null;
-  coverageCount: number;
-  locationCode: string | null;
-  locations: unknown;
-  supportTopUp: boolean;
-  isActive: boolean;
   isPopular: boolean;
   isBestSeller: boolean;
   isHot: boolean;
   badge: string | null;
-  ipExport: string | null;
+  features: unknown;
+  speeds: unknown;
   region: { id: string; name: string; emoji: string } | null;
   country: { id: string; name: string; emoji: string } | null;
 }
@@ -40,188 +32,152 @@ interface Region {
   _count: { plans: number };
 }
 
-const DATA_OPTIONS = [
-  { label: "1GB", min: 0.5, max: 1.5 },
-  { label: "3GB", min: 2, max: 4 },
-  { label: "5GB", min: 4, max: 6 },
-  { label: "10GB", min: 9, max: 12 },
-  { label: "20GB+", min: 19, max: 998 },
-  { label: "Unlimited", min: 999, max: 9999 },
-];
+function formatData(gb: number): string {
+  if (gb >= 999) return "Unlimited";
+  return `${gb}GB`;
+}
 
-const DURATION_OPTIONS = [
-  { label: "3 Days", value: 3 },
-  { label: "7 Days", value: 7 },
-  { label: "15 Days", value: 15 },
-  { label: "30 Days", value: 30 },
-  { label: "60 Days", value: 60 },
-  { label: "90 Days", value: 90 },
-];
-
-function PlanCard({ plan }: { plan: Plan }) {
+function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const isUnlimited = plan.dataAmount >= 999;
-  const pricePerDay = (plan.priceUsd / plan.durationDays).toFixed(2);
+  const pricePerDay = (plan.priceUsd / plan.validityDays).toFixed(2);
+  const features = Array.isArray(plan.features) ? plan.features : [];
 
   return (
-    <motion.div layout>
-      <Link href={`/plans/${plan.id}`} className="block h-full">
-        <div className="group relative h-full bg-gradient-to-b from-slate-800/80 to-slate-900/80 border border-slate-700/40 rounded-3xl overflow-hidden transition-all duration-300 hover:border-sky-500/30 hover:shadow-[0_0_40px_rgba(14,165,233,0.08)]">
-          {/* Top banner badge */}
-          {(plan.isBestSeller || plan.isHot) && (
-            <div className={`absolute top-0 left-0 right-0 text-center text-[11px] font-bold tracking-wider py-1.5 ${
-              plan.isBestSeller
-                ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
-                : "bg-gradient-to-r from-rose-500 to-pink-500 text-white"
-            }`}>
-              {plan.isBestSeller ? "⭐ BEST SELLER" : "🔥 HOT DEAL"}
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="group relative bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-sky-500/40 transition-all duration-300 hover:-translate-y-1"
+    >
+      {(plan.isBestSeller || plan.isHot || plan.isPopular) && (
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-1.5">
+          {plan.isBestSeller && (
+            <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+              BEST SELLER
+            </span>
           )}
+          {plan.isHot && (
+            <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+              HOT
+            </span>
+          )}
+          {plan.isPopular && !plan.isBestSeller && (
+            <span className="bg-gradient-to-r from-sky-500 to-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+              POPULAR
+            </span>
+          )}
+        </div>
+      )}
 
-          <div className={`p-6 flex flex-col h-full ${(plan.isBestSeller || plan.isHot) ? "pt-9" : ""}`}>
-            {/* Country */}
-            <div className="text-center mb-5">
-              <div className="text-4xl mb-2">{plan.country?.emoji || plan.region?.emoji || "🌍"}</div>
-              <h3 className="text-lg font-bold text-white">{plan.destination}</h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.packageCode}
-              </p>
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-2xl">{plan.country?.emoji || plan.region?.emoji || "🌍"}</span>
+              <h3 className="text-lg font-semibold text-white">{plan.destination}</h3>
             </div>
-
-            {/* Data + Days */}
-            <div className="flex items-center justify-center gap-6 mb-5">
-              <div className="text-center">
-                <p className="text-3xl font-extrabold bg-gradient-to-r from-sky-400 to-cyan-400 bg-clip-text text-transparent">
-                  {isUnlimited ? "∞" : `${plan.dataAmount}`}
-                </p>
-                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">
-                  {isUnlimited ? "Unlimited" : "GB"}
-                </p>
-              </div>
-              <div className="w-px h-10 bg-slate-700/60" />
-              <div className="text-center">
-                <p className="text-3xl font-extrabold text-white">{plan.durationDays}</p>
-                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">Days</p>
-              </div>
-            </div>
-
-            {/* Network + tags */}
-            <div className="flex justify-center flex-wrap gap-1.5 mb-5">
-              {plan.speed && (
-                <span className="bg-sky-500/10 text-sky-400 text-[11px] font-bold px-3 py-1 rounded-full border border-sky-500/20">
-                  {plan.speed}
-                </span>
-              )}
-              {plan.supportTopUp && (
-                <span className="bg-emerald-500/10 text-emerald-400 text-[11px] font-bold px-3 py-1 rounded-full border border-emerald-500/20">
-                  Top-Up
-                </span>
-              )}
-              {plan.dataType === 2 && (
-                <span className="bg-violet-500/10 text-violet-400 text-[11px] font-bold px-3 py-1 rounded-full border border-violet-500/20">
-                  Day Pass
-                </span>
-              )}
-            </div>
-
-            {/* Spacer */}
-            <div className="flex-1" />
-
-            {/* Price */}
-            <div className="text-center pt-4 border-t border-slate-700/40">
-              <p className="text-3xl font-extrabold text-white">${plan.priceUsd.toFixed(2)}</p>
-              <p className="text-xs text-slate-500 mt-1">${pricePerDay}/day</p>
-            </div>
-
-            {/* CTA */}
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={(e) => { e.preventDefault(); }}
-                className="flex-1 bg-slate-700/40 hover:bg-slate-600/50 text-slate-300 text-sm font-medium py-3 rounded-2xl transition-colors"
-              >
-                Details
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = `/checkout?planId=${plan.id}`;
-                }}
-                className="flex-[1.5] bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-white text-sm font-bold py-3 rounded-2xl transition-all shadow-lg shadow-sky-500/20 hover:shadow-sky-500/30"
-              >
-                Buy Now →
-              </button>
-            </div>
+            {plan.coverageCountries > 1 && (
+              <p className="text-slate-500 text-xs">{plan.coverageCountries} countries</p>
+            )}
           </div>
         </div>
-      </Link>
+
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="bg-slate-900/50 rounded-xl p-3 text-center">
+            <p className="text-xl font-bold text-sky-400">{isUnlimited ? "∞" : plan.dataAmount}</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">{isUnlimited ? "Unlimited" : "GB"}</p>
+          </div>
+          <div className="bg-slate-900/50 rounded-xl p-3 text-center">
+            <p className="text-xl font-bold text-white">{plan.validityDays}</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Days</p>
+          </div>
+          <div className="bg-slate-900/50 rounded-xl p-3 text-center">
+            <p className="text-xl font-bold text-emerald-400">${pricePerDay}</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">/Day</p>
+          </div>
+        </div>
+
+        {features.length > 0 && (
+          <div className="space-y-1.5 mb-5">
+            {(features as string[]).slice(0, 3).map((f, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-slate-400">
+                <svg className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                {f}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
+          <div>
+            <p className="text-2xl font-bold text-white">${plan.priceUsd.toFixed(2)}</p>
+            <p className="text-[10px] text-slate-500">one-time payment</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href={`/plans/${plan.id}`}>
+              <motion.button
+                className="bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white text-sm px-4 py-2.5 rounded-xl transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Details
+              </motion.button>
+            </Link>
+            <Link href={`/checkout?planId=${plan.id}`}>
+              <motion.button
+                className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-sky-500/20"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                Buy Now
+              </motion.button>
+            </Link>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 }
 
-function FilterChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <motion.button
-      onClick={onClick}
-      whileHover={{ scale: 1.04 }}
-      whileTap={{ scale: 0.96 }}
-      className={`relative px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 ${
-        active
-          ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-500/25"
-          : "bg-slate-800/60 text-slate-300 border border-slate-700/50 hover:border-slate-500 hover:text-white"
-      }`}
-    >
-      {children}
-    </motion.button>
-  );
-}
-
 export default function PlansPage() {
+  const { t } = useI18n();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState("all");
-  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
-  const [selectedData, setSelectedData] = useState<typeof DATA_OPTIONS[0] | null>(null);
-  const [sortBy, setSortBy] = useState("price-low");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [syncing, setSyncing] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState<string>("all");
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<string>("best");
+  const [networkFilter, setNetworkFilter] = useState<string>("");
+  const [priceRange, setPriceRange] = useState<string>("");
 
   const fetchPlans = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (selectedRegion !== "all") params.set("regionId", selectedRegion);
+      if (selectedRegion && selectedRegion !== "all") params.set("regionId", selectedRegion);
       if (selectedCountry) params.set("countryId", selectedCountry);
-      if (sortBy) params.set("sortBy", sortBy);
+      if (searchQuery) params.set("search", searchQuery);
+      if (networkFilter) params.set("networkType", networkFilter);
+
+      if (priceRange) {
+        const [min, max] = priceRange.split("-");
+        if (min) params.set("minPrice", min);
+        if (max) params.set("maxPrice", max);
+      }
 
       const res = await fetch(`/api/plans?${params.toString()}`);
       const data = await res.json();
-      let filtered = data.plans || [];
-
-      if (selectedDuration) {
-        filtered = filtered.filter((p: Plan) => p.durationDays === selectedDuration);
-      }
-      if (selectedData) {
-        filtered = filtered.filter(
-          (p: Plan) => p.dataAmount >= selectedData.min && p.dataAmount <= selectedData.max
-        );
-      }
-
-      setPlans(filtered);
+      setPlans(data.plans || []);
     } catch (error) {
       console.error("Failed to fetch plans:", error);
     } finally {
       setLoading(false);
     }
-  }, [selectedRegion, selectedCountry, selectedDuration, selectedData, sortBy]);
+  }, [selectedRegion, selectedCountry, searchQuery, networkFilter, priceRange]);
 
   useEffect(() => {
     fetch("/api/regions")
@@ -234,208 +190,195 @@ export default function PlansPage() {
     fetchPlans();
   }, [fetchPlans]);
 
-  function clearFilters() {
-    setSelectedRegion("all");
-    setSelectedCountry("");
-    setSelectedDuration(null);
-    setSelectedData(null);
+  async function syncPlans() {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/plans?sync=true");
+      const data = await res.json();
+      if (data.success) {
+        await fetchPlans();
+      }
+    } catch (error) {
+      console.error("Sync failed:", error);
+    } finally {
+      setSyncing(false);
+    }
   }
 
-  const hasFilters = selectedRegion !== "all" || selectedCountry || selectedDuration || selectedData;
+  const sortedPlans = [...plans].sort((a, b) => {
+    switch (sortBy) {
+      case "price-low": return a.priceUsd - b.priceUsd;
+      case "price-high": return b.priceUsd - a.priceUsd;
+      case "data": return b.dataAmount - a.dataAmount;
+      case "validity": return b.validityDays - a.validityDays;
+      default: return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0) || (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0) || a.priceUsd - b.priceUsd;
+    }
+  });
+
   const currentRegion = regions.find((r) => r.id === selectedRegion);
+  const countries = currentRegion?.countries || [];
 
   return (
-    <div className="min-h-screen bg-[#0a0f1a] text-white">
-      <main className="pt-24 pb-24">
+    <div className="min-h-screen bg-slate-900 text-white">
+      <main className="pt-28 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          {/* ===== HERO ===== */}
-          <div className="relative text-center mb-12 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-sky-500/5 via-cyan-500/10 to-sky-500/5 rounded-3xl blur-3xl" />
-            <div className="relative py-10">
-              <p className="text-sky-400 text-sm font-semibold uppercase tracking-[0.2em] mb-3">Travel eSIM Plans</p>
-              <h1 className="text-5xl md:text-6xl font-extrabold mb-4">
-                <span className="bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                  Stay Connected
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-sky-400 to-cyan-400 bg-clip-text text-transparent">
-                  Anywhere You Go
-                </span>
-              </h1>
-              <p className="text-slate-400 text-lg max-w-xl mx-auto">
-                Instant eSIM for 190+ countries. No contracts, no roaming fees.
-              </p>
-            </div>
+          <div className="text-center mb-10">
+            <h1 className="text-4xl font-bold text-white mb-3">{t("plans.title")}</h1>
+            <p className="text-slate-400 text-lg">{t("plans.subtitle")}</p>
+            <p className="text-slate-500 text-sm mt-1">{plans.length} plans available</p>
           </div>
 
-          {/* ===== SEARCH BAR ===== */}
-          <div className="relative mb-8">
-            <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-2 shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-2">
-                <div className="flex-1 relative">
-                  <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 mb-8">
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Search</label>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search destination..."
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-sky-500 transition-colors"
+                />
+              </div>
+
+              <div className="min-w-[160px]">
+                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Region</label>
+                <select
+                  value={selectedRegion}
+                  onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCountry(""); }}
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
+                >
+                  <option value="all">All Regions</option>
+                  {regions.map((r) => (
+                    <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {countries.length > 0 && (
+                <div className="min-w-[160px]">
+                  <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Country</label>
                   <select
-                    value={selectedCountry || selectedRegion}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const isRegion = regions.some((r) => r.id === val);
-                      if (isRegion) {
-                        setSelectedRegion(val);
-                        setSelectedCountry("");
-                      } else {
-                        setSelectedCountry(val);
-                        const parent = regions.find((r) => r.countries.some((c) => c.id === val));
-                        setSelectedRegion(parent?.id || "all");
-                      }
-                    }}
-                    className="w-full bg-transparent border-0 pl-12 pr-4 py-4 text-white text-sm font-medium focus:outline-none appearance-none cursor-pointer"
+                    value={selectedCountry}
+                    onChange={(e) => setSelectedCountry(e.target.value)}
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
                   >
-                    <option value="all" className="bg-slate-900">🔍 Search destination or region...</option>
-                    {regions.map((r) => (
-                      <optgroup key={r.id} label={`${r.emoji} ${r.name}`} className="bg-slate-900">
-                        {r.countries.map((c) => (
-                          <option key={c.id} value={c.id} className="bg-slate-900">{c.emoji} {c.name}</option>
-                        ))}
-                      </optgroup>
+                    <option value="">All Countries</option>
+                    {countries.map((c) => (
+                      <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
                     ))}
                   </select>
                 </div>
+              )}
 
-                <div className="h-8 w-px bg-slate-700/50" />
+              <div className="min-w-[140px]">
+                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Network</label>
+                <select
+                  value={networkFilter}
+                  onChange={(e) => setNetworkFilter(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
+                >
+                  <option value="">All</option>
+                  <option value="5G">5G</option>
+                  <option value="4G">4G LTE</option>
+                </select>
+              </div>
 
+              <div className="min-w-[140px]">
+                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Price</label>
+                <select
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
+                >
+                  <option value="">Any Price</option>
+                  <option value="0-10">Under $10</option>
+                  <option value="10-20">$10 - $20</option>
+                  <option value="20-50">$20 - $50</option>
+                  <option value="50-999">$50+</option>
+                </select>
+              </div>
+
+              <div className="min-w-[140px]">
+                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Sort By</label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-slate-700/30 text-slate-300 text-sm font-medium px-4 py-3 rounded-2xl border-0 focus:outline-none appearance-none cursor-pointer hover:bg-slate-700/50 transition-colors"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors"
                 >
-                  <option value="price-low" className="bg-slate-900">Price ↑</option>
-                  <option value="price-high" className="bg-slate-900">Price ↓</option>
-                  <option value="data" className="bg-slate-900">Most Data</option>
-                  <option value="duration" className="bg-slate-900">Longest</option>
+                  <option value="best">Best Match</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="data">Most Data</option>
+                  <option value="validity">Longest Validity</option>
                 </select>
               </div>
-            </div>
-          </div>
 
-          {/* ===== FILTER PILLS ===== */}
-          <div className="flex flex-wrap items-center gap-3 mb-8">
-            {/* Duration */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">⏱️</span>
-              <div className="flex gap-1.5">
-                {DURATION_OPTIONS.map((opt) => (
-                  <FilterChip
-                    key={opt.value}
-                    active={selectedDuration === opt.value}
-                    onClick={() => setSelectedDuration(selectedDuration === opt.value ? null : opt.value)}
-                  >
-                    {opt.label}
-                  </FilterChip>
-                ))}
-              </div>
-            </div>
-
-            <div className="w-px h-6 bg-slate-700/50" />
-
-            {/* Data */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">📶</span>
-              <div className="flex gap-1.5">
-                {DATA_OPTIONS.map((opt) => (
-                  <FilterChip
-                    key={opt.label}
-                    active={selectedData?.label === opt.label}
-                    onClick={() => setSelectedData(selectedData?.label === opt.label ? null : opt)}
-                  >
-                    {opt.label}
-                  </FilterChip>
-                ))}
-              </div>
-            </div>
-
-            {hasFilters && (
-              <>
-                <div className="w-px h-6 bg-slate-700/50" />
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  onClick={clearFilters}
-                  className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1 px-3 py-2 rounded-full bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+              {plans.length === 0 && !loading && (
+                <button
+                  onClick={syncPlans}
+                  disabled={syncing}
+                  className="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
                 >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Reset
-                </motion.button>
-              </>
-            )}
-          </div>
-
-          {/* ===== RESULTS BAR ===== */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              {loading ? (
-                <div className="flex items-center gap-2 text-slate-400 text-sm">
-                  <div className="animate-spin w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full" />
-                  Finding best plans...
-                </div>
-              ) : (
-                <p className="text-slate-400 text-sm">
-                  <span className="text-white font-bold">{plans.length}</span> plans found
-                  {selectedCountry && (
-                    <span className="ml-2">
-                      for <span className="text-sky-400 font-semibold">{regions.flatMap((r) => r.countries).find((c) => c.id === selectedCountry)?.emoji} {regions.flatMap((r) => r.countries).find((c) => c.id === selectedCountry)?.name}</span>
-                    </span>
-                  )}
-                </p>
+                  {syncing ? "Syncing..." : "Sync Plans from eSIM Access"}
+                </button>
               )}
             </div>
           </div>
 
-          {/* ===== PLANS GRID ===== */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <button
+              onClick={() => { setSelectedRegion("all"); setSelectedCountry(""); setSearchQuery(""); setNetworkFilter(""); setPriceRange(""); setSortBy("best"); }}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${selectedRegion === "all" && !searchQuery ? "bg-sky-500/20 border-sky-500/40 text-sky-400" : "border-slate-700 text-slate-400 hover:border-slate-500"}`}
+            >
+              All
+            </button>
+            {regions.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => { setSelectedRegion(r.id); setSelectedCountry(""); }}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${selectedRegion === r.id ? "bg-sky-500/20 border-sky-500/40 text-sky-400" : "border-slate-700 text-slate-400 hover:border-slate-500"}`}
+              >
+                {r.emoji} {r.name} ({r._count?.plans || 0})
+              </button>
+            ))}
+          </div>
+
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-slate-800/40 border border-slate-700/30 rounded-3xl p-6 animate-pulse">
-                  <div className="w-16 h-16 bg-slate-700/50 rounded-full mx-auto mb-4" />
-                  <div className="h-5 bg-slate-700/50 rounded mb-2 mx-auto w-24" />
-                  <div className="h-3 bg-slate-700/30 rounded mb-5 mx-auto w-16" />
-                  <div className="flex justify-center gap-6 mb-5">
-                    <div className="h-12 w-12 bg-slate-700/50 rounded" />
-                    <div className="h-12 w-12 bg-slate-700/50 rounded" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-slate-800/50 rounded-2xl p-6 animate-pulse">
+                  <div className="h-6 bg-slate-700 rounded mb-4 w-1/2" />
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    <div className="h-14 bg-slate-700 rounded-xl" />
+                    <div className="h-14 bg-slate-700 rounded-xl" />
+                    <div className="h-14 bg-slate-700 rounded-xl" />
                   </div>
-                  <div className="h-16 bg-slate-700/30 rounded-2xl" />
+                  <div className="h-10 bg-slate-700 rounded-xl" />
                 </div>
               ))}
             </div>
-          ) : plans.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-24 bg-slate-800/20 border border-slate-700/30 rounded-3xl"
-            >
-              <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-5">
-                <span className="text-4xl">✈️</span>
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">No plans found</h3>
-              <p className="text-slate-400 max-w-md mx-auto mb-8">
-                We couldn&apos;t find plans matching your filters. Try adjusting your search.
-              </p>
-              <button onClick={clearFilters} className="bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold px-8 py-3 rounded-2xl hover:shadow-lg hover:shadow-sky-500/25 transition-all">
-                Reset Filters
+          ) : sortedPlans.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-4xl mb-4">📦</p>
+              <h3 className="text-xl font-semibold text-white mb-2">No plans found</h3>
+              <p className="text-slate-400 mb-6">Try adjusting your filters or sync plans from eSIM Access</p>
+              <button
+                onClick={syncPlans}
+                disabled={syncing}
+                className="bg-sky-500 hover:bg-sky-400 disabled:bg-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
+              >
+                {syncing ? "Syncing..." : "Sync Plans Now"}
               </button>
-            </motion.div>
+            </div>
           ) : (
-            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               <AnimatePresence>
-                {plans.map((plan) => (
-                  <PlanCard key={plan.id} plan={plan} />
+                {sortedPlans.map((plan, index) => (
+                  <PlanCard key={plan.id} plan={plan} index={index} />
                 ))}
               </AnimatePresence>
-            </motion.div>
+            </div>
           )}
         </div>
       </main>
