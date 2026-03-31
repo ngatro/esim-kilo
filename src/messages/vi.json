@@ -3,7 +3,9 @@
     "home": "Trang chủ",
     "plans": "Gói dữ liệu",
     "cart": "Giỏ hàng",
-    
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
     "checkout": "Thanh toán",
     "orders": "Đơn hàng",
     "admin": "Quản trị",
@@ -21,19 +23,15 @@
     "refundPolicy": "Chính sách hoàn tiền 7 ngày"
   },
   "hero": {
-    "title": {
-      "stayConnected": "Luôn kết nối",
-      "anywhere": "Mọi nơi",
-      "youGo": "Bạn đến"
-    },
-    "subtitle": "Gói dữ liệu eSIM giá rẻ cho du lịch quốc tế. Không phí roaming, không hợp đồng. Kích hoạt tức thì trong vài phút.",
+    "title": "Luôn kết nối mọi nơi",
+    "subtitle": "Gói dữ liệu eSIM giá rẻ cho du lịch quốc tế",
     "cta": "Bắt đầu",
     "countries": "Quốc gia",
     "operators": "Nhà mạng",
     "plans": "Gói dữ liệu",
     "browsePlans": "Xem gói",
     "howItWorks": "Cách hoạt động",
-    "nowServing": "Luôn kết nối ở 190+ quốc gia trên toàn thế giới"
+    "nowServing": "Phục vụ 190+ quốc gia"
   },
   "howItWorks": {
     "title": "Cách hoạt động",
@@ -49,7 +47,7 @@
   },
   "plans": {
     "title": "Các gói dữ liệu có sẵn",
-    "subtitle": "Có data ngay cho mọi chuyến đi. Xem các gói hoặc tìm kiếm điểm đến của bạn.",
+    "subtitle": "Duyệt bộ sưu tập rộng lớn các gói dữ liệu eSIM",
     "filterByRegion": "Lọc theo khu vực",
     "allRegions": "Tất cả khu vực",
     "viewDetails": "Xem chi tiết",
@@ -62,14 +60,7 @@
     "validity": "Thời hạn",
     "speed": "Tốc độ",
     "getThisPlan": "Chọn gói này",
-    "viewAllPlans": "Xem tất cả gói",
-    "netSpeed": "Tốc độ mạng",
-    "whatIncluded": "Các tính năng bao gồm",
-    "oneTime": "Một lần",
-    "searchDesc": "Tìm điểm đến (ví dụ: Nhật Bản, Châu Âu…)",
-    "clearSearch": "Xóa tìm kiếm",
-    "noResults": "Không tìm thấy gói nào cho"
-
+    "viewAllPlans": "Xem tất cả gói"
   },
   "cart": {
     "title": "Giỏ hàng",
@@ -79,9 +70,6 @@
     "clearCart": "Xóa giỏ"
   },
   "auth": {
-    "login": "Đăng nhập",
-    "register": "Đăng ký",
-    "logout": "Đăng xuất",
     "signIn": "Đăng nhập vào tài khoản",
     "signUp": "Tạo tài khoản",
     "email": "Địa chỉ email",
@@ -147,12 +135,11 @@
     "checkList": "Xem danh sách tương thích đầy đủ"
   },
   "comparison": {
-    "title": "Tại sao chọn OpenWorld eSIM?",
-    "subtitle": "So sánh OpenWorld eSIM với roaming truyền thống và xem bạn có thể tiết kiệm bao nhiêu",
-    "owsim": "OpenWorld eSIM",
+    "title": "Tại sao chọn SimPal?",
+    "subtitle": "So sánh SimPal với roaming truyền thống và xem bạn có thể tiết kiệm bao nhiêu",
+    "simpal": "eSIM SimPal",
     "roaming": "Roaming truyền thống",
     "local": "SIM địa phương",
-    "recommended": "ĐƯỢC ĐỀ XUẤT",
     "features": {
       "cheaper": "Tiết kiệm đến 80%",
       "instant": "Kích hoạt tức thì",
@@ -183,7 +170,7 @@
     "savings": "Tiết kiệm"
   },
   "whyChoose": {
-    "title": "Tại sao chọn OpenWorld eSIM?",
+    "title": "Tại sao chọn SimPal?",
     "subtitle": "Chúng tôi đang cách mạng hóa cách du khách kết nối khi ở nước ngoài",
     "features": {
       "instant": {
@@ -214,7 +201,7 @@
   },
   "faq": {
     "title": "Câu hỏi thường gặp",
-    "subtitle": "Tất cả những gì bạn cần biết về eSIM OpenWorld eSIM",
+    "subtitle": "Tất cả những gì bạn cần biết về eSIM SimPal",
     "questions": {
       "whatIsEsim": "eSIM là gì?",
       "whatIsEsimAns": "eSIM (SIM nhúng) là SIM kỹ thuật số cho phép bạn kích hoạt gói di động mà không cần SIM vật lý. Nó được tích hợp sẵn trong thiết bị và có thể được lập trình từ xa.",
@@ -223,13 +210,13 @@
       "activationTime": "Kích hoạt eSIM mất bao lâu?",
       "activationTimeAns": "Sau khi nhận mã QR qua email, kích hoạt chỉ mất 5-10 phút. Chỉ cần quét mã QR trong cài đặt điện thoại và dữ liệu của bạn đã sẵn sàng sử dụng.",
       "keepOriginal": "Tôi có thể giữ SIM gốc không?",
-      "keepOriginalAns": "Có! eSIM hoạt động cùng với SIM vật lý. Bạn có thể có hai số điện thoại hoặc sử dụng số thường cho cuộc gọi/tin nhắn trong khi dùng OpenWorld eSIM cho dữ liệu.",
+      "keepOriginalAns": "Có! eSIM hoạt động cùng với SIM vật lý. Bạn có thể có hai số điện thoại hoặc sử dụng số thường cho cuộc gọi/tin nhắn trong khi dùng SimPal cho dữ liệu.",
       "runOutData": "Chuyện gì xảy ra nếu hết dữ liệu?",
       "runOutDataAns": "Bạn có thể mua thêm dữ liệu bất kỳ lúc nào qua ứng dụng hoặc website của chúng tôi. Quá trình tức thì và bạn sẽ trực tuyến ngay lập tức.",
       "refund": "Làm sao để hoàn tiền?",
       "refundAns": "Chúng tôi cung cấp chính sách hoàn tiền 7 ngày cho các gói chưa sử dụng. Liên hệ đội hỗ trợ trong vòng 7 ngày sau khi mua nếu bạn không hài lòng.",
-      "cruiseShip": "eSIM có hoạt động trên tàu biển không?",
-      "cruiseShipAns": "eSIM yêu cầu tín hiệu mạng di động trên đất liền. Đối với tàu biển, chúng tôi khuyên bạn nên kiểm tra xem khu vực đó có tín hiệu di động hoặc xem xét các giải pháp vệ tinh.",
+      "cruiseShip": "eSIM có hoạt động trên tàu cruise không?",
+      "cruiseShipAns": "eSIM yêu cầu tín hiệu mạng di động trên đất liền. Đối với cruise, chúng tôi khuyên bạn nên kiểm tra xem điểm đến có tín hiệu di động hoặc xem xét các giải pháp vệ tinh.",
       "hotspot": "Tôi có thể dùng eSIM cho hotspot không?",
       "hotspotAns": "Có! Hầu hết các gói của chúng tôi đều hỗ trợ chia sẻ hotspot. Kiểm tra chi tiết gói để xác nhận trước khi mua."
     }
@@ -241,7 +228,7 @@
   },
   "testimonials": {
     "title": "Du khách nói gì",
-    "subtitle": "Tham gia cùng hàng trăm ngàn du khách hài lòng với OpenWorld eSIM"
+    "subtitle": "Tham gia cùng hàng trăm ngàn du khách hài lòng với SimPal"
   },
   "partners": {
     "title": "Mạng đáng tin cậy trên toàn thế giới",

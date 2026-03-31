@@ -3,6 +3,9 @@
     "home": "Home",
     "plans": "Plans",
     "cart": "Cart",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
     "checkout": "Checkout",
     "orders": "My Orders",
     "admin": "Admin",
@@ -20,19 +23,15 @@
     "refundPolicy": "7-day refund policy"
   },
   "hero": {
-    "title": {
-      "stayConnected": "Stay Connected",
-      "anywhere": "Anywhere",
-      "youGo": "You Go"
-    },
-    "subtitle": "Affordable eSIM data plans for international travel. No roaming fees, no contracts. Instant activation in minutes.",
+    "title": "Stay Connected Anywhere",
+    "subtitle": "Affordable eSIM data plans for international travel",
     "cta": "Get Started",
     "countries": "Countries",
     "operators": "Operators",
     "plans": "Plans",
     "browsePlans": "Browse Plans",
     "howItWorks": "How It Works",
-    "nowServing": "Stay connected in 190+ countries worldwide"
+    "nowServing": "Now serving 190+ countries"
   },
   "howItWorks": {
     "title": "How It Works",
@@ -48,7 +47,7 @@
   },
   "plans": {
     "title": "Available Plans",
-    "subtitle": "Instant data for every journey. Browse plans or search for your destination.",
+    "subtitle": "Browse our extensive collection of eSIM data plans",
     "filterByRegion": "Filter by Region",
     "allRegions": "All Regions",
     "viewDetails": "View Details",
@@ -61,13 +60,7 @@
     "validity": "Validity",
     "speed": "Speed",
     "getThisPlan": "Get This Plan",
-    "viewAllPlans": "View All Available Plans",
-    "netSpeed": "Network Speed",
-    "whatIncluded": "What's Included",
-    "oneTime": "One-Time",
-    "searchDesc": "Search destination (e.g. Japan, Europe…)",
-    "clearSearch": "Clear Search",
-    "noResults": "No plans found for"
+    "viewAllPlans": "View All Available Plans"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -77,9 +70,6 @@
     "clearCart": "Clear Cart"
   },
   "auth": {
-    "login": "Login",
-    "register": "Register",
-    "logout": "Logout",
     "signIn": "Sign in to your account",
     "signUp": "Create your account",
     "email": "Email address",
@@ -145,12 +135,11 @@
     "checkList": "Check full compatibility list"
   },
   "comparison": {
-    "title": "Why Choose OpenWorld eSIM?",
-    "subtitle": "Compare OpenWorld eSIM with traditional roaming and see how much you can save",
-    "owsim": "OpenWorld eSIM",
+    "title": "Why Choose SimPal?",
+    "subtitle": "Compare SimPal with traditional roaming and see how much you can save",
+    "simpal": "SimPal eSIM",
     "roaming": "Traditional Roaming",
     "local": "Local SIM Cards",
-    "recommended": "RECOMMENDED",
     "features": {
       "cheaper": "Up to 80% cheaper",
       "instant": "Instant activation",
@@ -181,7 +170,7 @@
     "savings": "Savings"
   },
   "whyChoose": {
-    "title": "Why Choose OpenWorld eSIM?",
+    "title": "Why Choose SimPal?",
     "subtitle": "We're revolutionizing how travelers stay connected abroad",
     "features": {
       "instant": {
@@ -212,7 +201,7 @@
   },
   "faq": {
     "title": "Frequently Asked Questions",
-    "subtitle": "Everything you need to know about OpenWorld eSIM eSIM",
+    "subtitle": "Everything you need to know about SimPal eSIM",
     "questions": {
       "whatIsEsim": "What is an eSIM?",
       "whatIsEsimAns": "An eSIM (embedded SIM) is a digital SIM that allows you to activate a cellular plan without using a physical SIM card. It's built into your device and can be programmed remotely.",
@@ -221,7 +210,7 @@
       "activationTime": "How long does eSIM activation take?",
       "activationTimeAns": "Once you receive your QR code via email, activation takes just 5-10 minutes. Simply scan the QR code in your phone's settings and your data will be ready to use.",
       "keepOriginal": "Can I keep my original SIM card?",
-      "keepOriginalAns": "Yes! eSIM works alongside your physical SIM. You can have two phone numbers or use your regular number for calls/texts while using OpenWorld eSIM for data.",
+      "keepOriginalAns": "Yes! eSIM works alongside your physical SIM. You can have two phone numbers or use your regular number for calls/texts while using SimPal for data.",
       "runOutData": "What happens if I run out of data?",
       "runOutDataAns": "You can purchase additional data top-ups anytime through our app or website. The process is instant and you'll be back online immediately.",
       "refund": "How do I get a refund?",
@@ -235,24 +224,11 @@
   "cta": {
     "title": "Ready to Stay Connected?",
     "subtitle": "Join 500,000+ travelers who stay connected without the roaming bill shock.",
-    "button": "Find Your Plan",
-    "button1": "Learn More"
+    "button": "Find Your Plan"
   },
   "testimonials": {
     "title": "What Travelers Say",
-    "subtitle": "Join hundreds of thousands of happy travelers who stay connected with OpenWorld eSIM",
-    "items": {
-      "sarah": {
-        "name": "Sarah M.",
-        "location": "United States",
-        "text": "OpenWorld eSIM made my Japan trip so much easier! Got a 10GB plan for $14 and had data the whole time."
-      },
-      "marco": {
-        "name": "Marco D.",
-        "location": "Italy",
-        "text": "Best eSIM service I've used. Works perfectly in 15 Asian countries."
-      }
-    }
+    "subtitle": "Join hundreds of thousands of happy travelers who stay connected with SimPal"
   },
   "partners": {
     "title": "Trusted Networks Worldwide",

@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+  cartItems CartItem[]
+}
+
+model Region {
+  id        String   @id
+  name      String
+  emoji     String
+  countries Country[]
+  plans     Plan[]
+}
+
+model Country {
+  id        String   @id
+  name      String
+  code      String   @unique
+  emoji     String
+  regionId  String
+  region    Region   @relation(fields: [regionId], references: [id])
+  plans     Plan[]
+  createdAt DateTime @default(now())
+}
+
+model Plan {
+  id              String   @id
+  name            String
+  destination     String
+  regionId        String?
+  countryId       String?
+  region          Region?  @relation(fields: [regionId], references: [id])
+  country         Country? @relation(fields: [countryId], references: [id])
+  
+  dataAmount      Int
+  validityDays    Int
+  priceUsd        Float
+  costUsd         Float?
+  
+  coverageCountries Int    @default(1)
+  networkType     String?
+  speeds          Json?
+  features        Json?
+  
+  isActive        Boolean  @default(true)
+  isPopular       Boolean  @default(false)
+  isBestSeller    Boolean  @default(false)
+  isHot           Boolean  @default(false)
+  badge           String?
+  priority        Int      @default(0)
+  
+  esimaccessPackageName  String?
+  esimaccessPackageCode  String?
+  esimaccessRawData      Json?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orderItems      OrderItem[]
+
+  @@index([regionId])
+  @@index([isActive])
+  @@index([isPopular])
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  userId      Int?
+  user        User?       @relation(fields: [userId], references: [id])
+  
+  totalAmount Float
+  currency    String      @default("USD")
+  status      String      @default("pending")
+  
+  customerName    String?
+  customerEmail   String?
+  
+  esimaccessOrderId     String?
+  esimaccessOrderStatus String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  planId    String?
+  plan      Plan?   @relation(fields: [planId], references: [id])
+  
+  planName    String
+  quantity    Int     @default(1)
+  price       Float
+  
+  esimIccid   String?
+  esimQrCode  String?
+  esimQrImage String?
+  activationCode String?
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    String?
+  planName  String
+  price     Float
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String
+  image       String?
+  category    String?
+  author      String?
+  isPublished Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

@@ -1,40 +1,117 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { orders, orderItems } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { prisma } from "@/lib/prisma";
+import { createOrder, queryOrder } from "@/lib/esim-access";
 
 export async function POST(request: Request) {
   try {
     const cookie = request.headers.get("cookie");
     const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
     
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userId = token ? parseInt(token) : null;
+    const { items, customerName, customerEmail } = await request.json();
+
+    if (!items || items.length === 0) {
+      return NextResponse.json({ error: "No items" }, { status: 400 });
     }
 
-    const userId = parseInt(token);
-    const { items, totalAmount } = await request.json();
-
-    const order = await db.insert(orders).values({
-      userId,
-      totalAmount,
-      status: "completed",
-    }).returning();
-
-    const orderId = order[0].id;
+    let totalAmount = 0;
+    const orderItemsData: {
+      planId: string | null;
+      planName: string;
+      price: number;
+      quantity: number;
+    }[] = [];
 
     for (const item of items) {
-      await db.insert(orderItems).values({
-        orderId,
-        planId: item.planId,
-        planName: item.planName,
-        price: item.price,
-        quantity: item.quantity,
+      const plan = await prisma.plan.findUnique({
+        where: { id: item.planId },
+      });
+
+      if (!plan) {
+        return NextResponse.json(
+          { error: `Plan not found: ${item.planId}` },
+          { status: 400 }
+        );
+      }
+
+      const itemTotal = plan.priceUsd * item.quantity;
+      totalAmount += itemTotal;
+
+      orderItemsData.push({
+        planId: plan.id,
+        planName: plan.name,
+        price: plan.priceUsd,
+        quantity: item.quantity || 1,
       });
     }
 
-    return NextResponse.json({ success: true, orderId });
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        totalAmount,
+        status: "completed",
+        customerName: customerName || null,
+        customerEmail: customerEmail || null,
+        orderItems: {
+          create: orderItemsData,
+        },
+      },
+      include: {
+        orderItems: true,
+      },
+    });
+
+    const esimResults: { orderItem: number; status: string; orderNo: string }[] = [];
+
+    for (const orderItem of order.orderItems) {
+      const plan = await prisma.plan.findUnique({
+        where: { id: orderItem.planId || "" },
+      });
+
+      if (plan?.esimaccessPackageCode) {
+        try {
+          const esimOrder = await createOrder({
+            packageCode: plan.esimaccessPackageCode,
+            count: orderItem.quantity,
+          });
+
+          await prisma.orderItem.update({
+            where: { id: orderItem.id },
+            data: {
+              esimIccid: esimOrder.iccid,
+              esimQrCode: esimOrder.qrcode,
+              esimQrImage: esimOrder.qrcodeUrl,
+              activationCode: esimOrder.activationCode,
+            },
+          });
+
+          esimResults.push({
+            orderItem: orderItem.id,
+            status: esimOrder.orderStatus,
+            orderNo: esimOrder.orderNo,
+          });
+
+          await prisma.order.update({
+            where: { id: order.id },
+            data: {
+              esimaccessOrderId: esimOrder.orderNo,
+              esimaccessOrderStatus: esimOrder.orderStatus,
+            },
+          });
+        } catch (esimError) {
+          console.error("eSIM Access order error:", esimError);
+        }
+      }
+    }
+
+    const updatedOrder = await prisma.order.findUnique({
+      where: { id: order.id },
+      include: { orderItems: true },
+    });
+
+    return NextResponse.json({ success: true, order: updatedOrder, esimResults });
   } catch (error) {
+    console.error("Order creation error:", error);
     return NextResponse.json({ error: "Order failed" }, { status: 500 });
   }
 }
@@ -49,9 +126,15 @@ export async function GET(request: Request) {
     }
 
     const userId = parseInt(token);
-    const userOrders = await db.select().from(orders).where(eq(orders.userId, userId));
+    const orders = await prisma.order.findMany({
+      where: { userId },
+      include: {
+        orderItems: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-    return NextResponse.json({ orders: userOrders });
+    return NextResponse.json({ orders });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }

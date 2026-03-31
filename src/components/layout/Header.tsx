@@ -7,7 +7,6 @@ import { useCart } from "@/components/providers/CartProvider";
 import { useUI } from "@/components/providers/UIProvider";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 import { useState, useEffect } from "react";
-import { useI18n } from "../providers/I18nProvider";
 
 export default function Header() {
   const { user, logout, loading: authLoading } = useAuth();
@@ -15,7 +14,6 @@ export default function Header() {
   const { openLogin, openCart } = useUI();
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
@@ -25,8 +23,8 @@ export default function Header() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "#/plans", label: "Plans" },
-    { href: "#/how-it-works", label: "How It Works" },
+    { href: "/#plans", label: "Plans" },
+    { href: "/#how-it-works", label: "How It Works" },
     { href: "/blog", label: "Blog" },
     ...(mounted && user ? [{ href: "/orders", label: "My Orders" }] : []),
     ...(mounted && user?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
@@ -38,7 +36,7 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-2">
           <span className="text-2xl">📡</span>
           <span className="text-xl font-bold text-white tracking-tight">
-            Open<span className="text-sky-400">World</span>
+            Sim<span className="text-sky-400">Pal</span>
           </span>
         </Link>
 
@@ -71,7 +69,7 @@ export default function Header() {
                 onClick={() => logout()}
                 className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
               >
-                {t("auth.logout")}
+                Logout
               </button>
             </div>
           )}
@@ -83,7 +81,7 @@ export default function Header() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {t("auth.login")}
+              Login
             </motion.button>
           )}
 
@@ -132,7 +130,7 @@ export default function Header() {
                   }}
                   className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold px-4 py-3 rounded-lg transition-colors"
                 >
-                  {t("auth.login")}
+                  Login
                 </button>
               )}
 
@@ -144,7 +142,7 @@ export default function Header() {
                   }}
                   className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-3 rounded-lg transition-colors"
                 >
-                  {t("auth.logout")}
+                  Logout
                 </button>
               )}
             </div>
