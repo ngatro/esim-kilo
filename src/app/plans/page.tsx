@@ -50,124 +50,135 @@ const DATA_OPTIONS = [
 ];
 
 const DURATION_OPTIONS = [
-  { label: "3D", value: 3 },
-  { label: "7D", value: 7 },
-  { label: "15D", value: 15 },
-  { label: "30D", value: 30 },
-  { label: "60D", value: 60 },
-  { label: "90D", value: 90 },
+  { label: "3 Days", value: 3 },
+  { label: "7 Days", value: 7 },
+  { label: "15 Days", value: 15 },
+  { label: "30 Days", value: 30 },
+  { label: "60 Days", value: 60 },
+  { label: "90 Days", value: 90 },
 ];
 
-function PlanCard({ plan, index }: { plan: Plan; index: number }) {
+function PlanCard({ plan }: { plan: Plan }) {
   const isUnlimited = plan.dataAmount >= 999;
   const pricePerDay = (plan.priceUsd / plan.durationDays).toFixed(2);
-  const locations = Array.isArray(plan.locations) ? plan.locations as string[] : [];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03 }}
-      className="group relative bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-sky-500/30 hover:bg-slate-800/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-sky-500/5"
-    >
-      {/* Badge */}
-      {plan.isBestSeller && (
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold text-center py-1 tracking-wider">
-          ⭐ BEST SELLER
-        </div>
-      )}
-      {plan.isHot && !plan.isBestSeller && (
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold text-center py-1 tracking-wider">
-          🔥 HOT DEAL
-        </div>
-      )}
-      {plan.isPopular && !plan.isBestSeller && !plan.isHot && (
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-sky-500 to-blue-500 text-white text-[10px] font-bold text-center py-1 tracking-wider">
-          👑 POPULAR
-        </div>
-      )}
-
-      <div className={`p-5 ${(plan.isBestSeller || plan.isHot || plan.isPopular) ? "pt-8" : ""}`}>
-        {/* Destination */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-slate-700/50 rounded-xl flex items-center justify-center text-2xl">
-            {plan.country?.emoji || plan.region?.emoji || "🌍"}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-white truncate">{plan.destination}</h3>
-            <p className="text-xs text-slate-500">
-              {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.packageCode}
-            </p>
-          </div>
-        </div>
-
-        {/* Stats row */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex-1 bg-slate-900/50 rounded-xl py-2.5 text-center">
-            <p className="text-lg font-bold text-sky-400">{isUnlimited ? "∞" : `${plan.dataAmount}`}</p>
-            <p className="text-[9px] text-slate-500 uppercase tracking-wider">{isUnlimited ? "Unlimited" : "GB"}</p>
-          </div>
-          <div className="flex-1 bg-slate-900/50 rounded-xl py-2.5 text-center">
-            <p className="text-lg font-bold text-white">{plan.durationDays}</p>
-            <p className="text-[9px] text-slate-500 uppercase tracking-wider">Days</p>
-          </div>
-          <div className="flex-1 bg-slate-900/50 rounded-xl py-2.5 text-center">
-            <p className="text-lg font-bold text-emerald-400">${pricePerDay}</p>
-            <p className="text-[9px] text-slate-500 uppercase tracking-wider">/Day</p>
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {plan.speed && (
-            <span className="bg-sky-500/10 text-sky-400 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-sky-500/20">
-              {plan.speed}
-            </span>
+    <motion.div layout>
+      <Link href={`/plans/${plan.id}`} className="block h-full">
+        <div className="group relative h-full bg-gradient-to-b from-slate-800/80 to-slate-900/80 border border-slate-700/40 rounded-3xl overflow-hidden transition-all duration-300 hover:border-sky-500/30 hover:shadow-[0_0_40px_rgba(14,165,233,0.08)]">
+          {/* Top banner badge */}
+          {(plan.isBestSeller || plan.isHot) && (
+            <div className={`absolute top-0 left-0 right-0 text-center text-[11px] font-bold tracking-wider py-1.5 ${
+              plan.isBestSeller
+                ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
+                : "bg-gradient-to-r from-rose-500 to-pink-500 text-white"
+            }`}>
+              {plan.isBestSeller ? "⭐ BEST SELLER" : "🔥 HOT DEAL"}
+            </div>
           )}
-          {plan.supportTopUp && (
-            <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-emerald-500/20">
-              Top-Up
-            </span>
-          )}
-          {plan.ipExport && (
-            <span className="bg-orange-500/10 text-orange-400 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-orange-500/20">
-              IP: {plan.ipExport}
-            </span>
-          )}
-        </div>
 
-        {/* Countries preview */}
-        {locations.length > 1 && (
-          <p className="text-[10px] text-slate-600 mb-4 truncate">
-            {locations.join(", ")}
-          </p>
-        )}
+          <div className={`p-6 flex flex-col h-full ${(plan.isBestSeller || plan.isHot) ? "pt-9" : ""}`}>
+            {/* Country */}
+            <div className="text-center mb-5">
+              <div className="text-4xl mb-2">{plan.country?.emoji || plan.region?.emoji || "🌍"}</div>
+              <h3 className="text-lg font-bold text-white">{plan.destination}</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.packageCode}
+              </p>
+            </div>
 
-        {/* Price + CTA */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
-          <div>
-            <p className="text-2xl font-bold text-white">${plan.priceUsd.toFixed(2)}</p>
-            <p className="text-[10px] text-slate-500">one-time</p>
-          </div>
-          <div className="flex gap-2">
-            <Link href={`/plans/${plan.id}`}>
-              <button className="bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white text-sm px-4 py-2.5 rounded-xl transition-colors">
+            {/* Data + Days */}
+            <div className="flex items-center justify-center gap-6 mb-5">
+              <div className="text-center">
+                <p className="text-3xl font-extrabold bg-gradient-to-r from-sky-400 to-cyan-400 bg-clip-text text-transparent">
+                  {isUnlimited ? "∞" : `${plan.dataAmount}`}
+                </p>
+                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">
+                  {isUnlimited ? "Unlimited" : "GB"}
+                </p>
+              </div>
+              <div className="w-px h-10 bg-slate-700/60" />
+              <div className="text-center">
+                <p className="text-3xl font-extrabold text-white">{plan.durationDays}</p>
+                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">Days</p>
+              </div>
+            </div>
+
+            {/* Network + tags */}
+            <div className="flex justify-center flex-wrap gap-1.5 mb-5">
+              {plan.speed && (
+                <span className="bg-sky-500/10 text-sky-400 text-[11px] font-bold px-3 py-1 rounded-full border border-sky-500/20">
+                  {plan.speed}
+                </span>
+              )}
+              {plan.supportTopUp && (
+                <span className="bg-emerald-500/10 text-emerald-400 text-[11px] font-bold px-3 py-1 rounded-full border border-emerald-500/20">
+                  Top-Up
+                </span>
+              )}
+              {plan.dataType === 2 && (
+                <span className="bg-violet-500/10 text-violet-400 text-[11px] font-bold px-3 py-1 rounded-full border border-violet-500/20">
+                  Day Pass
+                </span>
+              )}
+            </div>
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Price */}
+            <div className="text-center pt-4 border-t border-slate-700/40">
+              <p className="text-3xl font-extrabold text-white">${plan.priceUsd.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 mt-1">${pricePerDay}/day</p>
+            </div>
+
+            {/* CTA */}
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={(e) => { e.preventDefault(); }}
+                className="flex-1 bg-slate-700/40 hover:bg-slate-600/50 text-slate-300 text-sm font-medium py-3 rounded-2xl transition-colors"
+              >
                 Details
               </button>
-            </Link>
-            <Link href={`/checkout?planId=${plan.id}`}>
-              <motion.button
-                className="bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-sky-500/20"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = `/checkout?planId=${plan.id}`;
+                }}
+                className="flex-[1.5] bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-white text-sm font-bold py-3 rounded-2xl transition-all shadow-lg shadow-sky-500/20 hover:shadow-sky-500/30"
               >
-                Buy
-              </motion.button>
-            </Link>
+                Buy Now →
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </Link>
     </motion.div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+      className={`relative px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 ${
+        active
+          ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-500/25"
+          : "bg-slate-800/60 text-slate-300 border border-slate-700/50 hover:border-slate-500 hover:text-white"
+      }`}
+    >
+      {children}
+    </motion.button>
   );
 }
 
@@ -181,6 +192,7 @@ export default function PlansPage() {
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
   const [selectedData, setSelectedData] = useState<typeof DATA_OPTIONS[0] | null>(null);
   const [sortBy, setSortBy] = useState("price-low");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const fetchPlans = useCallback(async () => {
     setLoading(true);
@@ -222,239 +234,208 @@ export default function PlansPage() {
     fetchPlans();
   }, [fetchPlans]);
 
-  const currentRegion = regions.find((r) => r.id === selectedRegion);
-  const countries = currentRegion?.countries || [];
-
   function clearFilters() {
     setSelectedRegion("all");
     setSelectedCountry("");
     setSelectedDuration(null);
     setSelectedData(null);
-    setSortBy("price-low");
   }
 
   const hasFilters = selectedRegion !== "all" || selectedCountry || selectedDuration || selectedData;
+  const currentRegion = regions.find((r) => r.id === selectedRegion);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
-      <main className="pt-28 pb-24">
+    <div className="min-h-screen bg-[#0a0f1a] text-white">
+      <main className="pt-24 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* Hero */}
-          <div className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-              Find Your Perfect <span className="text-sky-400">eSIM</span>
-            </h1>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Choose your destination, pick your data plan, stay connected in 190+ countries
-            </p>
+          {/* ===== HERO ===== */}
+          <div className="relative text-center mb-12 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-sky-500/5 via-cyan-500/10 to-sky-500/5 rounded-3xl blur-3xl" />
+            <div className="relative py-10">
+              <p className="text-sky-400 text-sm font-semibold uppercase tracking-[0.2em] mb-3">Travel eSIM Plans</p>
+              <h1 className="text-5xl md:text-6xl font-extrabold mb-4">
+                <span className="bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                  Stay Connected
+                </span>
+                <br />
+                <span className="bg-gradient-to-r from-sky-400 to-cyan-400 bg-clip-text text-transparent">
+                  Anywhere You Go
+                </span>
+              </h1>
+              <p className="text-slate-400 text-lg max-w-xl mx-auto">
+                Instant eSIM for 190+ countries. No contracts, no roaming fees.
+              </p>
+            </div>
           </div>
 
-          {/* ===== FILTER PANEL ===== */}
-          <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 mb-8 backdrop-blur-sm">
-            
-            {/* Row 1: Destination + Sort */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-              {/* Destination */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
-                  📍 Where are you traveling?
-                </label>
-                <select
-                  value={selectedCountry || selectedRegion}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const isRegion = regions.some((r) => r.id === val);
-                    if (isRegion) {
-                      setSelectedRegion(val);
-                      setSelectedCountry("");
-                    } else {
-                      setSelectedCountry(val);
-                      const parentRegion = regions.find((r) => r.countries.some((c) => c.id === val));
-                      setSelectedRegion(parentRegion?.id || "all");
-                    }
-                  }}
-                  className="w-full bg-slate-900/60 border border-slate-600 rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 transition-all"
-                >
-                  <option value="all">🌍 All Destinations</option>
-                  {regions.map((r) => (
-                    <optgroup key={r.id} label={`${r.emoji} ${r.name}`}>
-                      {r.countries.map((c) => (
-                        <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
+          {/* ===== SEARCH BAR ===== */}
+          <div className="relative mb-8">
+            <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-2 shadow-2xl shadow-black/20">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 relative">
+                  <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <select
+                    value={selectedCountry || selectedRegion}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const isRegion = regions.some((r) => r.id === val);
+                      if (isRegion) {
+                        setSelectedRegion(val);
+                        setSelectedCountry("");
+                      } else {
+                        setSelectedCountry(val);
+                        const parent = regions.find((r) => r.countries.some((c) => c.id === val));
+                        setSelectedRegion(parent?.id || "all");
+                      }
+                    }}
+                    className="w-full bg-transparent border-0 pl-12 pr-4 py-4 text-white text-sm font-medium focus:outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="all" className="bg-slate-900">🔍 Search destination or region...</option>
+                    {regions.map((r) => (
+                      <optgroup key={r.id} label={`${r.emoji} ${r.name}`} className="bg-slate-900">
+                        {r.countries.map((c) => (
+                          <option key={c.id} value={c.id} className="bg-slate-900">{c.emoji} {c.name}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Sort */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
-                  Sort by
-                </label>
+                <div className="h-8 w-px bg-slate-700/50" />
+
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-slate-600 rounded-xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 transition-all"
+                  className="bg-slate-700/30 text-slate-300 text-sm font-medium px-4 py-3 rounded-2xl border-0 focus:outline-none appearance-none cursor-pointer hover:bg-slate-700/50 transition-colors"
                 >
-                  <option value="price-low">💰 Price: Low → High</option>
-                  <option value="price-high">💰 Price: High → Low</option>
-                  <option value="data">📊 Most Data</option>
-                  <option value="duration">📅 Longest Duration</option>
+                  <option value="price-low" className="bg-slate-900">Price ↑</option>
+                  <option value="price-high" className="bg-slate-900">Price ↓</option>
+                  <option value="data" className="bg-slate-900">Most Data</option>
+                  <option value="duration" className="bg-slate-900">Longest</option>
                 </select>
               </div>
             </div>
+          </div>
 
-            {/* Row 2: Duration pills */}
-            <div className="mb-4">
-              <label className="block text-xs font-semibold text-slate-400 mb-2.5 uppercase tracking-wider">
-                ⏱️ Duration
-              </label>
-              <div className="flex flex-wrap gap-2">
+          {/* ===== FILTER PILLS ===== */}
+          <div className="flex flex-wrap items-center gap-3 mb-8">
+            {/* Duration */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">⏱️</span>
+              <div className="flex gap-1.5">
                 {DURATION_OPTIONS.map((opt) => (
-                  <motion.button
+                  <FilterChip
                     key={opt.value}
+                    active={selectedDuration === opt.value}
                     onClick={() => setSelectedDuration(selectedDuration === opt.value ? null : opt.value)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`text-sm font-semibold px-4 py-2 rounded-xl transition-all ${
-                      selectedDuration === opt.value
-                        ? "bg-sky-500 text-white shadow-lg shadow-sky-500/30"
-                        : "bg-slate-700/40 text-slate-300 hover:bg-slate-700/70 border border-slate-600/50"
-                    }`}
                   >
                     {opt.label}
-                  </motion.button>
+                  </FilterChip>
                 ))}
               </div>
             </div>
 
-            {/* Row 3: Data pills */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-2.5 uppercase tracking-wider">
-                📶 Data Amount
-              </label>
-              <div className="flex flex-wrap gap-2">
+            <div className="w-px h-6 bg-slate-700/50" />
+
+            {/* Data */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">📶</span>
+              <div className="flex gap-1.5">
                 {DATA_OPTIONS.map((opt) => (
-                  <motion.button
+                  <FilterChip
                     key={opt.label}
+                    active={selectedData?.label === opt.label}
                     onClick={() => setSelectedData(selectedData?.label === opt.label ? null : opt)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`text-sm font-semibold px-4 py-2 rounded-xl transition-all ${
-                      selectedData?.label === opt.label
-                        ? "bg-sky-500 text-white shadow-lg shadow-sky-500/30"
-                        : "bg-slate-700/40 text-slate-300 hover:bg-slate-700/70 border border-slate-600/50"
-                    }`}
                   >
                     {opt.label}
-                  </motion.button>
+                  </FilterChip>
                 ))}
               </div>
             </div>
 
-            {/* Active filters */}
             {hasFilters && (
-              <div className="flex items-center gap-2 mt-5 pt-4 border-t border-slate-700/50">
-                <span className="text-xs text-slate-500">Filters:</span>
-                {selectedCountry && (
-                  <button onClick={() => { setSelectedCountry(""); setSelectedRegion("all"); }} className="bg-sky-500/20 text-sky-400 text-xs px-2.5 py-1 rounded-full hover:bg-sky-500/30 transition-colors">
-                    {regions.flatMap((r) => r.countries).find((c) => c.id === selectedCountry)?.emoji} {selectedCountry} ×
-                  </button>
-                )}
-                {selectedRegion !== "all" && !selectedCountry && (
-                  <button onClick={() => setSelectedRegion("all")} className="bg-sky-500/20 text-sky-400 text-xs px-2.5 py-1 rounded-full hover:bg-sky-500/30 transition-colors">
-                    {regions.find((r) => r.id === selectedRegion)?.emoji} {selectedRegion} ×
-                  </button>
-                )}
-                {selectedDuration && (
-                  <button onClick={() => setSelectedDuration(null)} className="bg-sky-500/20 text-sky-400 text-xs px-2.5 py-1 rounded-full hover:bg-sky-500/30 transition-colors">
-                    {selectedDuration} days ×
-                  </button>
-                )}
-                {selectedData && (
-                  <button onClick={() => setSelectedData(null)} className="bg-sky-500/20 text-sky-400 text-xs px-2.5 py-1 rounded-full hover:bg-sky-500/30 transition-colors">
-                    {selectedData.label} ×
-                  </button>
-                )}
-                <button onClick={clearFilters} className="text-xs text-red-400 hover:text-red-300 font-medium ml-2">
-                  Clear all
-                </button>
-              </div>
+              <>
+                <div className="w-px h-6 bg-slate-700/50" />
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  onClick={clearFilters}
+                  className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1 px-3 py-2 rounded-full bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Reset
+                </motion.button>
+              </>
             )}
           </div>
 
-          {/* Results */}
+          {/* ===== RESULTS BAR ===== */}
           <div className="flex items-center justify-between mb-6">
-            <p className="text-sm text-slate-400">
+            <div>
               {loading ? (
-                <span className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-slate-400 text-sm">
                   <div className="animate-spin w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full" />
-                  Loading...
-                </span>
+                  Finding best plans...
+                </div>
               ) : (
-                <span>{plans.length} plan{plans.length !== 1 ? "s" : ""} available</span>
+                <p className="text-slate-400 text-sm">
+                  <span className="text-white font-bold">{plans.length}</span> plans found
+                  {selectedCountry && (
+                    <span className="ml-2">
+                      for <span className="text-sky-400 font-semibold">{regions.flatMap((r) => r.countries).find((c) => c.id === selectedCountry)?.emoji} {regions.flatMap((r) => r.countries).find((c) => c.id === selectedCountry)?.name}</span>
+                    </span>
+                  )}
+                </p>
               )}
-            </p>
-            {countries.length > 0 && selectedRegion !== "all" && (
-              <div className="flex flex-wrap gap-1.5">
-                {countries.slice(0, 8).map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCountry(selectedCountry === c.id ? "" : c.id)}
-                    className={`text-xs px-2 py-1 rounded-lg transition-all ${
-                      selectedCountry === c.id
-                        ? "bg-sky-500/30 text-sky-300 border border-sky-500/50"
-                        : "bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700/50"
-                    }`}
-                  >
-                    {c.emoji} {c.name}
-                  </button>
-                ))}
-              </div>
-            )}
+            </div>
           </div>
 
-          {/* Grid */}
+          {/* ===== PLANS GRID ===== */}
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-slate-800/50 rounded-2xl p-5 animate-pulse border border-slate-700/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-slate-700 rounded-xl" />
-                    <div className="flex-1">
-                      <div className="h-5 bg-slate-700 rounded mb-2 w-2/3" />
-                      <div className="h-3 bg-slate-700 rounded w-1/3" />
-                    </div>
+                <div key={i} className="bg-slate-800/40 border border-slate-700/30 rounded-3xl p-6 animate-pulse">
+                  <div className="w-16 h-16 bg-slate-700/50 rounded-full mx-auto mb-4" />
+                  <div className="h-5 bg-slate-700/50 rounded mb-2 mx-auto w-24" />
+                  <div className="h-3 bg-slate-700/30 rounded mb-5 mx-auto w-16" />
+                  <div className="flex justify-center gap-6 mb-5">
+                    <div className="h-12 w-12 bg-slate-700/50 rounded" />
+                    <div className="h-12 w-12 bg-slate-700/50 rounded" />
                   </div>
-                  <div className="flex gap-2 mb-4">
-                    <div className="flex-1 h-14 bg-slate-700 rounded-xl" />
-                    <div className="flex-1 h-14 bg-slate-700 rounded-xl" />
-                    <div className="flex-1 h-14 bg-slate-700 rounded-xl" />
-                  </div>
-                  <div className="h-12 bg-slate-700 rounded-xl" />
+                  <div className="h-16 bg-slate-700/30 rounded-2xl" />
                 </div>
               ))}
             </div>
           ) : plans.length === 0 ? (
-            <div className="text-center py-20 bg-slate-800/30 rounded-2xl border border-slate-700/50">
-              <p className="text-5xl mb-4">✈️</p>
-              <h3 className="text-xl font-bold text-white mb-2">No plans match your search</h3>
-              <p className="text-slate-400 mb-6 max-w-md mx-auto">
-                Try a different destination, duration, or data amount to find your perfect eSIM
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-24 bg-slate-800/20 border border-slate-700/30 rounded-3xl"
+            >
+              <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-5">
+                <span className="text-4xl">✈️</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">No plans found</h3>
+              <p className="text-slate-400 max-w-md mx-auto mb-8">
+                We couldn&apos;t find plans matching your filters. Try adjusting your search.
               </p>
-              <button onClick={clearFilters} className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+              <button onClick={clearFilters} className="bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold px-8 py-3 rounded-2xl hover:shadow-lg hover:shadow-sky-500/25 transition-all">
                 Reset Filters
               </button>
-            </div>
+            </motion.div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               <AnimatePresence>
-                {plans.map((plan, index) => (
-                  <PlanCard key={plan.id} plan={plan} index={index} />
+                {plans.map((plan) => (
+                  <PlanCard key={plan.id} plan={plan} />
                 ))}
               </AnimatePresence>
-            </div>
+            </motion.div>
           )}
         </div>
       </main>
