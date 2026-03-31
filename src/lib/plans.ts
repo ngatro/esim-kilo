@@ -140,7 +140,7 @@ export async function getBestPlans(options: {
 
   if (plans.length === 0) return [];
 
-  const scoredPlans = plans.map((plan) => {
+  const scoredPlans = plans.map((plan: typeof plans[number]) => {
     let score = 0;
 
     if (dataNeeded && plan.dataAmount >= dataNeeded) {
