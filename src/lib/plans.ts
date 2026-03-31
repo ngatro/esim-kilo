@@ -176,5 +176,5 @@ export async function getBestPlans(options: {
     return { ...plan, score };
   });
 
-  return scoredPlans.sort((a, b) => b.score - a.score).slice(0, 5);
+  return scoredPlans.sort((a: { score: number }, b: { score: number }) => b.score - a.score).slice(0, 5);
 }
