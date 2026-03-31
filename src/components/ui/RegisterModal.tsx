@@ -105,7 +105,7 @@ export default function RegisterModal() {
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-white">Create Account</h2>
-                <p className="text-slate-400 text-sm mt-1">Join SimPal and stay connected everywhere</p>
+                <p className="text-slate-400 text-sm mt-1">Join OW SIM and stay connected everywhere</p>
               </div>
             </motion.div>
             

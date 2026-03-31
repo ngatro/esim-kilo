@@ -9,13 +9,13 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">📡</span>
+              <span className="text-2xl">🌍</span>
               <span className="text-xl font-bold text-white">
-                Sim<span className="text-sky-400">Pal</span>
+                OW<span className="text-sky-400">SIM</span>
               </span>
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Stay connected anywhere in the world with affordable eSIM data plans for 190+ countries.
+              OpenWorld eSIM — Stay connected anywhere in the world with affordable data plans for 190+ countries.
             </p>
             <div className="mt-4 flex items-center gap-4">
               <a href="#" className="text-slate-500 hover:text-white transition-colors">
@@ -63,7 +63,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-600">
-          <p>&copy; {new Date().getFullYear()} SimPal. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} OpenWorld eSIM — owsim.com. All rights reserved.</p>
           <p>Made for travelers. Powered by global networks.</p>
         </div>
       </div>

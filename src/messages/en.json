@@ -135,9 +135,9 @@
     "checkList": "Check full compatibility list"
   },
   "comparison": {
-    "title": "Why Choose SimPal?",
-    "subtitle": "Compare SimPal with traditional roaming and see how much you can save",
-    "simpal": "SimPal eSIM",
+    "title": "Why Choose OW SIM?",
+    "subtitle": "Compare OW SIM with traditional roaming and see how much you can save",
+    "ow-sim": "OW SIM eSIM",
     "roaming": "Traditional Roaming",
     "local": "Local SIM Cards",
     "features": {
@@ -170,7 +170,7 @@
     "savings": "Savings"
   },
   "whyChoose": {
-    "title": "Why Choose SimPal?",
+    "title": "Why Choose OW SIM?",
     "subtitle": "We're revolutionizing how travelers stay connected abroad",
     "features": {
       "instant": {
@@ -201,7 +201,7 @@
   },
   "faq": {
     "title": "Frequently Asked Questions",
-    "subtitle": "Everything you need to know about SimPal eSIM",
+    "subtitle": "Everything you need to know about OW SIM eSIM",
     "questions": {
       "whatIsEsim": "What is an eSIM?",
       "whatIsEsimAns": "An eSIM (embedded SIM) is a digital SIM that allows you to activate a cellular plan without using a physical SIM card. It's built into your device and can be programmed remotely.",
@@ -210,7 +210,7 @@
       "activationTime": "How long does eSIM activation take?",
       "activationTimeAns": "Once you receive your QR code via email, activation takes just 5-10 minutes. Simply scan the QR code in your phone's settings and your data will be ready to use.",
       "keepOriginal": "Can I keep my original SIM card?",
-      "keepOriginalAns": "Yes! eSIM works alongside your physical SIM. You can have two phone numbers or use your regular number for calls/texts while using SimPal for data.",
+      "keepOriginalAns": "Yes! eSIM works alongside your physical SIM. You can have two phone numbers or use your regular number for calls/texts while using OW SIM for data.",
       "runOutData": "What happens if I run out of data?",
       "runOutDataAns": "You can purchase additional data top-ups anytime through our app or website. The process is instant and you'll be back online immediately.",
       "refund": "How do I get a refund?",
@@ -228,7 +228,7 @@
   },
   "testimonials": {
     "title": "What Travelers Say",
-    "subtitle": "Join hundreds of thousands of happy travelers who stay connected with SimPal"
+    "subtitle": "Join hundreds of thousands of happy travelers who stay connected with OW SIM"
   },
   "partners": {
     "title": "Trusted Networks Worldwide",

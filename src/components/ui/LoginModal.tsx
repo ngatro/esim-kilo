@@ -91,7 +91,7 @@ export default function LoginModal() {
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
-                <p className="text-slate-400 text-sm mt-1">Sign in to continue to SimPal</p>
+                <p className="text-slate-400 text-sm mt-1">Sign in to continue to OW SIM</p>
               </div>
             </motion.div>
             

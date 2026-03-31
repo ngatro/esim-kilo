@@ -13,14 +13,14 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>
               <p className="text-slate-300 leading-relaxed">
-                By accessing and using SimPal&apos;s services, you accept and agree to be bound by the terms and provision of this agreement. Additionally, when using SimPal&apos;s services, you shall be subject to any posted guidelines or rules applicable to such services.
+                By accessing and using OW SIM&apos;s services, you accept and agree to be bound by the terms and provision of this agreement. Additionally, when using OW SIM&apos;s services, you shall be subject to any posted guidelines or rules applicable to such services.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">2. Description of Service</h2>
               <p className="text-slate-300 leading-relaxed">
-                SimPal provides eSIM data plans for international travelers. The service includes access to mobile data in various countries through eSIM technology. We reserve the right to modify or discontinue the service at any time.
+                OW SIM provides eSIM data plans for international travelers. The service includes access to mobile data in various countries through eSIM technology. We reserve the right to modify or discontinue the service at any time.
               </p>
             </section>
 
@@ -48,14 +48,14 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">6. Limitation of Liability</h2>
               <p className="text-slate-300 leading-relaxed">
-                SimPal shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.
+                OW SIM shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">7. Contact Information</h2>
               <p className="text-slate-300 leading-relaxed">
-                If you have any questions about these Terms of Service, please contact us at support@simpal.com
+                If you have any questions about these Terms of Service, please contact us at support@ow-sim.com
               </p>
             </section>
           </div>

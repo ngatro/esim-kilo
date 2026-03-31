@@ -87,9 +87,9 @@ function Comparison() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Why Choose SimPal?</h2>
+            <h2 className="text-4xl font-bold text-white mb-4">Why Choose OW SIM?</h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Compare SimPal with traditional roaming and see how much you can save
+              Compare OW SIM with traditional roaming and see how much you can save
             </p>
           </div>
         </FadeIn>
@@ -100,7 +100,7 @@ function Comparison() {
               className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8"
               whileHover={{ y: -5 }}
             >
-              <h3 className="text-xl font-bold text-white mb-6">SimPal eSIM</h3>
+              <h3 className="text-xl font-bold text-white mb-6">OW SIM eSIM</h3>
               <ul className="space-y-4">
                 {[
                   "Up to 80% cheaper",
@@ -248,7 +248,7 @@ function Testimonials() {
     {
       name: "Sarah M.",
       location: "United States",
-      text: "SimPal made my Japan trip so much easier! Got a 10GB plan for $14 and had data the whole time. Setup took less than 5 minutes.",
+      text: "OW SIM made my Japan trip so much easier! Got a 10GB plan for $14 and had data the whole time. Setup took less than 5 minutes.",
       rating: 5,
       flag: "🇺🇸"
     },
@@ -269,7 +269,7 @@ function Testimonials() {
     {
       name: "Lisa Chen",
       location: "Australia",
-      text: "Perfect for digital nomads! I've used SimPal in over 20 countries. The coverage is amazing and prices are unbeatable.",
+      text: "Perfect for digital nomads! I've used OW SIM in over 20 countries. The coverage is amazing and prices are unbeatable.",
       rating: 5,
       flag: "🇦🇺"
     },
@@ -461,7 +461,7 @@ function FAQ() {
     },
     {
       q: "Can I keep my original SIM card?",
-      a: "Yes! eSIM works alongside your physical SIM. You can have two phone numbers or use your regular number for calls/texts while using SimPal for data."
+      a: "Yes! eSIM works alongside your physical SIM. You can have two phone numbers or use your regular number for calls/texts while using OW SIM for data."
     },
     {
       q: "What happens if I run out of data?",

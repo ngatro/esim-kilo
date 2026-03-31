@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SimPal — Travel eSIM Marketplace",
-  description: "Stay connected worldwide. Browse and activate affordable eSIM data plans for 190+ countries.",
+  title: "OW SIM — OpenWorld eSIM | Stay Connected Anywhere",
+  description: "Affordable eSIM data plans for international travel. Instant activation in 190+ countries. No roaming fees, no contracts.",
 };
 
 export default function RootLayout({

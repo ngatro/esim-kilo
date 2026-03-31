@@ -9,7 +9,7 @@ export default function Testimonials() {
     {
       name: "Sarah M.",
       location: "United States",
-      text: "SimPal made my Japan trip so much easier! Got a 10GB plan for $14 and had data the whole time. Setup took less than 5 minutes.",
+      text: "OW SIM made my Japan trip so much easier! Got a 10GB plan for $14 and had data the whole time. Setup took less than 5 minutes.",
       rating: 5,
       flag: "🇺🇸"
     },

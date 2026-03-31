@@ -13,7 +13,7 @@ export default function RefundPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">1. General Policy</h2>
               <p className="text-slate-300 leading-relaxed">
-                At SimPal, we want you to be completely satisfied with your purchase. If you&apos;re not satisfied with your eSIM plan, we offer a refund policy as outlined below.
+                At OW SIM, we want you to be completely satisfied with your purchase. If you&apos;re not satisfied with your eSIM plan, we offer a refund policy as outlined below.
               </p>
             </section>
 
@@ -47,7 +47,7 @@ export default function RefundPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">4. How to Request a Refund</h2>
               <p className="text-slate-300 leading-relaxed">
-                To request a refund, please contact our support team at support@simpal.com with your order number and reason for the refund request. Our team will review your request within 3-5 business days.
+                To request a refund, please contact our support team at support@ow-sim.com with your order number and reason for the refund request. Our team will review your request within 3-5 business days.
               </p>
             </section>
 
@@ -68,7 +68,7 @@ export default function RefundPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">7. Contact Us</h2>
               <p className="text-slate-300 leading-relaxed">
-                If you have any questions about our Refund Policy, please contact us at support@simpal.com
+                If you have any questions about our Refund Policy, please contact us at support@ow-sim.com
               </p>
             </section>
           </div>

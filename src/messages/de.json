@@ -110,9 +110,9 @@
     "notSupported": "Nicht unterstützt"
   },
   "comparison": {
-    "title": "Warum SimPal wählen?",
-    "subtitle": "Vergleichen Sie SimPal mit traditionellem Roaming und sehen Sie, wie viel Sie sparen können",
-    "simpal": "SimPal eSIM",
+    "title": "Warum OW SIM wählen?",
+    "subtitle": "Vergleichen Sie OW SIM mit traditionellem Roaming und sehen Sie, wie viel Sie sparen können",
+    "ow-sim": "OW SIM eSIM",
     "roaming": "Traditionelles Roaming",
     "local": "Lokale SIM-Karten"
   },
@@ -126,7 +126,7 @@
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
-    "subtitle": "Alles, was Sie über SimPal eSIM wissen müssen"
+    "subtitle": "Alles, was Sie über OW SIM eSIM wissen müssen"
   },
   "cta": {
     "title": "Bereit zum Verbinden?",

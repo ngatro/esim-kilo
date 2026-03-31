@@ -13,7 +13,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">1. Introduction</h2>
               <p className="text-slate-300 leading-relaxed">
-                At SimPal, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our eSIM data services.
+                At OW SIM, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our eSIM data services.
               </p>
             </section>
 
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">7. Contact Us</h2>
               <p className="text-slate-300 leading-relaxed">
-                If you have any questions about this Privacy Policy, please contact us at privacy@simpal.com
+                If you have any questions about this Privacy Policy, please contact us at privacy@ow-sim.com
               </p>
             </section>
           </div>

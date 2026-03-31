@@ -135,9 +135,9 @@
     "checkList": "Xem danh sách tương thích đầy đủ"
   },
   "comparison": {
-    "title": "Tại sao chọn SimPal?",
-    "subtitle": "So sánh SimPal với roaming truyền thống và xem bạn có thể tiết kiệm bao nhiêu",
-    "simpal": "eSIM SimPal",
+    "title": "Tại sao chọn OW SIM?",
+    "subtitle": "So sánh OW SIM với roaming truyền thống và xem bạn có thể tiết kiệm bao nhiêu",
+    "ow-sim": "eSIM OW SIM",
     "roaming": "Roaming truyền thống",
     "local": "SIM địa phương",
     "features": {
@@ -170,7 +170,7 @@
     "savings": "Tiết kiệm"
   },
   "whyChoose": {
-    "title": "Tại sao chọn SimPal?",
+    "title": "Tại sao chọn OW SIM?",
     "subtitle": "Chúng tôi đang cách mạng hóa cách du khách kết nối khi ở nước ngoài",
     "features": {
       "instant": {
@@ -201,7 +201,7 @@
   },
   "faq": {
     "title": "Câu hỏi thường gặp",
-    "subtitle": "Tất cả những gì bạn cần biết về eSIM SimPal",
+    "subtitle": "Tất cả những gì bạn cần biết về eSIM OW SIM",
     "questions": {
       "whatIsEsim": "eSIM là gì?",
       "whatIsEsimAns": "eSIM (SIM nhúng) là SIM kỹ thuật số cho phép bạn kích hoạt gói di động mà không cần SIM vật lý. Nó được tích hợp sẵn trong thiết bị và có thể được lập trình từ xa.",
@@ -210,7 +210,7 @@
       "activationTime": "Kích hoạt eSIM mất bao lâu?",
       "activationTimeAns": "Sau khi nhận mã QR qua email, kích hoạt chỉ mất 5-10 phút. Chỉ cần quét mã QR trong cài đặt điện thoại và dữ liệu của bạn đã sẵn sàng sử dụng.",
       "keepOriginal": "Tôi có thể giữ SIM gốc không?",
-      "keepOriginalAns": "Có! eSIM hoạt động cùng với SIM vật lý. Bạn có thể có hai số điện thoại hoặc sử dụng số thường cho cuộc gọi/tin nhắn trong khi dùng SimPal cho dữ liệu.",
+      "keepOriginalAns": "Có! eSIM hoạt động cùng với SIM vật lý. Bạn có thể có hai số điện thoại hoặc sử dụng số thường cho cuộc gọi/tin nhắn trong khi dùng OW SIM cho dữ liệu.",
       "runOutData": "Chuyện gì xảy ra nếu hết dữ liệu?",
       "runOutDataAns": "Bạn có thể mua thêm dữ liệu bất kỳ lúc nào qua ứng dụng hoặc website của chúng tôi. Quá trình tức thì và bạn sẽ trực tuyến ngay lập tức.",
       "refund": "Làm sao để hoàn tiền?",
@@ -228,7 +228,7 @@
   },
   "testimonials": {
     "title": "Du khách nói gì",
-    "subtitle": "Tham gia cùng hàng trăm ngàn du khách hài lòng với SimPal"
+    "subtitle": "Tham gia cùng hàng trăm ngàn du khách hài lòng với OW SIM"
   },
   "partners": {
     "title": "Mạng đáng tin cậy trên toàn thế giới",

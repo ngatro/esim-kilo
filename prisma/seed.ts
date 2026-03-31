@@ -93,7 +93,7 @@ async function main() {
   await prisma.setting.upsert({
     where: { key: "site_name" },
     update: {},
-    create: { key: "site_name", value: "SimPal eSIM" },
+    create: { key: "site_name", value: "OW SIM - OpenWorld eSIM" },
   });
   await prisma.setting.upsert({
     where: { key: "site_tagline" },

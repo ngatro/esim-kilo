@@ -110,9 +110,9 @@
     "notSupported": "Non pris en charge"
   },
   "comparison": {
-    "title": "Pourquoi choisir SimPal?",
-    "subtitle": "Comparez SimPal avec l'itinérance traditionnelle et voyez combien vous pouvez économisez",
-    "simpal": "eSIM SimPal",
+    "title": "Pourquoi choisir OW SIM?",
+    "subtitle": "Comparez OW SIM avec l'itinérance traditionnelle et voyez combien vous pouvez économisez",
+    "ow-sim": "eSIM OW SIM",
     "roaming": "Itinérance traditionnelle",
     "local": "SIM locales"
   },
@@ -126,7 +126,7 @@
   },
   "faq": {
     "title": "Questions fréquemment posées",
-    "subtitle": "Tout ce que vous devez savoir sur l'eSIM SimPal"
+    "subtitle": "Tout ce que vous devez savoir sur l'eSIM OW SIM"
   },
   "cta": {
     "title": "Prêt à rester connecté?",
