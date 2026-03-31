@@ -21,7 +21,7 @@ model User {
 }
 
 model Region {
-  id        String   @id
+  id        String    @id
   name      String
   emoji     String
   countries Country[]
@@ -42,21 +42,41 @@ model Country {
 model Plan {
   id              String   @id
   name            String
+  slug            String?
+  packageCode     String   @unique
+  description     String?
   destination     String
+  
   regionId        String?
   countryId       String?
   region          Region?  @relation(fields: [regionId], references: [id])
   country         Country? @relation(fields: [countryId], references: [id])
   
-  dataAmount      Int
-  validityDays    Int
-  priceUsd        Float
-  costUsd         Float?
+  dataType        Int      @default(1)     // 1 = Fixed, 2 = Day Pass
+  dataVolume      BigInt   @default(0)     // bytes from API
+  dataAmount      Int      @default(0)     // GB converted
+  durationDays    Int      @default(30)
+  durationUnit    String   @default("DAY")
   
-  coverageCountries Int    @default(1)
-  networkType     String?
-  speeds          Json?
-  features        Json?
+  priceRaw        Int      @default(0)     // price in smallest unit (cents * 10)
+  priceUsd        Float    @default(0)     // priceUsd = priceRaw / 1000
+  currencyCode    String   @default("USD")
+  
+  speed           String?                  // "3G/4G/5G"
+  networkType     String?                  // extracted from speed
+  
+  locationCode    String?                  // "JP", "AUKUS-3", "!GL", "!RG"
+  locations       Json?                    // ["JP"] or ["AU","GB","US"]
+  coverageCount   Int      @default(1)
+  
+  smsStatus       Int      @default(0)
+  activeType      Int      @default(1)
+  supportTopUp    Boolean  @default(false)
+  unusedValidTime Int      @default(0)
+  ipExport        String?
+  fupPolicy       String?
+  
+  locationNetworkList Json?  // full network operator data from API
   
   isActive        Boolean  @default(true)
   isPopular       Boolean  @default(false)
@@ -65,9 +85,7 @@ model Plan {
   badge           String?
   priority        Int      @default(0)
   
-  esimaccessPackageName  String?
-  esimaccessPackageCode  String?
-  esimaccessRawData      Json?
+  rawApiData      Json?    // full raw response from eSIM Access
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -75,18 +93,20 @@ model Plan {
   orderItems      OrderItem[]
 
   @@index([regionId])
+  @@index([countryId])
   @@index([isActive])
-  @@index([isPopular])
+  @@index([dataType])
+  @@index([locationCode])
 }
 
 model Order {
-  id          Int         @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   userId      Int?
-  user        User?       @relation(fields: [userId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
   
   totalAmount Float
-  currency    String      @default("USD")
-  status      String      @default("pending")
+  currency    String   @default("USD")
+  status      String   @default("pending")
   
   customerName    String?
   customerEmail   String?
@@ -94,30 +114,30 @@ model Order {
   esimaccessOrderId     String?
   esimaccessOrderStatus String?
   
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  orderItems OrderItem[]
+  orderItems  OrderItem[]
 
   @@index([userId])
   @@index([status])
 }
 
 model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  planId    String?
-  plan      Plan?   @relation(fields: [planId], references: [id])
+  id              Int     @id @default(autoincrement())
+  orderId         Int
+  order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  planId          String?
+  plan            Plan?   @relation(fields: [planId], references: [id])
   
-  planName    String
-  quantity    Int     @default(1)
-  price       Float
+  planName        String
+  quantity        Int     @default(1)
+  price           Float
   
-  esimIccid   String?
-  esimQrCode  String?
-  esimQrImage String?
-  activationCode String?
+  esimIccid       String?
+  esimQrCode      String?
+  esimQrImage     String?
+  activationCode  String?
 }
 
 model CartItem {

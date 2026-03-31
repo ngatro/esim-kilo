@@ -68,10 +68,10 @@ export async function POST(request: Request) {
         where: { id: orderItem.planId || "" },
       });
 
-      if (plan?.esimaccessPackageCode) {
+      if (plan?.packageCode) {
         try {
           const esimOrder = await createOrder({
-            packageCode: plan.esimaccessPackageCode,
+            packageCode: plan.packageCode,
             count: orderItem.quantity,
           });
 
