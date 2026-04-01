@@ -38,6 +38,37 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paypal");
   const [success, setSuccess] = useState<{ orderId: number; qrCode?: string; activationCode?: string } | null>(null);
 
+  // Handle PayPal success redirect
+  useEffect(() => {
+    const paypalSuccess = searchParams.get("success");
+    const paypalOrderId = searchParams.get("token"); // PayPal sends order ID as 'token'
+
+    if (paypalSuccess === "true" && paypalOrderId && planId) {
+      setProcessing(true);
+      // Confirm payment and create order
+      fetch("/api/payment/paypal/webhook", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: paypalOrderId, planId }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success && data.order) {
+            const item = data.order.orderItems?.[0];
+            setSuccess({
+              orderId: data.order.id,
+              qrCode: item?.esimQrCode || item?.esimQrImage || data.esim?.qrcodeUrl,
+              activationCode: item?.activationCode || data.esim?.activationCode,
+            });
+          } else {
+            setError(data.error || "Payment confirmation failed");
+          }
+        })
+        .catch(() => setError("Payment confirmation failed"))
+        .finally(() => setProcessing(false));
+    }
+  }, [searchParams, planId]);
+
   useEffect(() => {
     if (planId) {
       fetch(`/api/plans?id=${planId}`)
