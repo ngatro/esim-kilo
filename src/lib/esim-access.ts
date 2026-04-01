@@ -35,23 +35,23 @@ interface EsimPackage {
   locationNetworkList: LocationNetwork[];
 }
 
-interface PackageListResponse {
+interface EsimAccessResponse {
   success: boolean;
   message?: string;
+  obj?: unknown;
+}
+
+interface PackageListObj {
   packageList: EsimPackage[];
   total: number;
 }
 
-interface BalanceResponse {
-  success: boolean;
-  message?: string;
+interface BalanceObj {
   balance: number;
   currency: string;
 }
 
-interface OrderResponse {
-  success: boolean;
-  message?: string;
+interface OrderObj {
   orderNo: string;
   orderStatus: string;
   iccid: string;
@@ -74,7 +74,7 @@ function getSecretKey(): string {
   return key;
 }
 
-async function esimAccessPost<T>(endpoint: string, body: Record<string, unknown> = {}): Promise<T> {
+async function esimAccessPost(endpoint: string, body: Record<string, unknown> = {}): Promise<EsimAccessResponse> {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: "POST",
     headers: {
@@ -89,12 +89,13 @@ async function esimAccessPost<T>(endpoint: string, body: Record<string, unknown>
     throw new Error(`eSIM Access API: ${res.status} ${res.statusText}`);
   }
 
-  const data = await res.json();
-  return data as T;
+  return res.json() as Promise<EsimAccessResponse>;
 }
 
-export async function getBalance(): Promise<BalanceResponse> {
-  return esimAccessPost<BalanceResponse>("/balance/query");
+export async function getBalance(): Promise<BalanceObj> {
+  const res = await esimAccessPost("/balance/query");
+  if (!res.success || !res.obj) throw new Error(res.message || "Failed");
+  return res.obj as BalanceObj;
 }
 
 export async function getPackageList(params: {
@@ -103,7 +104,7 @@ export async function getPackageList(params: {
   slug?: string;
   packageCode?: string;
   iccid?: string;
-}): Promise<PackageListResponse> {
+}): Promise<PackageListObj> {
   const body: Record<string, unknown> = {};
   if (params.locationCode) body.locationCode = params.locationCode;
   if (params.type) body.type = params.type;
@@ -111,25 +112,38 @@ export async function getPackageList(params: {
   if (params.packageCode) body.packageCode = params.packageCode;
   if (params.iccid) body.iccid = params.iccid;
 
-  return esimAccessPost<PackageListResponse>("/package/list", body);
+  const res = await esimAccessPost("/package/list", body);
+
+  if (!res.success || !res.obj) throw new Error(res.message || "Failed");
+
+  const obj = res.obj as PackageListObj;
+  return {
+    packageList: obj.packageList || [],
+    total: obj.total || 0,
+  };
 }
 
 export async function createOrder(params: {
   packageCode: string;
   count?: number;
-}): Promise<OrderResponse> {
-  return esimAccessPost<OrderResponse>("/order/create", {
+}): Promise<OrderObj> {
+  const res = await esimAccessPost("/order/create", {
     packageCode: params.packageCode,
     count: params.count || 1,
   });
+  if (!res.success || !res.obj) throw new Error(res.message || "Failed");
+  return res.obj as OrderObj;
 }
 
-export async function queryOrder(orderNo: string): Promise<OrderResponse> {
-  return esimAccessPost<OrderResponse>("/order/query", { orderNo });
+export async function queryOrder(orderNo: string): Promise<OrderObj> {
+  const res = await esimAccessPost("/order/query", { orderNo });
+  if (!res.success || !res.obj) throw new Error(res.message || "Failed");
+  return res.obj as OrderObj;
 }
 
-export async function refundOrder(orderNo: string): Promise<{ success: boolean; message?: string }> {
-  return esimAccessPost("/order/refund", { orderNo });
+export async function refundOrder(orderNo: string): Promise<boolean> {
+  const res = await esimAccessPost("/order/refund", { orderNo });
+  return res.success;
 }
 
-export type { EsimPackage, OrderResponse, BalanceResponse, LocationNetwork, PackageListResponse };
+export type { EsimPackage, OrderObj, BalanceObj, LocationNetwork, PackageListObj };
