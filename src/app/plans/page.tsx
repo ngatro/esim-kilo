@@ -28,8 +28,10 @@ interface Plan {
   isBestSeller: boolean;
   isHot: boolean;
   badge: string | null;
-  region: { id: string; name: string; emoji: string } | null;
-  country: { id: string; name: string; emoji: string } | null;
+  regionId: string | null;
+  regionName: string | null;
+  countryId: string | null;
+  countryName: string | null;
 }
 
 interface Region {
@@ -86,11 +88,11 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
         {/* Header */}
         <div className="mb-3">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xl sm:text-2xl">{plan.country?.emoji || plan.region?.emoji || (plan.coverageCount > 1 ? "🌍" : "📱")}</span>
+            <span className="text-xl sm:text-2xl">{plan.countryId ? "🏳️" : plan.coverageCount > 1 ? "🌍" : "📱"}</span>
             <h3 className="text-base sm:text-lg font-semibold text-white truncate">{plan.destination}</h3>
           </div>
           <p className="text-slate-500 text-xs">
-            {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.country?.name || plan.destination}
+            {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.countryName || plan.destination}
             {plan.speed && ` · ${plan.speed}`}
           </p>
         </div>

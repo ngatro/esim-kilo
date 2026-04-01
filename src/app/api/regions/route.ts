@@ -4,17 +4,20 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const regions = await prisma.region.findMany({
-      include: {
-        countries: true,
-        _count: {
-          select: { plans: { where: { isActive: true } } },
-        },
-      },
+      include: { countries: true },
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({ regions });
+    // Count plans per region
+    const regionsWithCount = await Promise.all(
+      regions.map(async (r) => ({
+        ...r,
+        planCount: await prisma.plan.count({ where: { regionId: r.id, isActive: true } }),
+      }))
+    );
+
+    return NextResponse.json({ regions: regionsWithCount });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to get regions" }, { status: 500 });
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }

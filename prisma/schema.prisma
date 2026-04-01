@@ -21,11 +21,10 @@ model User {
 }
 
 model Region {
-  id        String    @id
+  id        String   @id
   name      String
   emoji     String
   countries Country[]
-  plans     Plan[]
 }
 
 model Country {
@@ -35,7 +34,6 @@ model Country {
   emoji     String
   regionId  String
   region    Region   @relation(fields: [regionId], references: [id])
-  plans     Plan[]
   createdAt DateTime @default(now())
 }
 
@@ -47,26 +45,26 @@ model Plan {
   description     String?
   destination     String
   
-  regionId        String?
-  countryId       String?
-  region          Region?  @relation(fields: [regionId], references: [id])
-  country         Country? @relation(fields: [countryId], references: [id])
+  regionId        String?   // "europe", "asia", "americas", etc - no FK
+  countryId       String?   // "JP", "US", etc - no FK
+  regionName      String?   // "Europe", "Asia" - for display
+  countryName     String?   // "Japan", "United States" - for display
   
-  dataType        Int      @default(1)     // 1 = Fixed, 2 = Day Pass
-  dataVolume      BigInt   @default(0)     // bytes from API
-  dataAmount      Int      @default(0)     // GB converted
+  dataType        Int      @default(1)
+  dataVolume      BigInt   @default(0)
+  dataAmount      Int      @default(0)
   durationDays    Int      @default(30)
   durationUnit    String   @default("DAY")
   
-  priceRaw        Int      @default(0)     // price in smallest unit (cents * 10)
-  priceUsd        Float    @default(0)     // priceUsd = priceRaw / 1000
+  priceRaw        Int      @default(0)
+  priceUsd        Float    @default(0)
   currencyCode    String   @default("USD")
   
-  speed           String?                  // "3G/4G/5G"
-  networkType     String?                  // extracted from speed
+  speed           String?
+  networkType     String?
   
-  locationCode    String?                  // "JP", "AUKUS-3", "!GL", "!RG"
-  locations       Json?                    // ["JP"] or ["AU","GB","US"]
+  locationCode    String?
+  locations       Json?
   coverageCount   Int      @default(1)
   
   smsStatus       Int      @default(0)
@@ -76,7 +74,7 @@ model Plan {
   ipExport        String?
   fupPolicy       String?
   
-  locationNetworkList Json?  // full network operator data from API
+  locationNetworkList Json?
   
   isActive        Boolean  @default(true)
   isPopular       Boolean  @default(false)
@@ -85,7 +83,7 @@ model Plan {
   badge           String?
   priority        Int      @default(0)
   
-  rawApiData      Json?    // full raw response from eSIM Access
+  rawApiData      Json?
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

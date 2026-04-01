@@ -7,10 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const plan = await prisma.plan.findUnique({
-      where: { id },
-      include: { region: true, country: true },
-    });
+    const plan = await prisma.plan.findUnique({ where: { id } });
 
     if (!plan) {
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });

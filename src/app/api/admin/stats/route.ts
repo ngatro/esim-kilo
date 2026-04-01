@@ -9,11 +9,7 @@ export async function GET() {
       prisma.order.count(),
       prisma.plan.count(),
       prisma.plan.count({ where: { isActive: true } }),
-      prisma.order.findMany({
-        take: 10,
-        orderBy: { createdAt: "desc" },
-        include: { orderItems: true },
-      }),
+      prisma.order.findMany({ take: 10, orderBy: { createdAt: "desc" }, include: { orderItems: true } }),
       getBalance().catch(() => ({ balance: 0, currency: "USD" })),
     ]);
 
@@ -22,13 +18,15 @@ export async function GET() {
       _sum: { totalAmount: true },
     });
 
-    const regions = await prisma.region.findMany({
-      include: {
-        _count: {
-          select: { plans: { where: { isActive: true } } },
-        },
-      },
-    });
+    const regions = await prisma.region.findMany({ include: { countries: true } });
+
+    // Count plans per region
+    const regionsWithCount = await Promise.all(
+      regions.map(async (r) => ({
+        ...r,
+        planCount: await prisma.plan.count({ where: { regionId: r.id, isActive: true } }),
+      }))
+    );
 
     return NextResponse.json({
       stats: {
@@ -41,10 +39,10 @@ export async function GET() {
         currency: balance.currency,
       },
       recentOrders,
-      regions,
+      regions: regionsWithCount,
     });
   } catch (error) {
     console.error("Admin stats error:", error);
-    return NextResponse.json({ error: "Failed to get stats" }, { status: 500 });
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }

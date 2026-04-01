@@ -6,95 +6,90 @@ function bytesToGB(bytes: number): number {
   return Math.round((bytes / (1024 * 1024 * 1024)) * 10) / 10;
 }
 
-// Region mapping based on country code
-const COUNTRY_TO_REGION: Record<string, string> = {
-  // Europe
-  FR: "europe", DE: "europe", IT: "europe", ES: "europe", GB: "europe",
-  NL: "europe", BE: "europe", AT: "europe", PT: "europe", GR: "europe",
-  PL: "europe", CH: "europe", SE: "europe", NO: "europe", DK: "europe",
-  FI: "europe", IE: "europe", CZ: "europe", HU: "europe", RO: "europe",
-  RU: "europe", UA: "europe", TR: "europe", HR: "europe", BG: "europe",
-  SK: "europe", SI: "europe", EE: "europe", LV: "europe", LT: "europe",
-  LU: "europe", MT: "europe", CY: "europe", IS: "europe", AL: "europe",
-  MK: "europe", ME: "europe", RS: "europe", BA: "europe", MD: "europe",
-  BY: "europe", GE: "europe", AM: "europe", AZ: "europe",
-  // Asia
-  JP: "asia", KR: "asia", CN: "asia", TH: "asia", VN: "asia",
-  SG: "asia", MY: "asia", ID: "asia", PH: "asia", TW: "asia",
-  HK: "asia", IN: "asia", PK: "asia", BD: "asia", LK: "asia",
-  KH: "asia", LA: "asia", MM: "asia", NP: "asia",
-  // Americas
-  US: "americas", CA: "americas", MX: "americas", BR: "americas",
-  AR: "americas", CO: "americas", CL: "americas", PE: "americas",
-  VE: "americas", EC: "americas", BO: "americas", UY: "americas",
-  PY: "americas", CR: "americas", PA: "americas", DO: "americas",
-  GT: "americas", HN: "americas", SV: "americas", NI: "americas",
-  CU: "americas", JM: "americas", TT: "americas",
-  // Middle East
-  AE: "middle-east", SA: "middle-east", QA: "middle-east", KW: "middle-east",
-  BH: "middle-east", OM: "middle-east", IL: "middle-east", JO: "middle-east",
-  LB: "middle-east", IQ: "middle-east", IR: "middle-east",
-  // Africa
-  ZA: "africa", EG: "africa", NG: "africa", KE: "africa", MA: "africa",
-  TZ: "africa", GH: "africa", ET: "africa", UG: "africa", DZ: "africa",
-  TN: "africa", AO: "africa", MZ: "africa", RW: "africa", SN: "africa",
-  // Oceania
-  AU: "oceania", NZ: "oceania", FJ: "oceania",
+const COUNTRY_TO_REGION: Record<string, { regionId: string; regionName: string; countryName: string }> = {
+  FR: { regionId: "europe", regionName: "Europe", countryName: "France" },
+  DE: { regionId: "europe", regionName: "Europe", countryName: "Germany" },
+  IT: { regionId: "europe", regionName: "Europe", countryName: "Italy" },
+  ES: { regionId: "europe", regionName: "Europe", countryName: "Spain" },
+  GB: { regionId: "europe", regionName: "Europe", countryName: "United Kingdom" },
+  NL: { regionId: "europe", regionName: "Europe", countryName: "Netherlands" },
+  BE: { regionId: "europe", regionName: "Europe", countryName: "Belgium" },
+  AT: { regionId: "europe", regionName: "Europe", countryName: "Austria" },
+  PT: { regionId: "europe", regionName: "Europe", countryName: "Portugal" },
+  GR: { regionId: "europe", regionName: "Europe", countryName: "Greece" },
+  PL: { regionId: "europe", regionName: "Europe", countryName: "Poland" },
+  CH: { regionId: "europe", regionName: "Europe", countryName: "Switzerland" },
+  SE: { regionId: "europe", regionName: "Europe", countryName: "Sweden" },
+  NO: { regionId: "europe", regionName: "Europe", countryName: "Norway" },
+  DK: { regionId: "europe", regionName: "Europe", countryName: "Denmark" },
+  FI: { regionId: "europe", regionName: "Europe", countryName: "Finland" },
+  IE: { regionId: "europe", regionName: "Europe", countryName: "Ireland" },
+  CZ: { regionId: "europe", regionName: "Europe", countryName: "Czech Republic" },
+  HU: { regionId: "europe", regionName: "Europe", countryName: "Hungary" },
+  RO: { regionId: "europe", regionName: "Europe", countryName: "Romania" },
+  RU: { regionId: "europe", regionName: "Europe", countryName: "Russia" },
+  UA: { regionId: "europe", regionName: "Europe", countryName: "Ukraine" },
+  TR: { regionId: "europe", regionName: "Europe", countryName: "Turkey" },
+  JP: { regionId: "asia", regionName: "Asia", countryName: "Japan" },
+  KR: { regionId: "asia", regionName: "Asia", countryName: "South Korea" },
+  CN: { regionId: "asia", regionName: "Asia", countryName: "China" },
+  TH: { regionId: "asia", regionName: "Asia", countryName: "Thailand" },
+  VN: { regionId: "asia", regionName: "Asia", countryName: "Vietnam" },
+  SG: { regionId: "asia", regionName: "Asia", countryName: "Singapore" },
+  MY: { regionId: "asia", regionName: "Asia", countryName: "Malaysia" },
+  ID: { regionId: "asia", regionName: "Asia", countryName: "Indonesia" },
+  PH: { regionId: "asia", regionName: "Asia", countryName: "Philippines" },
+  TW: { regionId: "asia", regionName: "Asia", countryName: "Taiwan" },
+  HK: { regionId: "asia", regionName: "Asia", countryName: "Hong Kong" },
+  IN: { regionId: "asia", regionName: "Asia", countryName: "India" },
+  US: { regionId: "americas", regionName: "Americas", countryName: "United States" },
+  CA: { regionId: "americas", regionName: "Americas", countryName: "Canada" },
+  MX: { regionId: "americas", regionName: "Americas", countryName: "Mexico" },
+  BR: { regionId: "americas", regionName: "Americas", countryName: "Brazil" },
+  AR: { regionId: "americas", regionName: "Americas", countryName: "Argentina" },
+  CO: { regionId: "americas", regionName: "Americas", countryName: "Colombia" },
+  CL: { regionId: "americas", regionName: "Americas", countryName: "Chile" },
+  PE: { regionId: "americas", regionName: "Americas", countryName: "Peru" },
+  AE: { regionId: "middle-east", regionName: "Middle East", countryName: "UAE" },
+  SA: { regionId: "middle-east", regionName: "Middle East", countryName: "Saudi Arabia" },
+  QA: { regionId: "middle-east", regionName: "Middle East", countryName: "Qatar" },
+  KW: { regionId: "middle-east", regionName: "Middle East", countryName: "Kuwait" },
+  BH: { regionId: "middle-east", regionName: "Middle East", countryName: "Bahrain" },
+  IL: { regionId: "middle-east", regionName: "Middle East", countryName: "Israel" },
+  ZA: { regionId: "africa", regionName: "Africa", countryName: "South Africa" },
+  EG: { regionId: "africa", regionName: "Africa", countryName: "Egypt" },
+  NG: { regionId: "africa", regionName: "Africa", countryName: "Nigeria" },
+  KE: { regionId: "africa", regionName: "Africa", countryName: "Kenya" },
+  MA: { regionId: "africa", regionName: "Africa", countryName: "Morocco" },
+  AU: { regionId: "oceania", regionName: "Oceania", countryName: "Australia" },
+  NZ: { regionId: "oceania", regionName: "Oceania", countryName: "New Zealand" },
 };
 
-function resolveRegion(pkg: Record<string, unknown>): { regionId: string | null; countryId: string | null; destination: string } {
+function resolveLocation(pkg: Record<string, unknown>) {
   const locationCode = (pkg.locationCode as string) || "";
-  const locations = ((pkg.location as string) || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+  const pkgName = (pkg.name as string) || "";
+  const locations = ((pkg.location as string) || "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
 
-  // Global package
-  if (locationCode === "!GL" || locationCode.toUpperCase() === "GLOBAL") {
-    return { regionId: "global", countryId: null, destination: "Global" };
-  }
+  if (locationCode === "!GL") return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || "Global" };
+  if (locationCode === "!RG" || locations.length > 5) return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || locationCode };
 
-  // Regional package - determine from countries
-  if (locationCode === "!RG" || locations.length > 3) {
-    // Count countries per region
-    const regionCounts: Record<string, number> = {};
-    for (const loc of locations) {
-      const region = COUNTRY_TO_REGION[loc.toUpperCase()];
-      if (region) regionCounts[region] = (regionCounts[region] || 0) + 1;
-    }
-    // Find dominant region
-    let maxRegion = "";
-    let maxCount = 0;
-    for (const [region, count] of Object.entries(regionCounts)) {
-      if (count > maxCount) { maxCount = count; maxRegion = region; }
-    }
-    if (maxRegion) {
-      return { regionId: maxRegion, countryId: null, destination: (pkg.name as string) || locationCode };
-    }
-    return { regionId: "global", countryId: null, destination: (pkg.name as string) || "Multi-region" };
-  }
-
-  // Single country
   if (locations.length === 1) {
-    const code = locations[0].toUpperCase();
-    const region = COUNTRY_TO_REGION[code];
-    if (region) return { regionId: region, countryId: code, destination: code };
-    return { regionId: null, countryId: null, destination: code };
+    const info = COUNTRY_TO_REGION[locations[0]];
+    if (info) return { regionId: info.regionId, regionName: info.regionName, countryId: locations[0], countryName: info.countryName, destination: pkgName || info.countryName };
   }
 
-  // Multi-country (2-3 countries) - assign to first country's region
   if (locations.length > 1) {
+    const counts: Record<string, number> = {};
     for (const loc of locations) {
-      const code = loc.toUpperCase();
-      const region = COUNTRY_TO_REGION[code];
-      if (region) return { regionId: region, countryId: null, destination: (pkg.name as string) || locationCode };
+      const info = COUNTRY_TO_REGION[loc];
+      if (info) counts[info.regionId] = (counts[info.regionId] || 0) + 1;
     }
+    let maxR = "global"; let maxC = 0;
+    for (const [r, c] of Object.entries(counts)) { if (c > maxC) { maxC = c; maxR = r; } }
+    return { regionId: maxR, regionName: maxR.charAt(0).toUpperCase() + maxR.slice(1), countryId: null, countryName: "", destination: pkgName || locationCode };
   }
 
-  // Fallback - use locationCode directly
-  if (locationCode.length === 2) {
-    const region = COUNTRY_TO_REGION[locationCode.toUpperCase()];
-    if (region) return { regionId: region, countryId: locationCode.toUpperCase(), destination: locationCode };
-  }
-
-  return { regionId: null, countryId: null, destination: (pkg.name as string) || locationCode || "Unknown" };
+  return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || locationCode };
 }
 
 export async function GET(request: Request) {
@@ -102,28 +97,19 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const sync = url.searchParams.get("sync");
 
-    // ADMIN: Sync ALL packages
     if (sync === "true") {
       const startTime = Date.now();
       const res = await getPackageList({ type: "BASE" });
       const packages = res.packageList || [];
+      if (packages.length === 0) return NextResponse.json({ success: false, error: "No packages" });
 
-      if (packages.length === 0) {
-        return NextResponse.json({ success: false, error: "No packages from eSIM Access" });
-      }
-
-      // Prepare plans
       const plans = packages.map((pkg) => {
         const dataAmount = bytesToGB(pkg.volume);
         const priceUsd = pkg.price / 1000;
-        const { regionId, countryId, destination } = resolveRegion(pkg as unknown as Record<string, unknown>);
-
-        const allNetworkTypes = new Set<string>();
-        pkg.locationNetworkList?.forEach((locItem) => {
-          locItem.operatorList?.forEach((op) => allNetworkTypes.add(op.networkType));
-        });
-        const networkType = [...allNetworkTypes].join("/") || "4G";
-
+        const loc = resolveLocation(pkg as unknown as Record<string, unknown>);
+        const allNet = new Set<string>();
+        pkg.locationNetworkList?.forEach((l) => l.operatorList?.forEach((o) => allNet.add(o.networkType)));
+        const networkType = [...allNet].join("/") || "4G";
         const locations = (pkg.location || "").split(",").map((s: string) => s.trim()).filter(Boolean);
 
         return {
@@ -132,9 +118,11 @@ export async function GET(request: Request) {
           slug: pkg.slug,
           packageCode: pkg.packageCode,
           description: pkg.description || null,
-          destination,
-          regionId,
-          countryId,
+          destination: loc.destination,
+          regionId: loc.regionId,
+          regionName: loc.regionName,
+          countryId: loc.countryId,
+          countryName: loc.countryName,
           dataType: pkg.dataType,
           dataVolume: BigInt(Math.floor(pkg.volume)),
           dataAmount,
@@ -158,34 +146,17 @@ export async function GET(request: Request) {
         };
       });
 
-      // Fast sync: delete all old plans, then create new ones
-      const deleteResult = await prisma.plan.deleteMany({});
-      console.log(`Deleted ${deleteResult.count} old plans`);
-
-      // Bulk create in batches
-      const BATCH_SIZE = 200;
+      await prisma.plan.deleteMany({});
       let totalCreated = 0;
-      for (let i = 0; i < plans.length; i += BATCH_SIZE) {
-        const batch = plans.slice(i, i + BATCH_SIZE);
-        await prisma.plan.createMany({
-          data: batch,
-          skipDuplicates: true,
-        });
-        totalCreated += batch.length;
+      for (let i = 0; i < plans.length; i += 200) {
+        await prisma.plan.createMany({ data: plans.slice(i, i + 200), skipDuplicates: true });
+        totalCreated += Math.min(200, plans.length - i);
       }
 
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-
-      return NextResponse.json({
-        success: true,
-        synced: totalCreated,
-        deleted: deleteResult.count,
-        total: packages.length,
-        elapsed: `${elapsed}s`,
-      });
+      return NextResponse.json({ success: true, synced: totalCreated, total: packages.length, elapsed: `${((Date.now() - startTime) / 1000).toFixed(1)}s` });
     }
 
-    // FRONTEND: Query plans
+    // Query
     const regionId = url.searchParams.get("regionId") || undefined;
     const countryId = url.searchParams.get("countryId") || undefined;
     const search = url.searchParams.get("search") || undefined;
@@ -194,45 +165,31 @@ export async function GET(request: Request) {
     const maxPrice = url.searchParams.get("maxPrice");
     const minData = url.searchParams.get("minData");
     const dataType = url.searchParams.get("dataType");
-    const isPopular = url.searchParams.get("isPopular");
-    const isBestSeller = url.searchParams.get("isBestSeller");
-    const isHot = url.searchParams.get("isHot");
     const sortBy = url.searchParams.get("sortBy") || "best";
     const id = url.searchParams.get("id");
 
     if (id) {
-      const plan = await prisma.plan.findUnique({
-        where: { id },
-        include: { region: true, country: true },
-      });
+      const plan = await prisma.plan.findUnique({ where: { id } });
       return NextResponse.json({ plans: plan ? [plan] : [] });
     }
 
     const where: Record<string, unknown> = { isActive: true };
-
     if (regionId) where.regionId = regionId;
     if (countryId) where.countryId = countryId;
-
     if (search) {
       where.OR = [
         { destination: { contains: search, mode: "insensitive" } },
         { name: { contains: search, mode: "insensitive" } },
-        { locationCode: { contains: search, mode: "insensitive" } },
+        { countryName: { contains: search, mode: "insensitive" } },
       ];
     }
-
-    if (networkType) where.speed = { contains: networkType };
+    if (networkType) where.networkType = { contains: networkType };
     if (dataType) where.dataType = parseInt(dataType);
-    if (isPopular === "true") where.isPopular = true;
-    if (isBestSeller === "true") where.isBestSeller = true;
-    if (isHot === "true") where.isHot = true;
-
     if (minPrice || maxPrice) {
       where.priceUsd = {};
       if (minPrice) (where.priceUsd as Record<string, unknown>).gte = parseFloat(minPrice);
       if (maxPrice) (where.priceUsd as Record<string, unknown>).lte = parseFloat(maxPrice);
     }
-
     if (minData) where.dataAmount = { gte: parseFloat(minData) };
 
     let orderBy: Record<string, string>[];
@@ -241,22 +198,10 @@ export async function GET(request: Request) {
       case "price-high": orderBy = [{ priceUsd: "desc" }]; break;
       case "data": orderBy = [{ dataAmount: "desc" }]; break;
       case "duration": orderBy = [{ durationDays: "desc" }]; break;
-      default: orderBy = [
-        { isBestSeller: "desc" },
-        { isPopular: "desc" },
-        { isHot: "desc" },
-        { priority: "desc" },
-        { priceUsd: "asc" },
-      ];
+      default: orderBy = [{ isBestSeller: "desc" }, { isPopular: "desc" }, { priceUsd: "asc" }];
     }
 
-    const plans = await prisma.plan.findMany({
-      where,
-      include: { region: true, country: true },
-      orderBy,
-      take: 500,
-    });
-
+    const plans = await prisma.plan.findMany({ where, orderBy, take: 500 });
     return NextResponse.json({ plans, total: plans.length });
   } catch (error) {
     console.error("Plans API error:", error);
