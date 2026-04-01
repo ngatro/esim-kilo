@@ -71,12 +71,12 @@ export default function AdminDashboardPage() {
 
   async function syncPlans() {
     setSyncing(true);
-    setSyncResult(null);
+    setSyncResult("Fetching packages from eSIM Access...");
     try {
       const res = await fetch("/api/plans?sync=true");
       const data = await res.json();
       if (data.success) {
-        setSyncResult(`Synced ${data.synced} plans (${data.failed || 0} failed, ${data.pages || 1} pages)`);
+        setSyncResult(`Done! ${data.synced} plans synced, ${data.deleted} old plans deleted (${data.elapsed})`);
       } else {
         setSyncResult(`Error: ${data.error || "Unknown"}`);
       }
