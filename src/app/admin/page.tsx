@@ -43,6 +43,7 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "admin")) {
@@ -70,11 +71,19 @@ export default function AdminDashboardPage() {
 
   async function syncPlans() {
     setSyncing(true);
+    setSyncResult(null);
     try {
-      await fetch("/api/plans?sync=true");
+      const res = await fetch("/api/plans?sync=true");
+      const data = await res.json();
+      if (data.success) {
+        setSyncResult(`Synced ${data.synced} plans (${data.failed || 0} failed, ${data.pages || 1} pages)`);
+      } else {
+        setSyncResult(`Error: ${data.error || "Unknown"}`);
+      }
       await fetchStats();
     } catch (error) {
       console.error("Sync failed:", error);
+      setSyncResult("Sync failed - check console");
     } finally {
       setSyncing(false);
     }
@@ -108,13 +117,23 @@ export default function AdminDashboardPage() {
             <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
             <p className="text-slate-400 text-sm mt-1">Welcome back, {user.name}</p>
           </div>
-          <button
-            onClick={syncPlans}
-            disabled={syncing}
-            className="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
-          >
-            {syncing ? "Syncing..." : "🔄 Sync Plans"}
-          </button>
+          <div className="flex items-center gap-3">
+            {syncResult && (
+              <span className="text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-lg">{syncResult}</span>
+            )}
+            <button
+              onClick={syncPlans}
+              disabled={syncing}
+              className="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+            >
+              {syncing ? (
+                <span className="flex items-center gap-2">
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  Syncing...
+                </span>
+              ) : "🔄 Sync Plans"}
+            </button>
+          </div>
         </div>
 
         {stats && (
