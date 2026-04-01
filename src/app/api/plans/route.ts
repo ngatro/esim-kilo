@@ -18,91 +18,6 @@ async function resolveRegion(locationCode: string): Promise<{ regionId: string |
   return { regionId: null, countryId: null, destination: locationCode };
 }
 
-async function syncSinglePackage(pkg: Record<string, unknown>): Promise<boolean> {
-  try {
-    const dataAmount = bytesToGB(pkg.volume as number);
-    const priceUsd = (pkg.price as number) / 1000;
-    const { regionId, countryId, destination } = await resolveRegion(pkg.locationCode as string);
-
-    const allNetworkTypes = new Set<string>();
-    (pkg.locationNetworkList as Array<{ operatorList: Array<{ networkType: string }> }>)?.forEach((locItem) => {
-      locItem.operatorList?.forEach((op) => allNetworkTypes.add(op.networkType));
-    });
-    const networkType = [...allNetworkTypes].join("/") || "4G";
-
-    const locations = (pkg.location as string)?.split(",").map((s: string) => s.trim()) || [];
-
-    await prisma.plan.upsert({
-      where: { packageCode: pkg.packageCode as string },
-      update: {
-        name: pkg.name as string,
-        slug: pkg.slug as string,
-        description: (pkg.description as string) || null,
-        destination,
-        regionId,
-        countryId,
-        dataType: pkg.dataType as number,
-        dataVolume: BigInt(pkg.volume as number),
-        dataAmount,
-        durationDays: pkg.duration as number,
-        durationUnit: (pkg.durationUnit as string) || "DAY",
-        priceRaw: pkg.price as number,
-        priceUsd,
-        currencyCode: (pkg.currencyCode as string) || "USD",
-        speed: (pkg.speed as string) || null,
-        networkType,
-        locationCode: (pkg.locationCode as string) || null,
-        locations,
-        coverageCount: locations.length || 1,
-        smsStatus: (pkg.smsStatus as number) || 0,
-        activeType: (pkg.activeType as number) || 1,
-        supportTopUp: (pkg.supportTopUpType as number) === 1,
-        unusedValidTime: (pkg.unusedValidTime as number) || 0,
-        ipExport: (pkg.ipExport as string) || null,
-        fupPolicy: (pkg.fupPolicy as string) || null,
-        locationNetworkList: pkg.locationNetworkList as object,
-        isActive: true,
-        rawApiData: pkg as object,
-      },
-      create: {
-        id: `esimaccess-${pkg.packageCode as string}`,
-        name: pkg.name as string,
-        slug: pkg.slug as string,
-        packageCode: pkg.packageCode as string,
-        description: (pkg.description as string) || null,
-        destination,
-        regionId,
-        countryId,
-        dataType: pkg.dataType as number,
-        dataVolume: BigInt(pkg.volume as number),
-        dataAmount,
-        durationDays: pkg.duration as number,
-        durationUnit: (pkg.durationUnit as string) || "DAY",
-        priceRaw: pkg.price as number,
-        priceUsd,
-        currencyCode: (pkg.currencyCode as string) || "USD",
-        speed: (pkg.speed as string) || null,
-        networkType,
-        locationCode: (pkg.locationCode as string) || null,
-        locations,
-        coverageCount: locations.length || 1,
-        smsStatus: (pkg.smsStatus as number) || 0,
-        activeType: (pkg.activeType as number) || 1,
-        supportTopUp: (pkg.supportTopUpType as number) === 1,
-        unusedValidTime: (pkg.unusedValidTime as number) || 0,
-        ipExport: (pkg.ipExport as string) || null,
-        fupPolicy: (pkg.fupPolicy as string) || null,
-        locationNetworkList: pkg.locationNetworkList as object,
-        isActive: true,
-        rawApiData: pkg as object,
-      },
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -110,47 +25,117 @@ export async function GET(request: Request) {
 
     // ADMIN: Sync ALL packages from eSIM Access
     if (sync === "true") {
+      // Get all packages from eSIM Access API (returns up to ~3000 in one call)
+      const res = await getPackageList({ type: "BASE" });
+      const packages = res.packageList || [];
+
+      if (packages.length === 0) {
+        return NextResponse.json({ success: false, error: "No packages returned from eSIM Access" });
+      }
+
       let totalSynced = 0;
       let totalFailed = 0;
-      let page = 1;
-      let hasMore = true;
+      const errors: string[] = [];
 
-      // Loop through all pages until no more packages
-      while (hasMore) {
-        try {
-          const res = await getPackageList({ type: "BASE" });
-          const packages = res.packageList || [];
+      // Process packages in batches of 50
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < packages.length; i += BATCH_SIZE) {
+        const batch = packages.slice(i, i + BATCH_SIZE);
 
-          if (packages.length === 0) {
-            hasMore = false;
-            break;
+        await Promise.all(batch.map(async (pkg) => {
+          try {
+            const dataAmount = bytesToGB(pkg.volume);
+            const priceUsd = pkg.price / 1000;
+            const { regionId, countryId, destination } = await resolveRegion(pkg.locationCode);
+
+            const allNetworkTypes = new Set<string>();
+            pkg.locationNetworkList?.forEach((locItem) => {
+              locItem.operatorList?.forEach((op) => allNetworkTypes.add(op.networkType));
+            });
+            const networkType = [...allNetworkTypes].join("/") || "4G";
+
+            const locations = pkg.location
+              ? pkg.location.split(",").map((s: string) => s.trim())
+              : [];
+
+            await prisma.plan.upsert({
+              where: { packageCode: pkg.packageCode },
+              update: {
+                name: pkg.name,
+                slug: pkg.slug,
+                description: pkg.description || null,
+                destination,
+                regionId,
+                countryId,
+                dataType: pkg.dataType,
+                dataVolume: BigInt(Math.floor(pkg.volume)),
+                dataAmount,
+                durationDays: pkg.duration,
+                durationUnit: pkg.durationUnit || "DAY",
+                priceRaw: pkg.price,
+                priceUsd,
+                currencyCode: pkg.currencyCode || "USD",
+                speed: pkg.speed || null,
+                networkType,
+                locationCode: pkg.locationCode || null,
+                locations,
+                coverageCount: locations.length || 1,
+                smsStatus: pkg.smsStatus || 0,
+                activeType: pkg.activeType || 1,
+                supportTopUp: pkg.supportTopUpType === 1,
+                unusedValidTime: pkg.unusedValidTime || 0,
+                ipExport: pkg.ipExport || null,
+                fupPolicy: pkg.fupPolicy || null,
+                isActive: true,
+              },
+              create: {
+                id: `esimaccess-${pkg.packageCode}`,
+                name: pkg.name,
+                slug: pkg.slug,
+                packageCode: pkg.packageCode,
+                description: pkg.description || null,
+                destination,
+                regionId,
+                countryId,
+                dataType: pkg.dataType,
+                dataVolume: BigInt(Math.floor(pkg.volume)),
+                dataAmount,
+                durationDays: pkg.duration,
+                durationUnit: pkg.durationUnit || "DAY",
+                priceRaw: pkg.price,
+                priceUsd,
+                currencyCode: pkg.currencyCode || "USD",
+                speed: pkg.speed || null,
+                networkType,
+                locationCode: pkg.locationCode || null,
+                locations,
+                coverageCount: locations.length || 1,
+                smsStatus: pkg.smsStatus || 0,
+                activeType: pkg.activeType || 1,
+                supportTopUp: pkg.supportTopUpType === 1,
+                unusedValidTime: pkg.unusedValidTime || 0,
+                ipExport: pkg.ipExport || null,
+                fupPolicy: pkg.fupPolicy || null,
+                isActive: true,
+              },
+            });
+
+            totalSynced++;
+          } catch (err: unknown) {
+            totalFailed++;
+            const msg = err instanceof Error ? err.message : "unknown";
+            errors.push(`${pkg.packageCode}: ${msg}`);
+            console.error(`Sync failed for ${pkg.packageCode}:`, msg);
           }
-
-          for (const pkg of packages) {
-            const ok = await syncSinglePackage(pkg as unknown as Record<string, unknown>);
-            if (ok) totalSynced++;
-            else totalFailed++;
-          }
-
-          // If we got fewer packages than expected, we've reached the end
-          if (packages.length < 100) {
-            hasMore = false;
-          }
-          page++;
-
-          // Safety: max 50 pages to prevent infinite loop
-          if (page > 50) hasMore = false;
-        } catch (err) {
-          console.error(`Sync page ${page} failed:`, err);
-          hasMore = false;
-        }
+        }));
       }
 
       return NextResponse.json({
         success: true,
         synced: totalSynced,
         failed: totalFailed,
-        pages: page - 1,
+        total: packages.length,
+        errors: errors.slice(0, 10),
       });
     }
 
@@ -169,7 +154,6 @@ export async function GET(request: Request) {
     const sortBy = url.searchParams.get("sortBy") || "best";
     const id = url.searchParams.get("id");
 
-    // Get single plan by ID
     if (id) {
       const plan = await prisma.plan.findUnique({
         where: { id },
