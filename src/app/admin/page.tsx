@@ -123,8 +123,8 @@ export default function AdminDashboardPage() {
               { label: "Users", value: stats.totalUsers, icon: "👥", color: "from-blue-500/20 to-blue-600/10" },
               { label: "Orders", value: stats.totalOrders, icon: "📦", color: "from-green-500/20 to-green-600/10" },
               { label: "Plans", value: stats.activePlans, icon: "📱", color: "from-purple-500/20 to-purple-600/10" },
-              { label: "Revenue", value: `$${stats.totalRevenue.toFixed(2)}`, icon: "💰", color: "from-amber-500/20 to-amber-600/10" },
-              { label: "Balance", value: `$${stats.balance.toFixed(2)}`, icon: "🏦", color: "from-sky-500/20 to-sky-600/10" },
+              { label: "Revenue", value: `$${(stats.totalRevenue || 0).toFixed(2)}`, icon: "💰", color: "from-amber-500/20 to-amber-600/10" },
+              { label: "Balance", value: `$${(stats.balance || 0).toFixed(2)}`, icon: "🏦", color: "from-sky-500/20 to-sky-600/10" },
               { label: "Total Plans", value: stats.totalPlans, icon: "📋", color: "from-pink-500/20 to-pink-600/10" },
             ].map((stat) => (
               <motion.div
@@ -187,7 +187,7 @@ export default function AdminDashboardPage() {
                       <p className="text-slate-500 text-xs">{order.customerEmail || "Guest"}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-white text-sm font-semibold">${order.totalAmount.toFixed(2)}</p>
+                      <p className="text-white text-sm font-semibold">${(order.totalAmount || 0).toFixed(2)}</p>
                       <span className={`text-xs ${order.status === "completed" ? "text-green-400" : "text-yellow-400"}`}>
                         {order.status}
                       </span>
