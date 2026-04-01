@@ -9,7 +9,7 @@ async function getAccessToken(): Promise<string> {
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error("PayPal not configured");
+    throw new Error("PayPal not configured - set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET");
   }
 
   const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
@@ -21,6 +21,11 @@ async function getAccessToken(): Promise<string> {
     body: "grant_type=client_credentials",
   });
 
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`PayPal auth failed: ${err}`);
+  }
+
   const data = await res.json();
   return data.access_token;
 }
@@ -29,7 +34,12 @@ export async function POST(request: Request) {
   try {
     const { planId, planName, price, customerEmail } = await request.json();
 
+    if (!price || price <= 0) {
+      return NextResponse.json({ error: "Invalid price" }, { status: 400 });
+    }
+
     const token = await getAccessToken();
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     const res = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
       method: "POST",
@@ -42,37 +52,21 @@ export async function POST(request: Request) {
         purchase_units: [
           {
             reference_id: planId,
-            description: `eSIM: ${planName}`,
+            description: `OW SIM eSIM: ${planName}`,
             amount: {
               currency_code: "USD",
               value: price.toFixed(2),
             },
-            custom_id: JSON.stringify({ planId, planName }),
+            custom_id: JSON.stringify({ planId, planName, email: customerEmail }),
           },
         ],
         application_context: {
-          brand_name: "OW SIM - OpenWorld eSIM",
+          brand_name: "OW SIM",
           landing_page: "BILLING",
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
-          return_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://owsim.com"}/checkout?success=true`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://owsim.com"}/checkout?cancelled=true`,
-        },
-        payment_source: {
-          paypal: {
-            experience_context: {
-              payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED",
-              brand_name: "OW SIM",
-              locale: "en-US",
-              landing_page: "BILLING",
-              shipping_preference: "NO_SHIPPING",
-              user_action: "PAY_NOW",
-              return_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://owsim.com"}/checkout?success=true`,
-              cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://owsim.com"}/checkout?cancelled=true`,
-            },
-          },
-          apple_pay: {},
-          google_pay: {},
+          return_url: `${appUrl}/checkout?success=true&planId=${planId}`,
+          cancel_url: `${appUrl}/checkout?cancelled=true`,
         },
       }),
     });
@@ -80,7 +74,8 @@ export async function POST(request: Request) {
     const data = await res.json();
 
     if (!res.ok) {
-      return NextResponse.json({ error: data.message || "Failed" }, { status: 500 });
+      console.error("PayPal create order error:", data);
+      return NextResponse.json({ error: data.message || data.details?.[0]?.description || "PayPal failed" }, { status: 500 });
     }
 
     const approveLink = data.links?.find((l: { rel: string }) => l.rel === "approve");
@@ -92,7 +87,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("PayPal error:", error);
-    return NextResponse.json({ error: "Payment failed" }, { status: 500 });
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
 

@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(request: Request) {
   try {
-    const { id, isPopular, isBestSeller, isHot, isActive, priority, badge } = await request.json();
+    const body = await request.json();
+    const { id, isPopular, isBestSeller, isHot, isActive, priority, badge, priceUsd, priceRaw, retailPriceUsd, retailPriceRaw } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Plan ID required" }, { status: 400 });
@@ -16,6 +17,10 @@ export async function PATCH(request: Request) {
     if (isActive !== undefined) updateData.isActive = isActive;
     if (priority !== undefined) updateData.priority = priority;
     if (badge !== undefined) updateData.badge = badge;
+    if (priceUsd !== undefined) updateData.priceUsd = priceUsd;
+    if (priceRaw !== undefined) updateData.priceRaw = priceRaw;
+    if (retailPriceUsd !== undefined) updateData.retailPriceUsd = retailPriceUsd;
+    if (retailPriceRaw !== undefined) updateData.retailPriceRaw = retailPriceRaw;
 
     const plan = await prisma.plan.update({
       where: { id },

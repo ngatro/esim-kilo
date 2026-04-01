@@ -13,6 +13,7 @@ interface Plan {
   dataAmount: number;
   durationDays: number;
   priceUsd: number;
+  retailPriceUsd: number;
   speed: string | null;
   networkType: string | null;
   regionId: string | null;
@@ -63,7 +64,12 @@ function MiniPlanCard({ plan, index }: { plan: Plan; index: number }) {
             {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.countryName || plan.regionName}
           </p>
         </div>
-        <p className="text-xl font-bold text-white">${plan.priceUsd.toFixed(2)}</p>
+        <div className="text-right">
+          {(plan.retailPriceUsd || 0) > plan.priceUsd && (
+            <p className="text-xs text-slate-500 line-through">${(plan.retailPriceUsd || plan.priceUsd).toFixed(2)}</p>
+          )}
+          <p className="text-xl font-bold text-white">${plan.priceUsd.toFixed(2)}</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
