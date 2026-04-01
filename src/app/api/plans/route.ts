@@ -6,15 +6,34 @@ function bytesToGB(bytes: number): number {
   return Math.round((bytes / (1024 * 1024 * 1024)) * 10) / 10;
 }
 
-async function resolveRegion(locationCode: string): Promise<{ regionId: string | null; countryId: string | null; destination: string }> {
+// Cache countries to avoid repeated DB queries
+let countryCache: Map<string, { regionId: string; name: string }> | null = null;
+
+async function getCountryCache() {
+  if (!countryCache) {
+    countryCache = new Map();
+    const countries = await prisma.country.findMany({ select: { id: true, regionId: true, name: true } });
+    countries.forEach((c) => countryCache!.set(c.id, { regionId: c.regionId, name: c.name }));
+  }
+  return countryCache;
+}
+
+function resolveRegion(locationCode: string, countries: Map<string, { regionId: string; name: string }>): { regionId: string | null; countryId: string | null; destination: string } {
   if (!locationCode) return { regionId: null, countryId: null, destination: "Global" };
   if (locationCode === "!GL") return { regionId: "global", countryId: null, destination: "Global" };
   if (locationCode === "!RG") return { regionId: null, countryId: null, destination: "Regional" };
-  if (locationCode.length === 2) {
-    const country = await prisma.country.findUnique({ where: { id: locationCode } });
-    if (country) return { regionId: country.regionId, countryId: country.id, destination: country.name };
-    return { regionId: null, countryId: locationCode, destination: locationCode };
+
+  // Check if country exists in our DB
+  const country = countries.get(locationCode);
+  if (country) {
+    return { regionId: country.regionId, countryId: locationCode, destination: country.name };
   }
+
+  // Country not in our DB - set countryId to null to avoid FK violation
+  if (locationCode.length === 2) {
+    return { regionId: null, countryId: null, destination: locationCode };
+  }
+
   return { regionId: null, countryId: null, destination: locationCode };
 }
 
@@ -25,7 +44,7 @@ export async function GET(request: Request) {
 
     // ADMIN: Sync ALL packages from eSIM Access
     if (sync === "true") {
-      // Get all packages from eSIM Access API (returns up to ~3000 in one call)
+      // Get all packages from eSIM Access API
       const res = await getPackageList({ type: "BASE" });
       const packages = res.packageList || [];
 
@@ -33,109 +52,101 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: "No packages returned from eSIM Access" });
       }
 
+      // Load country cache once
+      const countries = await getCountryCache();
+
+      // Prepare all plans for bulk insert
+      const plansToCreate = packages.map((pkg) => {
+        const dataAmount = bytesToGB(pkg.volume);
+        const priceUsd = pkg.price / 1000;
+        const { regionId, countryId, destination } = resolveRegion(pkg.locationCode, countries);
+
+        const allNetworkTypes = new Set<string>();
+        pkg.locationNetworkList?.forEach((locItem) => {
+          locItem.operatorList?.forEach((op) => allNetworkTypes.add(op.networkType));
+        });
+        const networkType = [...allNetworkTypes].join("/") || "4G";
+
+        const locations = pkg.location
+          ? pkg.location.split(",").map((s: string) => s.trim())
+          : [];
+
+        return {
+          id: `esimaccess-${pkg.packageCode}`,
+          name: pkg.name,
+          slug: pkg.slug,
+          packageCode: pkg.packageCode,
+          description: pkg.description || null,
+          destination,
+          regionId,
+          countryId,
+          dataType: pkg.dataType,
+          dataVolume: BigInt(Math.floor(pkg.volume)),
+          dataAmount,
+          durationDays: pkg.duration,
+          durationUnit: pkg.durationUnit || "DAY",
+          priceRaw: pkg.price,
+          priceUsd,
+          currencyCode: pkg.currencyCode || "USD",
+          speed: pkg.speed || null,
+          networkType,
+          locationCode: pkg.locationCode || null,
+          locations,
+          coverageCount: locations.length || 1,
+          smsStatus: pkg.smsStatus || 0,
+          activeType: pkg.activeType || 1,
+          supportTopUp: pkg.supportTopUpType === 1,
+          unusedValidTime: pkg.unusedValidTime || 0,
+          ipExport: pkg.ipExport || null,
+          fupPolicy: pkg.fupPolicy || null,
+          isActive: true,
+        };
+      });
+
+      // Bulk upsert in batches of 100 using transaction
+      const BATCH_SIZE = 100;
       let totalSynced = 0;
       let totalFailed = 0;
-      const errors: string[] = [];
 
-      // Process packages in batches of 50
-      const BATCH_SIZE = 50;
-      for (let i = 0; i < packages.length; i += BATCH_SIZE) {
-        const batch = packages.slice(i, i + BATCH_SIZE);
+      for (let i = 0; i < plansToCreate.length; i += BATCH_SIZE) {
+        const batch = plansToCreate.slice(i, i + BATCH_SIZE);
 
-        await Promise.all(batch.map(async (pkg) => {
-          try {
-            const dataAmount = bytesToGB(pkg.volume);
-            const priceUsd = pkg.price / 1000;
-            const { regionId, countryId, destination } = await resolveRegion(pkg.locationCode);
-
-            const allNetworkTypes = new Set<string>();
-            pkg.locationNetworkList?.forEach((locItem) => {
-              locItem.operatorList?.forEach((op) => allNetworkTypes.add(op.networkType));
-            });
-            const networkType = [...allNetworkTypes].join("/") || "4G";
-
-            const locations = pkg.location
-              ? pkg.location.split(",").map((s: string) => s.trim())
-              : [];
-
-            await prisma.plan.upsert({
-              where: { packageCode: pkg.packageCode },
-              update: {
-                name: pkg.name,
-                slug: pkg.slug,
-                description: pkg.description || null,
-                destination,
-                regionId,
-                countryId,
-                dataType: pkg.dataType,
-                dataVolume: BigInt(Math.floor(pkg.volume)),
-                dataAmount,
-                durationDays: pkg.duration,
-                durationUnit: pkg.durationUnit || "DAY",
-                priceRaw: pkg.price,
-                priceUsd,
-                currencyCode: pkg.currencyCode || "USD",
-                speed: pkg.speed || null,
-                networkType,
-                locationCode: pkg.locationCode || null,
-                locations,
-                coverageCount: locations.length || 1,
-                smsStatus: pkg.smsStatus || 0,
-                activeType: pkg.activeType || 1,
-                supportTopUp: pkg.supportTopUpType === 1,
-                unusedValidTime: pkg.unusedValidTime || 0,
-                ipExport: pkg.ipExport || null,
-                fupPolicy: pkg.fupPolicy || null,
-                isActive: true,
-              },
-              create: {
-                id: `esimaccess-${pkg.packageCode}`,
-                name: pkg.name,
-                slug: pkg.slug,
-                packageCode: pkg.packageCode,
-                description: pkg.description || null,
-                destination,
-                regionId,
-                countryId,
-                dataType: pkg.dataType,
-                dataVolume: BigInt(Math.floor(pkg.volume)),
-                dataAmount,
-                durationDays: pkg.duration,
-                durationUnit: pkg.durationUnit || "DAY",
-                priceRaw: pkg.price,
-                priceUsd,
-                currencyCode: pkg.currencyCode || "USD",
-                speed: pkg.speed || null,
-                networkType,
-                locationCode: pkg.locationCode || null,
-                locations,
-                coverageCount: locations.length || 1,
-                smsStatus: pkg.smsStatus || 0,
-                activeType: pkg.activeType || 1,
-                supportTopUp: pkg.supportTopUpType === 1,
-                unusedValidTime: pkg.unusedValidTime || 0,
-                ipExport: pkg.ipExport || null,
-                fupPolicy: pkg.fupPolicy || null,
-                isActive: true,
-              },
-            });
-
-            totalSynced++;
-          } catch (err: unknown) {
-            totalFailed++;
-            const msg = err instanceof Error ? err.message : "unknown";
-            errors.push(`${pkg.packageCode}: ${msg}`);
-            console.error(`Sync failed for ${pkg.packageCode}:`, msg);
+        try {
+          await prisma.$transaction(
+            batch.map((plan) =>
+              prisma.plan.upsert({
+                where: { packageCode: plan.packageCode },
+                update: plan,
+                create: plan,
+              })
+            )
+          );
+          totalSynced += batch.length;
+        } catch (err) {
+          // If batch fails, try one by one
+          for (const plan of batch) {
+            try {
+              await prisma.plan.upsert({
+                where: { packageCode: plan.packageCode },
+                update: plan,
+                create: plan,
+              });
+              totalSynced++;
+            } catch {
+              totalFailed++;
+            }
           }
-        }));
+        }
       }
+
+      // Clear cache
+      countryCache = null;
 
       return NextResponse.json({
         success: true,
         synced: totalSynced,
         failed: totalFailed,
         total: packages.length,
-        errors: errors.slice(0, 10),
       });
     }
 
