@@ -54,7 +54,8 @@ export async function GET(request: Request) {
 
       for (const loc of locationsToSync) {
         try {
-          const { packages } = await getPackageList({ locationCode: loc, size: 200 });
+          const res = await getPackageList({ locationCode: loc });
+          const packages = res.packageList || [];
 
           for (const pkg of packages) {
             const dataAmount = bytesToGB(pkg.volume);
@@ -63,8 +64,8 @@ export async function GET(request: Request) {
 
             // Extract network types from locationNetworkList
             const allNetworkTypes = new Set<string>();
-            pkg.locationNetworkList?.forEach((loc) => {
-              loc.operatorList?.forEach((op) => allNetworkTypes.add(op.networkType));
+            pkg.locationNetworkList?.forEach((locItem: { operatorList: { networkType: string }[] }) => {
+              locItem.operatorList?.forEach((op: { networkType: string }) => allNetworkTypes.add(op.networkType));
             });
             const networkType = [...allNetworkTypes].join("/") || "4G";
 

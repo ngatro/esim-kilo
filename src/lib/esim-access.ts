@@ -1,12 +1,5 @@
 const BASE_URL = "https://api.esimaccess.com/api/v1/open";
 
-interface EsimAccessResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  code?: string;
-}
-
 interface LocationNetwork {
   locationCode: string;
   locationLogo: string;
@@ -42,7 +35,23 @@ interface EsimPackage {
   locationNetworkList: LocationNetwork[];
 }
 
-interface EsimOrderResponse {
+interface PackageListResponse {
+  success: boolean;
+  message?: string;
+  packageList: EsimPackage[];
+  total: number;
+}
+
+interface BalanceResponse {
+  success: boolean;
+  message?: string;
+  balance: number;
+  currency: string;
+}
+
+interface OrderResponse {
+  success: boolean;
+  message?: string;
   orderNo: string;
   orderStatus: string;
   iccid: string;
@@ -51,11 +60,6 @@ interface EsimOrderResponse {
   activationCode: string;
   packageName: string;
   price: number;
-}
-
-interface EsimBalanceResponse {
-  balance: number;
-  currency: string;
 }
 
 function getAccessCode(): string {
@@ -70,10 +74,7 @@ function getSecretKey(): string {
   return key;
 }
 
-async function esimAccessRequest<T>(
-  endpoint: string,
-  body: Record<string, unknown> = {}
-): Promise<EsimAccessResponse<T>> {
+async function esimAccessPost<T>(endpoint: string, body: Record<string, unknown> = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: "POST",
     headers: {
@@ -88,70 +89,47 @@ async function esimAccessRequest<T>(
     throw new Error(`eSIM Access API: ${res.status} ${res.statusText}`);
   }
 
-  return res.json() as Promise<EsimAccessResponse<T>>;
+  const data = await res.json();
+  return data as T;
 }
 
-export async function getBalance(): Promise<EsimBalanceResponse> {
-  const res = await esimAccessRequest<EsimBalanceResponse>("/balance/query");
-  if (!res.success || !res.data) throw new Error(res.message || "Failed");
-  return res.data;
+export async function getBalance(): Promise<BalanceResponse> {
+  return esimAccessPost<BalanceResponse>("/balance/query");
 }
 
 export async function getPackageList(params: {
   locationCode?: string;
   type?: "BASE" | "TOPUP";
-  dataType?: string;
   slug?: string;
+  packageCode?: string;
   iccid?: string;
-  page?: number;
-  size?: number;
-}): Promise<{ packages: EsimPackage[]; total: number }> {
-  const body: Record<string, unknown> = {
-    type: params.type || "BASE",
-    page: params.page || 1,
-    size: params.size || 100,
-  };
+}): Promise<PackageListResponse> {
+  const body: Record<string, unknown> = {};
   if (params.locationCode) body.locationCode = params.locationCode;
-  if (params.dataType) body.dataType = params.dataType;
+  if (params.type) body.type = params.type;
   if (params.slug) body.slug = params.slug;
+  if (params.packageCode) body.packageCode = params.packageCode;
   if (params.iccid) body.iccid = params.iccid;
 
-  const res = await esimAccessRequest<{
-    packageList: EsimPackage[];
-    total: number;
-  }>("/package/list", body);
-
-  if (!res.success || !res.data) throw new Error(res.message || "Failed");
-
-  return {
-    packages: res.data.packageList || [],
-    total: res.data.total || 0,
-  };
+  return esimAccessPost<PackageListResponse>("/package/list", body);
 }
 
 export async function createOrder(params: {
   packageCode: string;
   count?: number;
-}): Promise<EsimOrderResponse> {
-  const res = await esimAccessRequest<EsimOrderResponse>("/order/create", {
+}): Promise<OrderResponse> {
+  return esimAccessPost<OrderResponse>("/order/create", {
     packageCode: params.packageCode,
     count: params.count || 1,
   });
-  if (!res.success || !res.data) throw new Error(res.message || "Failed");
-  return res.data;
 }
 
-export async function queryOrder(orderNo: string): Promise<EsimOrderResponse> {
-  const res = await esimAccessRequest<EsimOrderResponse>("/order/query", {
-    orderNo,
-  });
-  if (!res.success || !res.data) throw new Error(res.message || "Failed");
-  return res.data;
+export async function queryOrder(orderNo: string): Promise<OrderResponse> {
+  return esimAccessPost<OrderResponse>("/order/query", { orderNo });
 }
 
-export async function refundOrder(orderNo: string): Promise<boolean> {
-  const res = await esimAccessRequest("/order/refund", { orderNo });
-  return res.success;
+export async function refundOrder(orderNo: string): Promise<{ success: boolean; message?: string }> {
+  return esimAccessPost("/order/refund", { orderNo });
 }
 
-export type { EsimPackage, EsimOrderResponse, EsimBalanceResponse, LocationNetwork };
+export type { EsimPackage, OrderResponse, BalanceResponse, LocationNetwork, PackageListResponse };
