@@ -12,6 +12,7 @@ interface Plan {
   dataAmount: number;
   durationDays: number;
   priceUsd: number;
+  retailPriceUsd: number;
   regionId: string | null;
   regionName: string | null;
   isActive: boolean;

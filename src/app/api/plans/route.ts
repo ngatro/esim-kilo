@@ -116,7 +116,8 @@ export async function GET(request: Request) {
 
       const plans = packages.map((pkg) => {
         const dataAmount = bytesToGB(pkg.volume);
-        const priceUsd = pkg.price / 1000;
+        const priceUsd = pkg.price / 10000;
+        const retailPriceUsd = (pkg.retailPrice || pkg.price) / 10000;
         const loc = resolveLocation(pkg as unknown as Record<string, unknown>);
         const allNet = new Set<string>();
         pkg.locationNetworkList?.forEach((l) => l.operatorList?.forEach((o) => allNet.add(o.networkType)));
@@ -141,6 +142,8 @@ export async function GET(request: Request) {
           durationUnit: pkg.durationUnit || "DAY",
           priceRaw: pkg.price,
           priceUsd,
+          retailPriceRaw: pkg.retailPrice || pkg.price,
+          retailPriceUsd,
           currencyCode: pkg.currencyCode || "USD",
           speed: pkg.speed || null,
           networkType,
@@ -149,10 +152,11 @@ export async function GET(request: Request) {
           coverageCount: locations.length || 1,
           smsStatus: pkg.smsStatus || 0,
           activeType: pkg.activeType || 1,
-          supportTopUp: pkg.supportTopUpType === 1,
+          supportTopUp: pkg.supportTopUpType === 2,
           unusedValidTime: pkg.unusedValidTime || 0,
           ipExport: pkg.ipExport || null,
           fupPolicy: pkg.fupPolicy || null,
+          locationNetworkList: JSON.stringify(pkg.locationNetworkList || []),
           isActive: true,
         };
       });

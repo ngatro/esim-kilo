@@ -56,8 +56,10 @@ model Plan {
   durationDays    Int      @default(30)
   durationUnit    String   @default("DAY")
   
-  priceRaw        Int      @default(0)
-  priceUsd        Float    @default(0)
+  priceRaw        Int      @default(0)     // price * 10000 (10000 = $1.00)
+  priceUsd        Float    @default(0)     // priceRaw / 10000
+  retailPriceRaw  Int      @default(0)     // suggested retail price * 10000
+  retailPriceUsd  Float    @default(0)     // retailPriceRaw / 10000
   currencyCode    String   @default("USD")
   
   speed           String?
