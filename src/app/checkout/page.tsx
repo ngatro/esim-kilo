@@ -42,14 +42,29 @@ export default function CheckoutPage() {
   useEffect(() => {
     const paypalSuccess = searchParams.get("success");
     const paypalOrderId = searchParams.get("token"); // PayPal sends order ID as 'token'
+    const cancelled = searchParams.get("cancelled");
 
-    if (paypalSuccess === "true" && paypalOrderId && planId) {
+    if (cancelled) {
+      setError("Payment was cancelled");
+      return;
+    }
+
+    if (paypalSuccess === "true" && paypalOrderId) {
+      // Get planId from localStorage (saved before redirect) or URL
+      const savedPlanId = localStorage.getItem("paypal_planId") || planId;
+      const savedQty = parseInt(localStorage.getItem("paypal_qty") || "1");
+
+      if (!savedPlanId) {
+        setError("Plan ID not found");
+        return;
+      }
+
       setProcessing(true);
       // Confirm payment and create order
       fetch("/api/payment/paypal/webhook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: paypalOrderId, planId }),
+        body: JSON.stringify({ orderId: paypalOrderId, planId: savedPlanId, quantity: savedQty }),
       })
         .then((r) => r.json())
         .then((data) => {
@@ -60,11 +75,14 @@ export default function CheckoutPage() {
               qrCode: item?.esimQrCode || item?.esimQrImage || data.esim?.qrcodeUrl,
               activationCode: item?.activationCode || data.esim?.activationCode,
             });
+            // Clean up localStorage
+            localStorage.removeItem("paypal_planId");
+            localStorage.removeItem("paypal_qty");
           } else {
             setError(data.error || "Payment confirmation failed");
           }
         })
-        .catch(() => setError("Payment confirmation failed"))
+        .catch((err) => setError(`Payment confirmation failed: ${err}`))
         .finally(() => setProcessing(false));
     }
   }, [searchParams, planId]);
@@ -107,6 +125,9 @@ export default function CheckoutPage() {
     if (!res.ok) throw new Error(data.error || "PayPal failed");
 
     if (data.approveUrl) {
+      // Save planId and quantity before redirecting to PayPal
+      localStorage.setItem("paypal_planId", plan!.id);
+      localStorage.setItem("paypal_qty", quantity.toString());
       window.location.href = data.approveUrl;
       return;
     }

@@ -122,12 +122,17 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });
     }
 
+    // Get userId from cookie
+    const cookie = request.headers.get("cookie");
+    const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
+    const userId = token ? parseInt(token) : null;
+
     // Verify with PayPal
-    const token = await getAccessToken();
+    const accessToken = await getAccessToken();
     const res = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderId}/capture`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -142,9 +147,10 @@ export async function PUT(request: Request) {
     const plan = await prisma.plan.findUnique({ where: { id: planId || "" } });
     const amount = parseFloat(data.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || "0");
 
-    // Create order in DB
+    // Create order in DB with userId if logged in
     const order = await prisma.order.create({
       data: {
+        userId,
         totalAmount: amount,
         status: "completed",
         customerEmail: data.payer?.email_address || "",

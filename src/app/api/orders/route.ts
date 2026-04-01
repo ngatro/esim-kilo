@@ -118,18 +118,27 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const email = url.searchParams.get("email");
+
     const cookie = request.headers.get("cookie");
     const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
-    
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const where: Record<string, unknown> = {};
+
+    if (token) {
+      where.userId = parseInt(token);
+    } else if (email) {
+      where.customerEmail = email;
+    } else {
+      return NextResponse.json({ error: "Unauthorized - login or provide email" }, { status: 401 });
     }
 
-    const userId = parseInt(token);
     const orders = await prisma.order.findMany({
-      where: { userId },
+      where,
       include: {
         orderItems: true,
+        user: { select: { id: true, name: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
     });
