@@ -6,6 +6,17 @@ function bytesToGB(bytes: number): number {
   return Math.round((bytes / (1024 * 1024 * 1024)) * 10) / 10;
 }
 
+function generateSlug(name: string): string {
+  // "AUKUS(3 countries) 3GB 30days" -> "AUKUS-3-countries-3GB-30-days"
+  return name
+    .replace(/[()]/g, "")
+    .replace(/[^a-zA-Z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+}
+
 const COUNTRY_TO_REGION: Record<string, { regionId: string; regionName: string; countryName: string }> = {
   FR: { regionId: "europe", regionName: "Europe", countryName: "France" },
   DE: { regionId: "europe", regionName: "Europe", countryName: "Germany" },
@@ -115,7 +126,7 @@ export async function GET(request: Request) {
         return {
           id: `esimaccess-${pkg.packageCode}`,
           name: pkg.name,
-          slug: pkg.slug,
+          slug: generateSlug(pkg.name),
           packageCode: pkg.packageCode,
           description: pkg.description || null,
           destination: loc.destination,
@@ -167,10 +178,22 @@ export async function GET(request: Request) {
     const dataType = url.searchParams.get("dataType");
     const sortBy = url.searchParams.get("sortBy") || "best";
     const id = url.searchParams.get("id");
+    const slugParam = url.searchParams.get("slug");
 
+    // Single plan by ID or slug
     if (id) {
       const plan = await prisma.plan.findUnique({ where: { id } });
-      return NextResponse.json({ plans: plan ? [plan] : [] });
+      if (plan) return NextResponse.json({ plans: [{ ...plan, dataVolume: Number(plan.dataVolume) }] });
+      // Try as slug
+      const bySlug = await prisma.plan.findFirst({ where: { slug: id } });
+      if (bySlug) return NextResponse.json({ plans: [{ ...bySlug, dataVolume: Number(bySlug.dataVolume) }] });
+      return NextResponse.json({ plans: [] });
+    }
+
+    if (slugParam) {
+      const plan = await prisma.plan.findFirst({ where: { slug: slugParam } });
+      if (plan) return NextResponse.json({ plans: [{ ...plan, dataVolume: Number(plan.dataVolume) }] });
+      return NextResponse.json({ plans: [] });
     }
 
     const where: Record<string, unknown> = { isActive: true };
@@ -202,7 +225,14 @@ export async function GET(request: Request) {
     }
 
     const plans = await prisma.plan.findMany({ where, orderBy, take: 500 });
-    return NextResponse.json({ plans, total: plans.length });
+
+    // Serialize BigInt to number for JSON
+    const serialized = plans.map((p) => ({
+      ...p,
+      dataVolume: Number(p.dataVolume),
+    }));
+
+    return NextResponse.json({ plans: serialized, total: serialized.length });
   } catch (error) {
     console.error("Plans API error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

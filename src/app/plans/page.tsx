@@ -163,7 +163,7 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
             <p className="text-[10px] text-slate-500">one-time</p>
           </div>
           <div className="flex gap-2">
-            <Link href={`/plans/${plan.id}`}>
+            <Link href={`/plans/${plan.slug || plan.id}`}>
               <button className="bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl transition-colors">
                 Details
               </button>

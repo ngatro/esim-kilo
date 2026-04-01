@@ -3,6 +3,7 @@ import Link from "next/link";
 interface PlanCardData {
   id: string;
   name: string;
+  slug: string | null;
   destination: string;
   dataAmount: number;
   durationDays: number;
@@ -68,7 +69,7 @@ export default function PlanCard({ plan }: PlanCardProps) {
       </div>
 
       <Link
-        href={`/plans/${plan.id}`}
+        href={`/plans/${plan.slug || plan.id}`}
         className="block w-full text-center py-2 rounded-xl text-sm font-semibold bg-slate-700 hover:bg-sky-500 text-white transition-all"
       >
         Buy Now

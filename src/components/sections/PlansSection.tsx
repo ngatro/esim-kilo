@@ -8,6 +8,7 @@ import { useI18n } from "../providers/I18nProvider";
 interface Plan {
   id: string;
   name: string;
+  slug: string | null;
   destination: string;
   dataAmount: number;
   durationDays: number;
@@ -81,7 +82,7 @@ function MiniPlanCard({ plan, index }: { plan: Plan; index: number }) {
       </div>
 
       <Link
-        href={`/plans/${plan.id}`}
+        href={`/plans/${plan.slug || plan.id}`}
         className="block w-full text-center py-2 rounded-xl text-sm font-semibold bg-slate-700 hover:bg-sky-500 text-white transition-all"
       >
         Buy Now
