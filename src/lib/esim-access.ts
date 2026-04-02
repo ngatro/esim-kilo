@@ -1,3 +1,7 @@
+import HmacSHA256 from "crypto-js/hmac-sha256";
+import Hex from "crypto-js/enc-hex";
+import { v4 as uuidv4 } from "uuid";
+
 const BASE_URL = "https://api.esimaccess.com/api/v1/open";
 
 interface LocationNetwork {
@@ -74,18 +78,39 @@ function getSecretKey(): string {
   return key;
 }
 
+// Generate HMAC-SHA256 signature
+// signData = Timestamp + RequestID + AccessCode + JSON.stringify(RequestBody)
+// signature = HMAC-SHA256(signData, SecretKey) as HexString
+function generateSignature(timestamp: string, requestId: string, accessCode: string, body: string): string {
+  const secretKey = getSecretKey();
+  const signData = timestamp + requestId + accessCode + body;
+  return HmacSHA256(signData, secretKey).toString(Hex);
+}
+
 async function esimAccessPost(endpoint: string, body: Record<string, unknown> = {}): Promise<EsimAccessResponse> {
   const url = `${BASE_URL}${endpoint}`;
-  console.log(`[eSIM API] POST ${url}`, JSON.stringify(body));
+  const accessCode = getAccessCode();
+  const timestamp = Date.now().toString();
+  const requestId = uuidv4();
+  const bodyStr = JSON.stringify(body);
+
+  // Generate HMAC-SHA256 signature
+  const signature = generateSignature(timestamp, requestId, accessCode, bodyStr);
+
+  console.log(`[eSIM API] POST ${url}`);
+  console.log(`[eSIM API] Headers: RT-AccessCode=${accessCode.slice(0, 8)}..., RT-Timestamp=${timestamp}, RT-RequestID=${requestId}`);
+  console.log(`[eSIM API] Body: ${bodyStr.slice(0, 200)}`);
 
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "RT-AccessKey": getAccessCode(),
-      "RT-SecretKey": getSecretKey(),
+      "RT-AccessCode": accessCode,
+      "RT-Timestamp": timestamp,
+      "RT-RequestID": requestId,
+      "RT-Signature": signature,
     },
-    body: JSON.stringify(body),
+    body: bodyStr,
   });
 
   if (!res.ok) {
@@ -95,7 +120,7 @@ async function esimAccessPost(endpoint: string, body: Record<string, unknown> = 
   }
 
   const data = await res.json();
-  console.log(`[eSIM API] Response:`, JSON.stringify(data).slice(0, 500));
+  console.log(`[eSIM API] Response: success=${data.success}`);
   return data as EsimAccessResponse;
 }
 
@@ -120,14 +145,10 @@ export async function getPackageList(params: {
   if (params.iccid) body.iccid = params.iccid;
 
   const res = await esimAccessPost("/package/list", body);
-
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
 
   const obj = res.obj as PackageListObj;
-  return {
-    packageList: obj.packageList || [],
-    total: obj.total || 0,
-  };
+  return { packageList: obj.packageList || [], total: obj.total || 0 };
 }
 
 export async function createOrder(params: {
