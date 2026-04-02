@@ -169,12 +169,17 @@ export async function PUT(request: Request) {
       include: { orderItems: true },
     });
 
-    // Call eSIM Access
+    // Call eSIM Access to get eSIM
     let esimData = null;
+    console.log("Plan packageCode:", plan?.packageCode, "planId:", planId);
+
     if (plan?.packageCode) {
       try {
+        console.log("Calling eSIM Access API with packageCode:", plan.packageCode);
         const esimOrder = await createEsimOrder({ packageCode: plan.packageCode, count: quantity });
-        await prisma.orderItem.update({
+        console.log("eSIM Access response:", JSON.stringify(esimOrder));
+
+        const updatedItem = await prisma.orderItem.update({
           where: { id: order.orderItems[0].id },
           data: {
             esimIccid: esimOrder.iccid,
@@ -183,14 +188,19 @@ export async function PUT(request: Request) {
             activationCode: esimOrder.activationCode,
           },
         });
+        console.log("Order item updated with eSIM data");
+
         await prisma.order.update({
           where: { id: order.id },
-          data: { esimaccessOrderStatus: esimOrder.orderStatus },
+          data: { esimaccessOrderStatus: esimOrder.orderStatus || "completed" },
         });
+
         esimData = esimOrder;
       } catch (esimErr) {
-        console.error("eSIM order failed:", esimErr);
+        console.error("eSIM Access order FAILED:", esimErr);
       }
+    } else {
+      console.error("No packageCode found for plan:", planId, "plan:", plan);
     }
 
     // Fetch updated order
@@ -198,6 +208,53 @@ export async function PUT(request: Request) {
       where: { id: order.id },
       include: { orderItems: true },
     });
+
+    // Send email notification
+    if (updatedOrder?.customerEmail) {
+      try {
+        const { sendEmail, getOrderConfirmationHtml, getOrderConfirmationAdminHtml } = await import("@/lib/email");
+
+        // Email to customer
+        await sendEmail({
+          to: updatedOrder.customerEmail,
+          subject: `OW SIM Order #${updatedOrder.id} Confirmed - Your eSIM is ready!`,
+          html: getOrderConfirmationHtml({
+            id: updatedOrder.id,
+            totalAmount: updatedOrder.totalAmount,
+            customerName: updatedOrder.customerName,
+            items: updatedOrder.orderItems.map((item) => ({
+              planName: item.planName,
+              price: item.price,
+              quantity: item.quantity,
+              qrImage: item.esimQrImage,
+              activationCode: item.activationCode,
+              iccid: item.esimIccid,
+            })),
+          }),
+        });
+
+        // Email to admin
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail) {
+          await sendEmail({
+            to: adminEmail,
+            subject: `New Order #${updatedOrder.id} - $${updatedOrder.totalAmount.toFixed(2)}`,
+            html: getOrderConfirmationAdminHtml({
+              id: updatedOrder.id,
+              totalAmount: updatedOrder.totalAmount,
+              customerName: updatedOrder.customerName,
+              customerEmail: updatedOrder.customerEmail,
+              items: updatedOrder.orderItems.map((item) => ({
+                planName: item.planName,
+                price: item.price,
+              })),
+            }),
+          });
+        }
+      } catch (emailErr) {
+        console.error("Email send failed:", emailErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,
