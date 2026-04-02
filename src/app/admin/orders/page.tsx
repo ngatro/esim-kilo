@@ -157,12 +157,28 @@ export default function AdminOrdersPage() {
                       <div className="border-t border-slate-700/50 p-4 sm:p-5 space-y-4">
                         {/* Payment Info */}
                         <div className="bg-slate-900/50 rounded-xl p-4">
-                          <h4 className="text-white font-medium text-sm mb-3">Payment Info</h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                            <div><p className="text-slate-500">Amount</p><p className="text-white font-semibold">${order.totalAmount.toFixed(2)} {order.currency}</p></div>
-                            <div><p className="text-slate-500">Status</p><p className="text-green-400">{order.status}</p></div>
-                            <div><p className="text-slate-500">PayPal Order</p><p className="text-slate-300 font-mono truncate">{order.esimaccessOrderId || "-"}</p></div>
-                            <div><p className="text-slate-500">eSIM Status</p><p className="text-sky-400">{order.esimaccessOrderStatus || "-"}</p></div>
+                          <h4 className="text-white font-medium text-sm mb-3">Transaction Log</h4>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3 text-xs">
+                              <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</div>
+                              <div className="flex-1"><p className="text-white">PayPal Payment</p><p className="text-slate-500">${order.totalAmount.toFixed(2)} - {order.esimaccessOrderId || "N/A"}</p></div>
+                              <span className="text-green-400">{order.status}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                                order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+                              }`}>{order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "✓" : "⏳"}</div>
+                              <div className="flex-1"><p className="text-white">eSIM Access</p><p className="text-slate-500">{order.esimaccessOrderStatus || "Pending"}</p></div>
+                              <span className={order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "text-green-400" : "text-yellow-400"}>
+                                {order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "Activated" : "Waiting"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                                order.customerEmail ? "bg-green-500/20 text-green-400" : "bg-slate-600 text-slate-400"
+                              }`}>{order.customerEmail ? "✓" : "-"}</div>
+                              <div className="flex-1"><p className="text-white">Email Sent</p><p className="text-slate-500">{order.customerEmail || "No email"}</p></div>
+                            </div>
                           </div>
                         </div>
 

@@ -23,104 +23,160 @@ async function getAccessToken(): Promise<string> {
   return data.access_token;
 }
 
-// Webhook endpoint - PayPal calls this when payment is completed
+// Shared: activate eSIM after payment
+async function activateEsimAndEmail(orderId: number, planId: string | null, quantity: number) {
+  const plan = planId ? await prisma.plan.findUnique({ where: { id: planId } }) : null;
+  const packageCode = plan?.packageCode;
+
+  console.log(`[AUTO] Order ${orderId}: plan=${planId}, packageCode=${packageCode}`);
+
+  if (!packageCode) {
+    console.error(`[AUTO] Order ${orderId}: No packageCode found`);
+    return;
+  }
+
+  try {
+    // Call eSIM Access
+    console.log(`[AUTO] Calling eSIM Access: ${packageCode}`);
+    const esimOrder = await createEsimOrder({ packageCode, count: quantity, orderId: String(orderId) });
+    console.log(`[AUTO] eSIM Response: iccid=${esimOrder.iccid}, orderNo=${esimOrder.orderNo}`);
+
+    // Update order item with eSIM data
+    const orderItem = await prisma.orderItem.findFirst({ where: { orderId } });
+    if (orderItem) {
+      await prisma.orderItem.update({
+        where: { id: orderItem.id },
+        data: {
+          esimIccid: esimOrder.iccid,
+          esimQrCode: esimOrder.qrcode,
+          esimQrImage: esimOrder.qrcodeUrl,
+          activationCode: esimOrder.activationCode,
+        },
+      });
+    }
+
+    // Update order status
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        esimaccessOrderStatus: esimOrder.orderStatus || "activated",
+      },
+    });
+
+    console.log(`[AUTO] Order ${orderId}: eSIM activated successfully`);
+
+    // Send email
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { orderItems: true },
+    });
+
+    if (order?.customerEmail) {
+      try {
+        const { sendEmail, getOrderConfirmationHtml, getOrderConfirmationAdminHtml } = await import("@/lib/email");
+
+        await sendEmail({
+          to: order.customerEmail,
+          subject: `OW SIM Order #${order.id} - Your eSIM is ready!`,
+          html: getOrderConfirmationHtml({
+            id: order.id,
+            totalAmount: order.totalAmount,
+            customerName: order.customerName,
+            items: order.orderItems.map((item) => ({
+              planName: item.planName,
+              price: item.price,
+              quantity: item.quantity,
+              qrImage: item.esimQrImage,
+              activationCode: item.activationCode,
+              iccid: item.esimIccid,
+            })),
+          }),
+        });
+        console.log(`[AUTO] Order ${orderId}: Email sent to ${order.customerEmail}`);
+
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail) {
+          await sendEmail({
+            to: adminEmail,
+            subject: `New Order #${order.id} - $${order.totalAmount.toFixed(2)}`,
+            html: getOrderConfirmationAdminHtml({
+              id: order.id,
+              totalAmount: order.totalAmount,
+              customerName: order.customerName,
+              customerEmail: order.customerEmail,
+              items: order.orderItems.map((item) => ({ planName: item.planName, price: item.price })),
+            }),
+          });
+        }
+      } catch (emailErr) {
+        console.error(`[AUTO] Order ${orderId}: Email failed:`, emailErr);
+      }
+    }
+  } catch (esimErr) {
+    console.error(`[AUTO] Order ${orderId}: eSIM activation FAILED:`, esimErr);
+  }
+}
+
+// PayPal webhook (called by PayPal)
 export async function POST(request: Request) {
   try {
     const body = await request.text();
     const event = JSON.parse(body);
+    console.log("[PayPal Webhook]", event.event_type);
 
-    console.log("PayPal webhook event:", event.event_type);
-
-    if (event.event_type === "PAYMENT.CAPTURE.COMPLETED" || event.event_type === "CHECKOUT.ORDER.APPROVED") {
-      const orderId = event.resource?.supplementary_data?.related_ids?.order_id || event.resource?.id;
-
-      if (orderId) {
-        // Verify payment with PayPal
+    if (event.event_type === "PAYMENT.CAPTURE.COMPLETED") {
+      const paypalOrderId = event.resource?.supplementary_data?.related_ids?.order_id;
+      if (paypalOrderId) {
         const token = await getAccessToken();
-        const verifyRes = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderId}`, {
+        const verifyRes = await fetch(`${PAYPAL_API}/v2/checkout/orders/${paypalOrderId}`, {
           headers: { "Authorization": `Bearer ${token}` },
         });
         const orderData = await verifyRes.json();
 
         if (orderData.status === "APPROVED" || orderData.status === "COMPLETED") {
-          // Extract custom_id from purchase_units
           const customId = orderData.purchase_units?.[0]?.custom_id;
           let planId = "";
+          try { planId = JSON.parse(customId || "{}").planId || ""; } catch {}
 
-          try {
-            const parsed = JSON.parse(customId || "{}");
-            planId = parsed.planId || "";
-          } catch {}
-
-          // Create order in DB
-          const purchaseUnit = orderData.purchase_units?.[0];
-          const amount = parseFloat(purchaseUnit?.amount?.value || "0");
-
+          const amount = parseFloat(orderData.purchase_units?.[0]?.amount?.value || "0");
           const order = await prisma.order.create({
             data: {
               totalAmount: amount,
               status: "completed",
               customerEmail: orderData.payer?.email_address || "",
               customerName: `${orderData.payer?.name?.given_name || ""} ${orderData.payer?.name?.surname || ""}`.trim(),
-              esimaccessOrderId: orderId,
+              esimaccessOrderId: paypalOrderId,
               esimaccessOrderStatus: "paid",
               orderItems: {
                 create: [{
                   planId,
-                  planName: purchaseUnit?.description || "eSIM Plan",
+                  planName: orderData.purchase_units?.[0]?.description || "eSIM",
+                  packageCode: planId ? (await prisma.plan.findUnique({ where: { id: planId } }))?.packageCode || null : null,
                   price: amount,
                   quantity: 1,
                 }],
               },
             },
-            include: { orderItems: true },
           });
 
-          // Call eSIM Access to get the package
-          if (planId) {
-            const plan = await prisma.plan.findUnique({ where: { id: planId } });
-            if (plan?.packageCode) {
-              try {
-                const esimOrder = await createEsimOrder({ packageCode: plan.packageCode });
-                await prisma.orderItem.update({
-                  where: { id: order.orderItems[0].id },
-                  data: {
-                    esimIccid: esimOrder.iccid,
-                    esimQrCode: esimOrder.qrcode,
-                    esimQrImage: esimOrder.qrcodeUrl,
-                    activationCode: esimOrder.activationCode,
-                  },
-                });
-                await prisma.order.update({
-                  where: { id: order.id },
-                  data: { esimaccessOrderStatus: esimOrder.orderStatus },
-                });
-              } catch (esimErr) {
-                console.error("eSIM Access order failed:", esimErr);
-              }
-            }
-          }
-
-          console.log(`Order ${order.id} created from PayPal webhook`);
+          // Auto-activate
+          await activateEsimAndEmail(order.id, planId, 1);
         }
       }
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Webhook error:", error);
+    console.error("[PayPal Webhook] Error:", error);
     return NextResponse.json({ error: "Webhook failed" }, { status: 500 });
   }
 }
 
-// Confirm payment and create order (called from frontend after PayPal redirect)
+// Frontend confirmation (after PayPal redirect)
 export async function PUT(request: Request) {
   try {
     const { orderId, planId, quantity = 1 } = await request.json();
-
-    if (!orderId) {
-      return NextResponse.json({ error: "Order ID required" }, { status: 400 });
-    }
+    if (!orderId) return NextResponse.json({ error: "Order ID required" }, { status: 400 });
 
     // Get userId from cookie
     const cookie = request.headers.get("cookie");
@@ -131,23 +187,17 @@ export async function PUT(request: Request) {
     const accessToken = await getAccessToken();
     const res = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderId}/capture`, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Authorization": `Bearer ${accessToken}`, "Content-Type": "application/json" },
     });
 
     const data = await res.json();
-
     if (data.status !== "COMPLETED") {
       return NextResponse.json({ error: "Payment not completed", status: data.status }, { status: 400 });
     }
 
-    // Get plan info
     const plan = await prisma.plan.findUnique({ where: { id: planId || "" } });
     const amount = parseFloat(data.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || "0");
 
-    // Create order in DB with userId if logged in
     const order = await prisma.order.create({
       data: {
         userId,
@@ -167,103 +217,19 @@ export async function PUT(request: Request) {
           }],
         },
       },
-      include: { orderItems: true },
     });
 
-    // Call eSIM Access to get eSIM
-    let esimData = null;
-    console.log("Plan packageCode:", plan?.packageCode, "planId:", planId);
+    // Auto-activate eSIM + send email
+    await activateEsimAndEmail(order.id, planId, quantity);
 
-    if (plan?.packageCode) {
-      try {
-        console.log("Calling eSIM Access API with packageCode:", plan.packageCode);
-        const esimOrder = await createEsimOrder({ packageCode: plan.packageCode, count: quantity });
-        console.log("eSIM Access response:", JSON.stringify(esimOrder));
-
-        const updatedItem = await prisma.orderItem.update({
-          where: { id: order.orderItems[0].id },
-          data: {
-            esimIccid: esimOrder.iccid,
-            esimQrCode: esimOrder.qrcode,
-            esimQrImage: esimOrder.qrcodeUrl,
-            activationCode: esimOrder.activationCode,
-          },
-        });
-        console.log("Order item updated with eSIM data");
-
-        await prisma.order.update({
-          where: { id: order.id },
-          data: { esimaccessOrderStatus: esimOrder.orderStatus || "completed" },
-        });
-
-        esimData = esimOrder;
-      } catch (esimErr) {
-        console.error("eSIM Access order FAILED:", esimErr);
-      }
-    } else {
-      console.error("No packageCode found for plan:", planId, "plan:", plan);
-    }
-
-    // Fetch updated order
     const updatedOrder = await prisma.order.findUnique({
       where: { id: order.id },
       include: { orderItems: true },
     });
 
-    // Send email notification
-    if (updatedOrder?.customerEmail) {
-      try {
-        const { sendEmail, getOrderConfirmationHtml, getOrderConfirmationAdminHtml } = await import("@/lib/email");
-
-        // Email to customer
-        await sendEmail({
-          to: updatedOrder.customerEmail,
-          subject: `OW SIM Order #${updatedOrder.id} Confirmed - Your eSIM is ready!`,
-          html: getOrderConfirmationHtml({
-            id: updatedOrder.id,
-            totalAmount: updatedOrder.totalAmount,
-            customerName: updatedOrder.customerName,
-            items: updatedOrder.orderItems.map((item) => ({
-              planName: item.planName,
-              price: item.price,
-              quantity: item.quantity,
-              qrImage: item.esimQrImage,
-              activationCode: item.activationCode,
-              iccid: item.esimIccid,
-            })),
-          }),
-        });
-
-        // Email to admin
-        const adminEmail = process.env.ADMIN_EMAIL;
-        if (adminEmail) {
-          await sendEmail({
-            to: adminEmail,
-            subject: `New Order #${updatedOrder.id} - $${updatedOrder.totalAmount.toFixed(2)}`,
-            html: getOrderConfirmationAdminHtml({
-              id: updatedOrder.id,
-              totalAmount: updatedOrder.totalAmount,
-              customerName: updatedOrder.customerName,
-              customerEmail: updatedOrder.customerEmail,
-              items: updatedOrder.orderItems.map((item) => ({
-                planName: item.planName,
-                price: item.price,
-              })),
-            }),
-          });
-        }
-      } catch (emailErr) {
-        console.error("Email send failed:", emailErr);
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      order: updatedOrder,
-      esim: esimData,
-    });
+    return NextResponse.json({ success: true, order: updatedOrder });
   } catch (error) {
-    console.error("Payment confirmation error:", error);
+    console.error("[PayPal Confirm] Error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
