@@ -161,6 +161,7 @@ export async function PUT(request: Request) {
           create: [{
             planId: planId || null,
             planName: plan?.name || "eSIM Plan",
+            packageCode: plan?.packageCode || null,
             price: amount,
             quantity,
           }],

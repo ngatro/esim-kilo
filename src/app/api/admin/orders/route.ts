@@ -15,13 +15,32 @@ export async function GET(request: Request) {
       where,
       include: {
         user: { select: { id: true, name: true, email: true } },
-        orderItems: { include: { plan: { select: { name: true, packageCode: true } } } },
+        orderItems: true,
       },
       orderBy: { createdAt: "desc" },
       take: limit,
     });
 
-    return NextResponse.json({ orders, total: orders.length });
+    // Fetch plans separately for each order item
+    const ordersWithPlans = await Promise.all(
+      orders.map(async (order) => {
+        const itemsWithPlans = await Promise.all(
+          order.orderItems.map(async (item) => {
+            let plan = null;
+            if (item.planId) {
+              plan = await prisma.plan.findUnique({
+                where: { id: item.planId },
+                select: { id: true, name: true, packageCode: true, destination: true },
+              });
+            }
+            return { ...item, plan };
+          })
+        );
+        return { ...order, orderItems: itemsWithPlans };
+      })
+    );
+
+    return NextResponse.json({ orders: ordersWithPlans, total: orders.length });
   } catch (error) {
     console.error("Admin orders error:", error);
     return NextResponse.json({ error: "Failed" }, { status: 500 });
@@ -39,7 +58,6 @@ export async function POST(request: Request) {
 
     const orderItem = await prisma.orderItem.findUnique({
       where: { id: orderItemId },
-      include: { plan: true },
     });
 
     if (!orderItem) {
@@ -50,15 +68,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "eSIM already activated" }, { status: 400 });
     }
 
-    if (!orderItem.plan?.packageCode) {
-      return NextResponse.json({ error: "No package code found" }, { status: 400 });
+    // Fetch plan separately to get packageCode, or use it from order item
+    const plan = orderItem.planId
+      ? await prisma.plan.findUnique({ where: { id: orderItem.planId } })
+      : null;
+
+    // Try: plan.packageCode > orderItem.packageCode
+    const packageCode = plan?.packageCode || orderItem.packageCode;
+
+    console.log(`[eSIM] OrderItem ${orderItemId}, planId: ${orderItem.planId}, packageCode: ${packageCode}, planExists: ${!!plan}`);
+
+    if (!packageCode) {
+      return NextResponse.json({
+        error: "No package code found. Plan may not be linked to this order item.",
+        debug: { planId: orderItem.planId, planName: orderItem.planName, planExists: !!plan },
+      }, { status: 400 });
     }
 
     // Call eSIM Access API
+    console.log(`[eSIM Activation] Calling eSIM Access with packageCode: ${packageCode}`);
     const esimOrder = await createEsimOrder({
-      packageCode: orderItem.plan.packageCode,
+      packageCode,
       count: orderItem.quantity,
     });
+    console.log(`[eSIM Activation] eSIM Access response:`, JSON.stringify(esimOrder));
 
     // Update order item with eSIM data
     await prisma.orderItem.update({
@@ -76,9 +109,11 @@ export async function POST(request: Request) {
       where: { id: orderItem.orderId },
       data: {
         esimaccessOrderId: esimOrder.orderNo,
-        esimaccessOrderStatus: esimOrder.orderStatus,
+        esimaccessOrderStatus: esimOrder.orderStatus || "activated",
       },
     });
+
+    console.log(`[eSIM Activation] Success! ICCID: ${esimOrder.iccid}`);
 
     return NextResponse.json({
       success: true,
@@ -91,7 +126,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("eSIM activation error:", error);
+    console.error("[eSIM Activation] Error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

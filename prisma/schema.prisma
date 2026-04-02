@@ -131,6 +131,7 @@ model OrderItem {
   plan            Plan?   @relation(fields: [planId], references: [id])
   
   planName        String
+  packageCode     String?   // saved directly for redundancy
   quantity        Int     @default(1)
   price           Float
   
