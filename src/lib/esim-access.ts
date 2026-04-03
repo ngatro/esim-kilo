@@ -82,6 +82,7 @@ interface EsimListItem {
   iccid?: string;
   eid?: string;
   esimTranNo?: string;
+  tranNo?: string;
   qrCode?: string;
   qrCodeUrl?: string;
   qrcodeUrl?: string;
@@ -199,28 +200,32 @@ export async function createOrder(params: {
   }
 
   const obj = res.obj as { esimList?: EsimListItem[]; orderNo?: string };
+  const orderNo = obj.orderNo;
   
   if (obj.esimList && obj.esimList.length > 0) {
     const firstItem = obj.esimList[0];
-    if (firstItem.qrCodeUrl || firstItem.qrCode || firstItem.iccid) {
-      return firstItem;
-    }
+    return {
+      ...firstItem,
+      esimTranNo: firstItem.esimTranNo || firstItem.tranNo || orderNo || undefined,
+    };
   }
 
   const directObj = res.obj as EsimListItem;
   if (directObj.iccid && (directObj.qrCodeUrl || directObj.qrCode)) {
-    return directObj;
+    return {
+      ...directObj,
+      esimTranNo: directObj.esimTranNo || directObj.tranNo || orderNo || undefined,
+    };
+  }
+
+  if (!orderNo) {
+    throw new Error("No eSIM data in response");
   }
 
   await new Promise(r => setTimeout(r, 2000));
   
-  const orderNo = obj.orderNo;
-  if (orderNo) {
-    console.log("[createOrder] No QR in initial response, querying for orderNo:", orderNo);
-    return await queryOrder(orderNo);
-  }
-
-  throw new Error("No eSIM data in response");
+  console.log("[createOrder] No QR in initial response, querying for orderNo:", orderNo);
+  return await queryOrder(orderNo);
 }
 
 export async function queryOrder(orderNo: string): Promise<EsimListItem> {
@@ -239,7 +244,10 @@ export async function queryOrder(orderNo: string): Promise<EsimListItem> {
   if (obj.esimList && obj.esimList.length > 0) {
     const first = obj.esimList[0];
     console.log("[queryOrder] First item - iccid:", first.iccid, "qrCodeUrl:", first.qrCodeUrl ? "present" : "missing", "ac:", first.ac ? "present" : "missing");
-    return first;
+    return {
+      ...first,
+      esimTranNo: first.esimTranNo || first.tranNo || orderNo || undefined,
+    };
   }
   
   return res.obj as EsimListItem;

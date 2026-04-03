@@ -140,8 +140,13 @@ export async function POST(request: Request) {
             const existingEnabled = items.some((item: { enabledAt: Date | null }) => item.enabledAt);
             if (!existingEnabled) {
               updateData.enabledAt = new Date();
-              console.log("[eSIM Webhook] eSIM enabled - setting enabledAt for dispute prevention");
+              updateData.esimStatus = "IN_USE";
+              console.log("[eSIM Webhook] eSIM enabled - setting enabledAt and esimStatus=IN_USE for dispute prevention");
             }
+          }
+
+          if (smdpStatus === "DOWNLOAD" || smdpStatus === "INSTALLATION") {
+            updateData.esimStatus = "IN_USE";
           }
 
           await Promise.all(items.map(item =>

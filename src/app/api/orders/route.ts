@@ -76,19 +76,21 @@ export async function POST(request: Request) {
             count: orderItem.quantity,
           });
 
+          const qrCodeUrl = esimOrder.qrCodeUrl || esimOrder.qrCode || null;
+          
           await prisma.orderItem.update({
             where: { id: orderItem.id },
             data: {
               esimIccid: esimOrder.iccid || null,
               esimEid: esimOrder.eid || null,
               esimTranNo: esimOrder.esimTranNo || null,
-              esimQrCode: esimOrder.qrCode || null,
-              esimQrImage: esimOrder.qrCodeUrl || null,
+              esimQrCode: qrCodeUrl,
+              esimQrImage: qrCodeUrl,
               esimLpaString: esimOrder.ac || esimOrder.lpaString || null,
               activationCode: esimOrder.activationCode || null,
               totalVolume: esimOrder.totalVolume || null,
-              smdpStatus: esimOrder.smdpStatus || null,
-              esimStatus: esimOrder.esimStatus || null,
+              smdpStatus: null,
+              esimStatus: esimOrder.esimStatus || "GOT_RESOURCE",
             },
           });
 
