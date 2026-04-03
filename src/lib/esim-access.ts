@@ -160,8 +160,9 @@ export async function createOrder(params: {
 
   const res = await esimAccessPost("/esim/order", {
     transactionId,
-    packageCode: params.packageCode,
-    count: params.count || 1,
+    packageList: [
+      { packageCode: params.packageCode, count: params.count || 1 }
+    ],
   });
 
   if (!res.success || !res.obj) {

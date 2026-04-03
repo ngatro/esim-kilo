@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createOrder, queryOrder } from "@/lib/esim-access";
+import { sendEmail, getOrderConfirmationHtml } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -108,6 +109,26 @@ export async function POST(request: Request) {
       where: { id: order.id },
       include: { orderItems: true },
     });
+
+    if (updatedOrder?.customerEmail) {
+      await sendEmail({
+        to: updatedOrder.customerEmail,
+        subject: `OW SIM Order #${updatedOrder.id} - Your eSIM is ready!`,
+        html: getOrderConfirmationHtml({
+          id: updatedOrder.id,
+          totalAmount: updatedOrder.totalAmount,
+          customerName: updatedOrder.customerName,
+          items: updatedOrder.orderItems.map((item) => ({
+            planName: item.planName,
+            price: item.price,
+            quantity: item.quantity,
+            qrImage: item.esimQrImage,
+            activationCode: item.activationCode,
+            iccid: item.esimIccid,
+          })),
+        }),
+      });
+    }
 
     return NextResponse.json({ success: true, order: updatedOrder, esimResults });
   } catch (error) {
