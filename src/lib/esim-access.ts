@@ -198,20 +198,25 @@ export async function createOrder(params: {
     throw new Error(res.message || "eSIM order creation failed");
   }
 
-  const obj = res.obj as { esimList?: EsimListItem[] };
+  const obj = res.obj as { esimList?: EsimListItem[]; orderNo?: string };
   
   if (obj.esimList && obj.esimList.length > 0) {
-    return obj.esimList[0];
+    const firstItem = obj.esimList[0];
+    if (firstItem.qrCodeUrl || firstItem.qrCode || firstItem.iccid) {
+      return firstItem;
+    }
   }
 
   const directObj = res.obj as EsimListItem;
-  if (directObj.iccid) {
+  if (directObj.iccid && (directObj.qrCodeUrl || directObj.qrCode)) {
     return directObj;
   }
 
   await new Promise(r => setTimeout(r, 2000));
-  const orderNo = (res.obj as { orderNo?: string })?.orderNo;
+  
+  const orderNo = obj.orderNo;
   if (orderNo) {
+    console.log("[createOrder] No QR in initial response, querying for orderNo:", orderNo);
     return await queryOrder(orderNo);
   }
 
@@ -219,15 +224,22 @@ export async function createOrder(params: {
 }
 
 export async function queryOrder(orderNo: string): Promise<EsimListItem> {
+  console.log("[queryOrder] Calling with orderNo:", orderNo);
   const res = await esimAccessPost("/esim/query", { 
     orderNo,
     pager: { page: 1, pageSize: 10 }
   });
+  console.log("[queryOrder] Response success:", res.success, "obj keys:", Object.keys(res.obj || {}));
+  
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
   
   const obj = res.obj as { esimList?: EsimListItem[] };
+  console.log("[queryOrder] esimList:", obj.esimList ? "present (" + obj.esimList.length + " items)" : "missing");
+  
   if (obj.esimList && obj.esimList.length > 0) {
-    return obj.esimList[0];
+    const first = obj.esimList[0];
+    console.log("[queryOrder] First item - iccid:", first.iccid, "qrCodeUrl:", first.qrCodeUrl ? "present" : "missing", "ac:", first.ac ? "present" : "missing");
+    return first;
   }
   
   return res.obj as EsimListItem;
