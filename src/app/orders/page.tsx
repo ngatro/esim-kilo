@@ -6,13 +6,9 @@ import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
-  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") {
-    return { label: "Depleted", color: "bg-red-500/20 text-red-400" };
-  }
-  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") {
-    return { label: "Terminated", color: "bg-slate-500/20 text-slate-500" };
-  }
-  
+  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "bg-red-500/20 text-red-400" };
+  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "bg-slate-500/20 text-slate-500" };
+
   if (item.smdpStatus === "ENABLED" || item.esimStatus === "IN_USE") {
     return { label: "In Use", color: "bg-green-500/20 text-green-400" };
   }

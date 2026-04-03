@@ -28,13 +28,9 @@ interface OrderItem {
 }
 
 function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
-  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") {
-    return { label: "Depleted", color: "text-red-400" };
-  }
-  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") {
-    return { label: "Terminated", color: "text-slate-500" };
-  }
-  
+  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "text-red-400" };
+  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "text-slate-500" };
+
   if (item.smdpStatus === "ENABLED" || item.esimStatus === "IN_USE") {
     return { label: "In Use", color: "text-green-400" };
   }
@@ -52,6 +48,14 @@ function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   }
 
   return { label: "Processing", color: "text-slate-400" };
+}
+
+function formatBytes(bytes: number | null): string {
+  if (!bytes || bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 interface Order {
@@ -75,6 +79,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
   const [activating, setActivating] = useState<number | null>(null);
+  const [syncing, setSyncing] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
@@ -116,6 +121,25 @@ export default function AdminOrdersPage() {
       console.error("Activation failed:", err);
     } finally {
       setActivating(null);
+    }
+  }
+
+  async function syncEsim(orderItemId: number) {
+    setSyncing(orderItemId);
+    try {
+      const res = await fetch("/api/admin/orders/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderItemId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchOrders();
+      }
+    } catch (err) {
+      console.error("Sync failed:", err);
+    } finally {
+      setSyncing(null);
     }
   }
 
@@ -232,12 +256,20 @@ export default function AdminOrdersPage() {
                                 <h4 className="text-white font-medium text-sm">{item.planName}</h4>
                                 <p className="text-slate-500 text-xs">${item.price.toFixed(2)} × {item.quantity}</p>
                               </div>
-                              {!item.esimQrCode && !item.esimQrImage && order.status === "completed" && (
-                                <button onClick={() => activateEsim(item.id)} disabled={activating === item.id}
-                                  className="bg-sky-500 hover:bg-sky-400 disabled:bg-slate-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors">
-                                  {activating === item.id ? "Activating..." : "Activate eSIM"}
-                                </button>
-                              )}
+                              <div className="flex gap-2">
+                                {(item.esimQrCode || item.esimQrImage) && (
+                                  <button onClick={() => syncEsim(item.id)} disabled={syncing === item.id}
+                                    className="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1">
+                                    {syncing === item.id ? "↻" : "↻"} Sync
+                                  </button>
+                                )}
+                                {!item.esimQrCode && !item.esimQrImage && order.status === "completed" && (
+                                  <button onClick={() => activateEsim(item.id)} disabled={activating === item.id}
+                                    className="bg-sky-500 hover:bg-sky-400 disabled:bg-slate-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors">
+                                    {activating === item.id ? "Activating..." : "Activate eSIM"}
+                                  </button>
+                                )}
+                              </div>
                             </div>
 
                             {(item.esimQrCode || item.esimQrImage) && (
@@ -249,11 +281,25 @@ export default function AdminOrdersPage() {
                                   {item.esimIccid && (
                                     <div><p className="text-slate-500 text-xs">ICCID</p><p className="text-sky-400 text-xs font-mono">{item.esimIccid}</p></div>
                                   )}
+                                  {item.esimEid && (
+                                    <div><p className="text-slate-500 text-xs">EID (Device ID)</p><p className="text-purple-400 text-xs font-mono break-all">{item.esimEid}</p></div>
+                                  )}
                                   {item.smdpStatus && (
                                     <div><p className="text-slate-500 text-xs">SM-DP+</p><p className={"text-xs font-medium " + getEsimStatusLabel(item).color}>{item.smdpStatus}</p></div>
                                   )}
                                   {item.esimStatus && (
                                     <div><p className="text-slate-500 text-xs">Status</p><p className={"text-xs font-medium " + getEsimStatusLabel(item).color}>{getEsimStatusLabel(item).label}</p></div>
+                                  )}
+                                  {item.totalVolume && item.totalVolume > 0 && (
+                                    <div>
+                                      <p className="text-slate-500 text-xs">Data Usage</p>
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                          <div className="h-full bg-sky-500 rounded-full" style={{ width: `${Math.min(100, (item.orderUsage || 0) / item.totalVolume * 100)}%` }} />
+                                        </div>
+                                        <span className="text-xs text-slate-400">{formatBytes(item.orderUsage)} / {formatBytes(item.totalVolume)}</span>
+                                      </div>
+                                    </div>
                                   )}
                                   {item.enabledAt && (
                                     <div><p className="text-green-400/70 text-xs">✓ Enabled: {new Date(item.enabledAt).toLocaleString()}</p></div>

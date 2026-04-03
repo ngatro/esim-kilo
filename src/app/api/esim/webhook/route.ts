@@ -13,6 +13,8 @@ export async function POST(request: Request) {
     const orderStatus = body.content?.orderStatus || body.orderStatus || body.order_status;
     const smdpStatus = body.content?.smdpStatus || body.smdpStatus;
     const iccid = body.content?.iccid || body.iccid;
+    const eid = body.content?.eid || body.eid || body.content?.EID || null;
+    const eventTime = body.content?.eventGenerateTime || body.eventGenerateTime || null;
 
     await prisma.webhookLog.create({
       data: {
@@ -80,14 +82,13 @@ export async function POST(request: Request) {
                   data: {
                     esimIccid: esimData.iccid || item.esimIccid,
                     esimEid: esimData.eid || null,
-                    esimTranNo: esimData.esimTranNo || null,
-                    esimQrCode: esimData.qrCode || null,
+                    esimTranNo: esimData.esimTranNo || orderNo || null,
                     esimQrImage: qrImageUrl || item.esimQrImage,
                     esimLpaString: lpaStr || item.esimLpaString,
                     activationCode: esimData.activationCode || null,
                     totalVolume: esimData.totalVolume || null,
                     smdpStatus: esimData.smdpStatus || "RELEASED",
-                    esimStatus: orderStatus,
+                    esimStatus: orderStatus === "GOT_RESOURCE" ? "GOT_RESOURCE" : "IN_USE",
                     orderUsage: esimData.orderUsage || 0,
                   },
                 })
@@ -132,21 +133,29 @@ export async function POST(request: Request) {
 
       case "SMDP_EVENT":
         if (smdpStatus) {
-          console.log("[eSIM Webhook] SMDP_EVENT - smdpStatus=" + smdpStatus);
+          console.log("[eSIM Webhook] SMDP_EVENT - smdpStatus=" + smdpStatus + ", eid=" + eid);
           
           const updateData: Record<string, unknown> = { smdpStatus };
           
           if (smdpStatus === "ENABLED") {
+            updateData.esimStatus = "IN_USE";
             const existingEnabled = items.some((item: { enabledAt: Date | null }) => item.enabledAt);
             if (!existingEnabled) {
-              updateData.enabledAt = new Date();
-              updateData.esimStatus = "IN_USE";
-              console.log("[eSIM Webhook] eSIM enabled - setting enabledAt and esimStatus=IN_USE for dispute prevention");
+              updateData.enabledAt = eventTime ? new Date(eventTime) : new Date();
+              console.log("[eSIM Webhook] eSIM enabled - setting enabledAt and esimStatus=IN_USE");
             }
           }
 
           if (smdpStatus === "DOWNLOAD" || smdpStatus === "INSTALLATION") {
             updateData.esimStatus = "IN_USE";
+          }
+
+          if (smdpStatus === "RELEASED" || smdpStatus === "DELETED") {
+            updateData.esimStatus = smdpStatus === "DELETED" ? "CANCEL" : "USED_UP";
+          }
+
+          if (eid) {
+            updateData.esimEid = eid;
           }
 
           await Promise.all(items.map(item =>
@@ -159,35 +168,21 @@ export async function POST(request: Request) {
         break;
 
       case "DATA_USAGE":
-      case "ESIM_STATUS":
         const usage = body.content?.orderUsage || body.orderUsage || 0;
         const totalVol = body.content?.totalVolume || body.totalVolume || 0;
-        const status = body.content?.esimStatus || body.esimStatus;
 
-        console.log("[eSIM Webhook] DATA_USAGE/ESIM_STATUS - usage=" + usage + ", status=" + status);
+        console.log("[eSIM Webhook] DATA_USAGE - usage=" + usage + ", totalVolume=" + totalVol);
 
         await Promise.all(items.map(item =>
           prisma.orderItem.update({
             where: { id: item.id },
             data: {
               orderUsage: usage,
-              esimStatus: status || item.esimStatus,
+              totalVolume: totalVol || item.totalVolume,
               lastUsageSync: new Date(),
             },
           })
         ));
-
-        if (order.customerEmail && status === "USED_UP") {
-          try {
-            await sendEmail({
-              to: order.customerEmail,
-              subject: "OW SIM - Data Limit Reached",
-              html: "<h2>Your eSIM data has been used up</h2><p>Please purchase a new plan to continue using data.</p><p><a href='https://owsim.com/plans'>Browse Plans</a></p>",
-            });
-          } catch (emailErr) {
-            console.error("[eSIM Webhook] Usage email error:", emailErr);
-          }
-        }
 
         if (order.customerEmail && usage >= totalVol * 0.8 && usage < totalVol * 0.9) {
           try {
@@ -198,6 +193,38 @@ export async function POST(request: Request) {
             });
           } catch (emailErr) {
             console.error("[eSIM Webhook] 80% warning email error:", emailErr);
+          }
+        }
+        break;
+
+      case "ESIM_STATUS":
+        const esimStatus = body.content?.esimStatus || body.esimStatus;
+        const esimUsage = body.content?.orderUsage || body.orderUsage || 0;
+        const esimTotalVol = body.content?.totalVolume || body.totalVolume || 0;
+
+        console.log("[eSIM Webhook] ESIM_STATUS - status=" + esimStatus + ", usage=" + esimUsage);
+
+        await Promise.all(items.map(item =>
+          prisma.orderItem.update({
+            where: { id: item.id },
+            data: {
+              esimStatus: esimStatus || item.esimStatus,
+              orderUsage: esimUsage,
+              totalVolume: esimTotalVol || item.totalVolume,
+              lastUsageSync: new Date(),
+            },
+          })
+        ));
+
+        if (esimStatus === "USED_UP" && order.customerEmail) {
+          try {
+            await sendEmail({
+              to: order.customerEmail,
+              subject: "OW SIM - Data Limit Reached",
+              html: "<h2>Your eSIM data has been used up</h2><p>Please purchase a new plan to continue using data.</p><p><a href='https://owsim.com/plans'>Browse Plans</a></p>",
+            });
+          } catch (emailErr) {
+            console.error("[eSIM Webhook] Usage email error:", emailErr);
           }
         }
         break;
