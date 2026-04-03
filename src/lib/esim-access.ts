@@ -92,7 +92,7 @@ async function esimAccessPost(endpoint: string, body: Record<string, unknown> = 
   const accessCode = getAccessCode();
   const timestamp = Date.now().toString();
   const requestId = uuidv4();
-  const bodyStr = JSON.stringify(body);
+  const bodyStr = JSON.stringify(body).replace(/\s+/g, "");
 
   // Generate HMAC-SHA256 signature
   const signature = generateSignature(timestamp, requestId, accessCode, bodyStr);
