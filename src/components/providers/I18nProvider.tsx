@@ -5,6 +5,7 @@ import en from "@/messages/en.json";
 import vi from "@/messages/vi.json";
 import de from "@/messages/de.json";
 import fr from "@/messages/fr.json";
+import { formatCurrency, getExchangeRates, LOCALE_TO_CURRENCY, type ExchangeRates } from "@/lib/currency";
 
 export type Locale = "en" | "vi" | "de" | "fr";
 
@@ -27,6 +28,9 @@ interface I18nContextType {
   setLocale: (locale: Locale) => void;
   t: (key: string) => string;
   isReady: boolean;
+  currency: string;
+  formatPrice: (usdAmount: number) => string;
+  rates: ExchangeRates;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -47,6 +51,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): string {
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
   const [isReady, setIsReady] = useState(false);
+  const [rates, setRates] = useState<ExchangeRates>({ USD: 1, VND: 24500, EUR: 0.92, JPY: 150 });
 
   useEffect(() => {
     try {
@@ -58,6 +63,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       // ignore
     }
     setIsReady(true);
+  }, []);
+
+  useEffect(() => {
+    getExchangeRates().then(setRates).catch(console.error);
   }, []);
 
   const setLocale = (newLocale: Locale) => {
@@ -76,8 +85,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return getNestedValue(translations[currentLocale], key);
   };
 
+  const currency = LOCALE_TO_CURRENCY[locale] || "USD";
+  
+  const formatPrice = (usdAmount: number): string => {
+    return formatCurrency(usdAmount, currency, rates);
+  };
+
   return (
-    <I18nContext.Provider value={{ locale, setLocale, t, isReady }}>
+    <I18nContext.Provider value={{ locale, setLocale, t, isReady, currency, formatPrice, rates }}>
       {children}
     </I18nContext.Provider>
   );

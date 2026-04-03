@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 interface PlanCardData {
   id: string;
@@ -30,9 +31,11 @@ function formatData(gb: number): string {
 }
 
 export default function PlanCard({ plan }: PlanCardProps) {
+  const { formatPrice } = useI18n();
   const isUnlimited = plan.dataAmount >= 999;
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
+  const pricePerDay = formatPrice(displayPrice / plan.durationDays);
 
   return (
     <div
@@ -55,9 +58,9 @@ export default function PlanCard({ plan }: PlanCardProps) {
         </div>
         <div className="text-right">
           {hasDiscount && (
-            <p className="text-xs text-slate-500 line-through">${hasDiscount ? plan.priceUsd.toFixed(2) : ""}</p>
+            <p className="text-xs text-slate-500 line-through">{formatPrice(plan.priceUsd)}</p>
           )}
-          <p className="text-xl font-bold text-white">${displayPrice.toFixed(2)}</p>
+          <p className="text-xl font-bold text-white">{formatPrice(displayPrice)}</p>
         </div>
       </div>
 
@@ -71,7 +74,7 @@ export default function PlanCard({ plan }: PlanCardProps) {
           <p className="text-[10px] text-slate-500">Days</p>
         </div>
         <div className="bg-slate-900/60 rounded-xl p-2 text-center">
-          <p className="text-sm font-bold text-emerald-400">${(displayPrice / plan.durationDays).toFixed(2)}</p>
+          <p className="text-sm font-bold text-emerald-400">{pricePerDay}</p>
           <p className="text-[10px] text-slate-500">/Day</p>
         </div>
       </div>
