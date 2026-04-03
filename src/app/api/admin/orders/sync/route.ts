@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { queryOrder } from "@/lib/esim-access";
+import { queryOrder, queryEsimUsage } from "@/lib/esim-access";
 
 export async function POST(request: Request) {
   try {
@@ -19,55 +19,77 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Order item not found" }, { status: 404 });
     }
 
-    const orderNo = orderItem.esimTranNo || orderItem.order?.esimaccessOrderId;
+    let orderNo = orderItem.esimTranNo || orderItem.order?.esimaccessOrderId;
     
     if (!orderNo) {
-      return NextResponse.json({ error: "No orderNo found for this item" }, { status: 400 });
+      return NextResponse.json({ error: "No orderNo/TranNo found. esimTranNo is missing in database." }, { status: 400 });
+    }
+
+    const isPayPalId = /^[0-9A-Z]{4,}$/.test(orderNo) && !orderNo.startsWith("B") && orderNo.length > 20;
+    if (isPayPalId) {
+      return NextResponse.json({ error: "Cannot sync - esimTranNo is missing. Current esimaccessOrderId appears to be PayPal ID: " + orderNo }, { status: 400 });
     }
 
     console.log("[Admin Sync] Querying eSIM Access for orderNo:", orderNo);
-    const esimData = await queryOrder(orderNo);
-
-    if (!esimData?.iccid) {
-      return NextResponse.json({ error: "No eSIM data found from API" }, { status: 404 });
+    
+    let esimData;
+    try {
+      esimData = await queryOrder(orderNo);
+    } catch (queryErr) {
+      console.log("[Admin Sync] queryOrder failed, trying by ICCID:", orderItem.esimIccid);
+      if (orderItem.esimIccid) {
+        const usageData = await queryEsimUsage(orderItem.esimIccid);
+        esimData = {
+          iccid: orderItem.esimIccid,
+          eid: orderItem.esimEid,
+          smdpStatus: usageData.smdpStatus,
+          esimStatus: usageData.esimStatus,
+          orderUsage: usageData.orderUsage,
+          totalVolume: usageData.totalVolume,
+        };
+      }
     }
 
-    const qrCodeUrl = esimData.qrCodeUrl || esimData.qrCode || null;
+    if (!esimData?.iccid) {
+      return NextResponse.json({ error: "No eSIM data found from API for orderNo: " + orderNo }, { status: 404 });
+    }
+
+    const qrCodeUrl = (esimData as { qrCodeUrl?: string; qrCode?: string }).qrCodeUrl || (esimData as { qrCodeUrl?: string; qrCode?: string }).qrCode || null;
     
     await prisma.orderItem.update({
       where: { id: orderItemId },
       data: {
-        esimIccid: esimData.iccid || orderItem.esimIccid,
-        esimEid: esimData.eid || orderItem.esimEid,
-        esimTranNo: esimData.esimTranNo || orderNo,
+        esimIccid: (esimData as { iccid?: string }).iccid || orderItem.esimIccid,
+        esimEid: (esimData as { eid?: string }).eid || orderItem.esimEid,
+        esimTranNo: (esimData as { esimTranNo?: string }).esimTranNo || orderNo,
         esimQrImage: qrCodeUrl || orderItem.esimQrImage,
-        esimLpaString: esimData.ac || esimData.lpaString || orderItem.esimLpaString,
-        activationCode: esimData.activationCode || orderItem.activationCode,
-        totalVolume: esimData.totalVolume || orderItem.totalVolume,
-        smdpStatus: esimData.smdpStatus || orderItem.smdpStatus,
-        esimStatus: esimData.esimStatus || orderItem.esimStatus,
-        orderUsage: esimData.orderUsage ?? orderItem.orderUsage,
+        esimLpaString: (esimData as { ac?: string; lpaString?: string }).ac || (esimData as { ac?: string; lpaString?: string }).lpaString || orderItem.esimLpaString,
+        activationCode: (esimData as { activationCode?: string }).activationCode || orderItem.activationCode,
+        totalVolume: (esimData as { totalVolume?: number }).totalVolume || orderItem.totalVolume,
+        smdpStatus: (esimData as { smdpStatus?: string }).smdpStatus || orderItem.smdpStatus,
+        esimStatus: (esimData as { esimStatus?: string }).esimStatus || orderItem.esimStatus,
+        orderUsage: (esimData as { orderUsage?: number }).orderUsage ?? orderItem.orderUsage,
         lastUsageSync: new Date(),
       },
     });
 
     await prisma.order.update({
       where: { id: orderItem.orderId },
-      data: { esimaccessOrderStatus: esimData.esimStatus || orderItem.order?.esimaccessOrderStatus },
+      data: { esimaccessOrderStatus: (esimData as { esimStatus?: string }).esimStatus || orderItem.order?.esimaccessOrderStatus },
     });
 
-    console.log("[Admin Sync] Success! ICCID:", esimData.iccid, "Usage:", esimData.orderUsage);
+    console.log("[Admin Sync] Success! ICCID:", (esimData as { iccid?: string }).iccid, "Usage:", (esimData as { orderUsage?: number }).orderUsage);
 
     return NextResponse.json({
       success: true,
       data: {
-        iccid: esimData.iccid,
-        eid: esimData.eid,
+        iccid: (esimData as { iccid?: string }).iccid,
+        eid: (esimData as { eid?: string }).eid,
         qrImage: qrCodeUrl,
-        smdpStatus: esimData.smdpStatus,
-        esimStatus: esimData.esimStatus,
-        orderUsage: esimData.orderUsage,
-        totalVolume: esimData.totalVolume,
+        smdpStatus: (esimData as { smdpStatus?: string }).smdpStatus,
+        esimStatus: (esimData as { esimStatus?: string }).esimStatus,
+        orderUsage: (esimData as { orderUsage?: number }).orderUsage,
+        totalVolume: (esimData as { totalVolume?: number }).totalVolume,
       },
     });
   } catch (error) {
