@@ -77,17 +77,6 @@ export default function OrdersPage() {
   }, [user, searched]);
 
   useEffect(() => {
-    const hasPendingOrders = orders.some(o => o.orderItems.every(i => !i.esimQrImage));
-    if (!hasPendingOrders || orders.length === 0) return;
-
-    const interval = setInterval(() => {
-      fetchOrders();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [orders, user, searched]);
-
-  useEffect(() => {
     const previousOrders = orders.filter(o => !newlyReady.includes(o.id));
     const newlyActivated = orders.filter(o => 
       o.orderItems.every(i => i.esimIccid) && 
@@ -248,10 +237,10 @@ export default function OrdersPage() {
                               )}
                             </div>
 
-                            {(item.esimQrCode || item.esimQrImage || item.esimIccid) ? (
+                            {(item.esimQrImage && item.esimQrImage.length > 0) ? (
                               <div className="flex flex-col sm:flex-row items-start gap-4">
                                 <div className="bg-white rounded-xl p-3 sm:p-4 flex-shrink-0 mx-auto sm:mx-0">
-                                  <img src={item.esimQrImage || item.esimQrCode || ""} alt="eSIM QR Code"
+                                  <img src={item.esimQrImage} alt="eSIM QR Code"
                                     className="w-36 h-36 sm:w-44 sm:h-44" />
                                 </div>
                                 <div className="flex-1 space-y-2 sm:space-y-3 text-center sm:text-left">
