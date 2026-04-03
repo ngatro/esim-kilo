@@ -12,14 +12,8 @@ function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   if (item.smdpStatus === "ENABLED" || item.esimStatus === "ACTIVATED") {
     return { label: "In Use", color: "bg-green-500/20 text-green-400" };
   }
-  if (item.smdpStatus === "DOWNLOADED" || item.smdpStatus === "INSTALLED" || item.smdpStatus === "INSTALLATION") {
-    return { label: "Installing...", color: "bg-yellow-500/20 text-yellow-400" };
-  }
-  if (item.esimStatus === "GOT_RESOURCE" || item.esimQrImage) {
-    return { label: "Ready to Scan", color: "bg-sky-500/20 text-sky-400" };
-  }
-  if (item.esimIccid) {
-    return { label: "Issued", color: "bg-blue-500/20 text-blue-400" };
+  if (item.esimQrImage || item.esimIccid) {
+    return { label: "Ready", color: "bg-yellow-500/20 text-yellow-400" };
   }
   return { label: "Processing", color: "bg-slate-500/20 text-slate-400" };
 }
@@ -298,7 +292,7 @@ export default function OrdersPage() {
                                         </span>
                                       </div>
                                       {item.enabledAt && (
-                                        <p className="text-[10px] text-green-400/70">✓ Activated on {new Date(item.enabledAt).toLocaleString()}</p>
+                                        <p className="text-[10px] text-green-400/70">✓ Enabled on {new Date(item.enabledAt).toLocaleString()}</p>
                                       )}
                                       {item.orderUsage !== null && item.orderUsage !== undefined && (
                                         <div>
@@ -329,7 +323,7 @@ export default function OrdersPage() {
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs">
                             <div><p className="text-slate-500">Amount</p><p className="text-white font-semibold">${order.totalAmount.toFixed(2)}</p></div>
                             <div><p className="text-slate-500">Payment</p><p className={order.status === "completed" ? "text-green-400" : "text-yellow-400"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
-                            <div><p className="text-slate-500">eSIM</p><p className={order.orderItems.every(i => i.esimIccid) ? "text-green-400" : order.orderItems.some(i => i.esimIccid) ? "text-yellow-400" : "text-slate-400"}>{order.orderItems.every(i => i.esimIccid) ? "✅ Activated" : order.orderItems.some(i => i.esimIccid) ? "⚠️ Partial" : "⏳ Pending"}</p></div>
+                            <div><p className="text-slate-500">eSIM</p><p className={order.orderItems.every(i => i.smdpStatus === "ENABLED") ? "text-green-400" : order.orderItems.some(i => i.esimQrImage) ? "text-yellow-400" : "text-slate-400"}>{order.orderItems.every(i => i.smdpStatus === "ENABLED") ? "✅ In Use" : order.orderItems.some(i => i.esimQrImage) ? "✅ Ready" : "⏳ Processing"}</p></div>
                             {order.esimaccessOrderId && (
                               <div><p className="text-slate-500">Order ID</p><p className="text-slate-300 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
                             )}

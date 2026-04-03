@@ -34,14 +34,8 @@ function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   if (item.smdpStatus === "ENABLED" || item.esimStatus === "ACTIVATED") {
     return { label: "In Use", color: "text-green-400" };
   }
-  if (item.smdpStatus === "DOWNLOADED" || item.smdpStatus === "INSTALLED" || item.smdpStatus === "INSTALLATION") {
-    return { label: "Installing...", color: "text-yellow-400" };
-  }
-  if (item.esimStatus === "GOT_RESOURCE" || item.esimQrImage) {
-    return { label: "Ready to Scan", color: "text-sky-400" };
-  }
-  if (item.esimIccid) {
-    return { label: "Issued", color: "text-blue-400" };
+  if (item.esimQrImage || item.esimIccid) {
+    return { label: "Ready", color: "text-yellow-400" };
   }
   return { label: "Processing", color: "text-slate-400" };
 }
