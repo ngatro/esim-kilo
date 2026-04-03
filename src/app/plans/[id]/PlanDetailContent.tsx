@@ -114,7 +114,8 @@ export default function PlanDetailContent() {
   }
 
   const isUnlimited = plan.dataAmount >= 999;
-  const pricePerDay = (plan.priceUsd / plan.durationDays).toFixed(2);
+  const displayPrice = plan.retailPriceUsd || plan.priceUsd;
+  const pricePerDay = (displayPrice / plan.durationDays).toFixed(2);
   const locations = Array.isArray(plan.locations) ? (plan.locations as string[]) : [];
   const networkList = Array.isArray(plan.locationNetworkList) ? (plan.locationNetworkList as LocationNetwork[]) : [];
   const hasDiscount = plan.retailPriceUsd > plan.priceUsd;
@@ -160,13 +161,14 @@ export default function PlanDetailContent() {
               <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 sm:p-6">
                 <h2 className="text-base sm:text-lg font-semibold text-white mb-3">Plan Details</h2>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><p className="text-slate-500 text-xs">Data Type</p><p className="text-white">{getDataTypeLabel(plan.dataType)}</p></div>
-                  <div><p className="text-slate-500 text-xs">Network</p><p className="text-white">{plan.speed || "4G LTE"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Data</p><p className="text-white">{formatData(plan.dataAmount)}</p></div>
+                  <div><p className="text-slate-500 text-xs">Validity</p><p className="text-white">{plan.durationDays} Days</p></div>
+                  <div><p className="text-slate-500 text-xs">Speed</p><p className="text-white">{plan.speed || "4G LTE"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Plan Type</p><p className="text-white">{plan.smsStatus === 0 ? "Data Only" : "Data + SMS"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Tethering</p><p className="text-white">{plan.ipExport ? "Supported" : "Not supported"}</p></div>
                   <div><p className="text-slate-500 text-xs">Activation</p><p className="text-white">{plan.activeType === 1 ? "First installation" : "First network connection"}</p></div>
-                  <div><p className="text-slate-500 text-xs">SMS</p><p className="text-white">{plan.smsStatus === 0 ? "Not supported" : plan.smsStatus === 1 ? "API + Mobile" : "API only"}</p></div>
-                  {plan.ipExport && <div><p className="text-slate-500 text-xs">IP Export</p><p className="text-white">{plan.ipExport}</p></div>}
-                  <div><p className="text-slate-500 text-xs">Top-Up</p><p className="text-white">{plan.supportTopUp ? "Supported" : "Not supported"}</p></div>
                   {plan.unusedValidTime > 0 && <div><p className="text-slate-500 text-xs">Valid After Purchase</p><p className="text-white">{plan.unusedValidTime} days</p></div>}
+                  <div><p className="text-slate-500 text-xs">Top-Up</p><p className="text-white">{plan.supportTopUp ? "Supported" : "Not supported"}</p></div>
                   <div><p className="text-slate-500 text-xs">Package Code</p><p className="text-slate-400 text-xs font-mono">{plan.packageCode}</p></div>
                 </div>
               </div>
@@ -186,10 +188,13 @@ export default function PlanDetailContent() {
                       <div key={net.locationCode} className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0 text-xs">{net.locationCode}</div>
                         <div className="flex-1">
-                          <p className="text-white text-sm font-medium">{net.locationName}</p>
-                          <div className="flex flex-wrap gap-2 mt-1">
+                          <p className="text-white text-sm font-medium">Location: {net.locationName}</p>
+                          <div className="flex flex-wrap gap-2 mt-2">
                             {net.operatorList?.map((op, i) => (
-                              <span key={i} className="bg-sky-500/10 text-sky-400 text-xs px-2 py-0.5 rounded-full">{op.operatorName} ({op.networkType})</span>
+                              <span key={i} className="bg-green-500/10 text-green-400 text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                {op.operatorName} ({op.networkType})
+                              </span>
                             ))}
                           </div>
                         </div>
@@ -237,12 +242,12 @@ export default function PlanDetailContent() {
               <motion.div className="sticky top-20 sm:top-24 bg-slate-800/70 border border-slate-700/60 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 {hasDiscount && (
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-slate-500 line-through text-lg">${plan.retailPriceUsd.toFixed(2)}</span>
-                    <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-0.5 rounded-full">-{Math.round((1 - plan.priceUsd / plan.retailPriceUsd) * 100)}%</span>
+                    <span className="text-slate-500 line-through text-lg">${(plan.retailPriceUsd || plan.priceUsd).toFixed(2)}</span>
+                    <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-0.5 rounded-full">-{Math.round((1 - plan.priceUsd / (plan.retailPriceUsd || plan.priceUsd)) * 100)}%</span>
                   </div>
                 )}
                 <div className="flex items-baseline justify-between mb-1">
-                  <p className="text-3xl sm:text-4xl font-bold text-white">${plan.priceUsd.toFixed(2)}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-white">${displayPrice.toFixed(2)}</p>
                   <p className="text-sm text-slate-500">one-time</p>
                 </div>
                 <p className="text-slate-500 text-sm mb-5 sm:mb-6">{isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`} · {plan.durationDays} days</p>

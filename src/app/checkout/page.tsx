@@ -13,6 +13,7 @@ interface Plan {
   dataAmount: number;
   durationDays: number;
   priceUsd: number;
+  retailPriceUsd: number;
   coverageCount: number;
   speed: string | null;
   networkType: string | null;
@@ -354,7 +355,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const totalPrice = plan.priceUsd * quantity;
+  const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd || plan.priceUsd) * quantity;
   const isUnlimited = plan.dataAmount >= 999;
 
   return (
@@ -383,7 +384,7 @@ export default function CheckoutPage() {
                     {isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`} · {plan.durationDays} days · {plan.speed || "4G LTE"}
                   </p>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-white flex-shrink-0">${plan.priceUsd.toFixed(2)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-white flex-shrink-0">${plan.retailPriceUsd || plan.priceUsd.toFixed(2)}</p>
               </div>
             </div>
 
@@ -539,7 +540,7 @@ export default function CheckoutPage() {
               <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 <div className="flex justify-between text-slate-300 text-sm">
                   <span>{plan.destination} eSIM × {quantity}</span>
-                  <span>${(plan.priceUsd * quantity).toFixed(2)}</span>
+                  <span>${(plan.retailPriceUsd || plan.priceUsd * quantity).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-slate-300 text-sm">
                   <span>Activation</span>
