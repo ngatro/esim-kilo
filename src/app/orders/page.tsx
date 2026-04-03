@@ -5,6 +5,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 
+function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
+  if (item.esimStatus === "USED_UP" || item.esimStatus === "CANCEL") {
+    return { label: "Depleted", color: "bg-red-500/20 text-red-400" };
+  }
+  if (item.smdpStatus === "ENABLED" || item.esimStatus === "ACTIVATED") {
+    return { label: "In Use", color: "bg-green-500/20 text-green-400" };
+  }
+  if (item.smdpStatus === "DOWNLOADED" || item.smdpStatus === "INSTALLED" || item.smdpStatus === "INSTALLATION") {
+    return { label: "Installing...", color: "bg-yellow-500/20 text-yellow-400" };
+  }
+  if (item.esimStatus === "GOT_RESOURCE" || item.esimQrImage) {
+    return { label: "Ready to Scan", color: "bg-sky-500/20 text-sky-400" };
+  }
+  if (item.esimIccid) {
+    return { label: "Issued", color: "bg-blue-500/20 text-blue-400" };
+  }
+  return { label: "Processing", color: "bg-slate-500/20 text-slate-400" };
+}
+
 interface OrderItem {
   id: number;
   planId: string | null;
@@ -202,13 +221,15 @@ export default function OrdersPage() {
                         }`}>
                           {order.status === "completed" ? "Paid" : order.status}
                         </span>
-                        <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${
-                          order.orderItems.every(i => i.esimIccid) ? "bg-green-500/20 text-green-400" :
-                          order.orderItems.some(i => i.esimIccid) ? "bg-yellow-500/20 text-yellow-400" :
-                          "bg-slate-500/20 text-slate-400"
-                        }`}>
-                          {order.orderItems.every(i => i.esimIccid) ? "Active" : order.orderItems.some(i => i.esimIccid) ? "Partial" : "Pending"}
-                        </span>
+                        {(() => {
+                          const firstItem = order.orderItems[0];
+                          const status = firstItem ? getEsimStatusLabel(firstItem) : { label: "Processing", color: "bg-slate-500/20 text-slate-400" };
+                          return (
+                            <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${status.color}`}>
+                              {status.label}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                     <svg className={`w-4 h-4 sm:w-5 sm:h-5 text-slate-500 transition-transform ${expandedOrder === order.id ? "rotate-180" : ""}`}

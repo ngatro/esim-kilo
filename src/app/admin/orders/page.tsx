@@ -23,7 +23,27 @@ interface OrderItem {
   smdpStatus: string | null;
   esimStatus: string | null;
   orderUsage: number | null;
+  enabledAt: string | null;
   plan?: { name: string; packageCode: string } | null;
+}
+
+function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
+  if (item.esimStatus === "USED_UP" || item.esimStatus === "CANCEL") {
+    return { label: "Depleted", color: "text-red-400" };
+  }
+  if (item.smdpStatus === "ENABLED" || item.esimStatus === "ACTIVATED") {
+    return { label: "In Use", color: "text-green-400" };
+  }
+  if (item.smdpStatus === "DOWNLOADED" || item.smdpStatus === "INSTALLED" || item.smdpStatus === "INSTALLATION") {
+    return { label: "Installing...", color: "text-yellow-400" };
+  }
+  if (item.esimStatus === "GOT_RESOURCE" || item.esimQrImage) {
+    return { label: "Ready to Scan", color: "text-sky-400" };
+  }
+  if (item.esimIccid) {
+    return { label: "Issued", color: "text-blue-400" };
+  }
+  return { label: "Processing", color: "text-slate-400" };
 }
 
 interface Order {
@@ -176,8 +196,8 @@ export default function AdminOrdersPage() {
                                 order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
                               }`}>{order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "✓" : "⏳"}</div>
                               <div className="flex-1"><p className="text-white">eSIM Access</p><p className="text-slate-500">{order.orderItems[0]?.esimStatus || order.esimaccessOrderStatus || "Pending"}</p></div>
-                              <span className={order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "text-green-400" : order.orderItems.some(i => i.esimStatus === "GOT_RESOURCE") ? "text-yellow-400" : "text-slate-400"}>
-                                {order.orderItems.some(i => i.esimStatus === "ACTIVATED") ? "Active" : order.orderItems.some(i => i.esimStatus === "GOT_RESOURCE") ? "Ready" : order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "Activated" : "Waiting"}
+                              <span className={order.orderItems[0] ? getEsimStatusLabel(order.orderItems[0]).color : "text-slate-400"}>
+                                {order.orderItems[0] ? getEsimStatusLabel(order.orderItems[0]).label : "Waiting"}
                               </span>
                             </div>
                             <div className="flex items-center gap-3 text-xs">
@@ -221,8 +241,14 @@ export default function AdminOrdersPage() {
                                   {item.esimIccid && (
                                     <div><p className="text-slate-500 text-xs">ICCID</p><p className="text-sky-400 text-xs font-mono">{item.esimIccid}</p></div>
                                   )}
+                                  {item.smdpStatus && (
+                                    <div><p className="text-slate-500 text-xs">SM-DP+</p><p className={"text-xs font-medium " + getEsimStatusLabel(item).color}>{item.smdpStatus}</p></div>
+                                  )}
                                   {item.esimStatus && (
-                                    <div><p className="text-slate-500 text-xs">Status</p><p className={"text-xs font-medium " + (item.esimStatus === "ACTIVATED" ? "text-green-400" : item.esimStatus === "GOT_RESOURCE" ? "text-yellow-400" : "text-slate-400")}>{item.esimStatus}</p></div>
+                                    <div><p className="text-slate-500 text-xs">Status</p><p className={"text-xs font-medium " + getEsimStatusLabel(item).color}>{getEsimStatusLabel(item).label}</p></div>
+                                  )}
+                                  {item.enabledAt && (
+                                    <div><p className="text-green-400/70 text-xs">✓ Enabled: {new Date(item.enabledAt).toLocaleString()}</p></div>
                                   )}
                                   {item.activationCode && (
                                     <div><p className="text-slate-500 text-xs">Activation Code</p><p className="text-sky-400 text-xs font-mono break-all">{item.activationCode}</p></div>
