@@ -145,13 +145,22 @@ export default function OrdersPage() {
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="text-right">
                       <p className="text-base sm:text-lg font-bold text-white">${order.totalAmount.toFixed(2)}</p>
-                      <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${
-                        order.status === "completed" ? "bg-green-500/20 text-green-400" :
-                        order.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
-                        "bg-red-500/20 text-red-400"
-                      }`}>
-                        {order.status === "completed" ? "Paid" : order.status}
-                      </span>
+                      <div className="flex gap-1 mt-1">
+                        <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${
+                          order.status === "completed" ? "bg-green-500/20 text-green-400" :
+                          order.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                          "bg-red-500/20 text-red-400"
+                        }`}>
+                          {order.status === "completed" ? "Paid" : order.status}
+                        </span>
+                        <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${
+                          order.orderItems.every(i => i.esimIccid) ? "bg-green-500/20 text-green-400" :
+                          order.orderItems.some(i => i.esimIccid) ? "bg-yellow-500/20 text-yellow-400" :
+                          "bg-slate-500/20 text-slate-400"
+                        }`}>
+                          {order.orderItems.every(i => i.esimIccid) ? "Active" : order.orderItems.some(i => i.esimIccid) ? "Partial" : "Pending"}
+                        </span>
+                      </div>
                     </div>
                     <svg className={`w-4 h-4 sm:w-5 sm:h-5 text-slate-500 transition-transform ${expandedOrder === order.id ? "rotate-180" : ""}`}
                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -212,11 +221,12 @@ export default function OrdersPage() {
 
                         {/* Payment info */}
                         <div className="bg-slate-900/50 rounded-xl p-3 sm:p-4">
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-xs">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs">
                             <div><p className="text-slate-500">Amount</p><p className="text-white font-semibold">${order.totalAmount.toFixed(2)}</p></div>
-                            <div><p className="text-slate-500">Status</p><p className="text-green-400">{order.status}</p></div>
+                            <div><p className="text-slate-500">Payment</p><p className={order.status === "completed" ? "text-green-400" : "text-yellow-400"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
+                            <div><p className="text-slate-500">eSIM</p><p className={order.orderItems.every(i => i.esimIccid) ? "text-green-400" : order.orderItems.some(i => i.esimIccid) ? "text-yellow-400" : "text-slate-400"}>{order.orderItems.every(i => i.esimIccid) ? "✅ Activated" : order.orderItems.some(i => i.esimIccid) ? "⚠️ Partial" : "⏳ Pending"}</p></div>
                             {order.esimaccessOrderId && (
-                              <div><p className="text-slate-500">PayPal ID</p><p className="text-slate-300 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
+                              <div><p className="text-slate-500">Order ID</p><p className="text-slate-300 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
                             )}
                           </div>
                         </div>
