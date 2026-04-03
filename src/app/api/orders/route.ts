@@ -165,7 +165,13 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ orders });
+    return NextResponse.json({ orders }, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+      },
+    });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }

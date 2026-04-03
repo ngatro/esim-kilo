@@ -8,8 +8,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("[eSIM Webhook] Received:", JSON.stringify(body));
 
-    if (body.notifyType === "CHECK_HEALTH") {
-      console.log("[eSIM Webhook] Health Check - URL validated successfully");
+    if (body.notifyType === "CHECK_HEALTH" || body.content?.orderStatus === "Test" || body.orderStatus === "Test") {
+      console.log("[eSIM Webhook] Health Check / Test - URL validated");
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         console.log("[eSIM Webhook] Query result: iccid=" + (esimData?.iccid || "none") + ", qrCodeUrl=" + (esimData?.qrCodeUrl ? "present" : "none") + ", ac=" + (esimData?.ac ? "present" : "none"));
 
         if (esimData?.iccid) {
-          const qrImageUrl = esimData.qrCodeUrl || esimData.qrCode || null;
+          const qrImageUrl = esimData.qrCodeUrl || esimData.qrcodeUrl || esimData.qrCode || null;
           const lpaStr = esimData.ac || esimData.lpaString || null;
           
           console.log("[eSIM Webhook] Mapping: qrCodeUrl=" + qrImageUrl + ", ac=" + lpaStr + ", esimTranNo=" + esimData.esimTranNo + ", totalVolume=" + esimData.totalVolume);
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
                     planName: item.planName,
                     price: item.price,
                     quantity: item.quantity,
-                    qrImage: esimData!.qrcodeUrl,
+                    qrImage: esimData!.qrCodeUrl || esimData!.qrcodeUrl || null,
                     activationCode: esimData!.activationCode,
                     iccid: esimData!.iccid,
                   })),

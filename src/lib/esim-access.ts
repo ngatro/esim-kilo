@@ -82,6 +82,8 @@ interface EsimListItem {
   esimTranNo?: string;
   qrCode?: string;
   qrCodeUrl?: string;
+  qrcodeUrl?: string;
+  lpaString?: string;
   ac?: string;
   activationCode?: string;
   smdpAddress?: string;

@@ -183,6 +183,21 @@ export async function PUT(request: Request) {
     const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
     const userId = token ? parseInt(token) : null;
 
+    // Idempotency: Check if order already exists
+    const existingOrder = await prisma.order.findFirst({
+      where: { esimaccessOrderId: orderId },
+      include: { orderItems: true },
+    });
+
+    if (existingOrder) {
+      console.log("[PayPal Confirm] Order already exists: " + existingOrder.id);
+      return NextResponse.json({ 
+        success: true, 
+        order: existingOrder,
+        alreadyProcessed: true 
+      });
+    }
+
     // Verify with PayPal
     const accessToken = await getAccessToken();
     const res = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderId}/capture`, {

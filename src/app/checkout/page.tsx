@@ -70,6 +70,11 @@ export default function CheckoutPage() {
         .then((data) => {
           if (data.success && data.order) {
             const item = data.order.orderItems?.[0];
+            if (data.alreadyProcessed) {
+              // Order already processed, redirect to orders
+              router.replace("/orders");
+              return;
+            }
             setSuccess({
               orderId: data.order.id,
               qrCode: item?.esimQrCode || item?.esimQrImage || data.esim?.qrcodeUrl,
@@ -78,6 +83,8 @@ export default function CheckoutPage() {
             // Clean up localStorage
             localStorage.removeItem("paypal_planId");
             localStorage.removeItem("paypal_qty");
+            // Redirect to orders page to remove token from URL
+            setTimeout(() => router.replace("/orders"), 3000);
           } else {
             setError(data.error || "Payment confirmation failed");
           }
