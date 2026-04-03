@@ -219,7 +219,7 @@ export async function createOrder(params: {
 }
 
 export async function queryOrder(orderNo: string): Promise<EsimListItem> {
-  const res = await esimAccessPost("/esim/order/query", { 
+  const res = await esimAccessPost("/esim/query", { 
     orderNo,
     pager: { page: 1, pageSize: 10 }
   });

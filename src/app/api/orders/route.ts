@@ -95,16 +95,18 @@ export async function POST(request: Request) {
           esimResults.push({
             orderItem: orderItem.id,
             status: esimOrder.esimStatus || "created",
-            orderNo: esimOrder.iccid ? "created" : "",
+            orderNo: esimOrder.orderNo || "",
           });
 
-          await prisma.order.update({
-            where: { id: order.id },
-            data: {
-              esimaccessOrderId: esimOrder.orderNo,
-              esimaccessOrderStatus: esimOrder.orderStatus,
-            },
-          });
+          if (esimOrder.orderNo) {
+            await prisma.order.update({
+              where: { id: order.id },
+              data: {
+                esimaccessOrderId: esimOrder.orderNo,
+                esimaccessOrderStatus: esimOrder.esimStatus || esimOrder.orderStatus || "created",
+              },
+            });
+          }
         } catch (esimError) {
           console.error("eSIM Access order error:", esimError);
         }
