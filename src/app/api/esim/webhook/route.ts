@@ -23,15 +23,21 @@ export async function POST(request: Request) {
 
     console.log("[eSIM Webhook] Processing: " + orderNo + " | status=" + orderStatus);
 
+    console.log("[eSIM Webhook] Searching for order with esimaccessOrderId: " + orderNo);
+
     const order = await prisma.order.findFirst({
       where: { esimaccessOrderId: orderNo },
       include: { orderItems: true },
     });
 
     if (!order) {
-      console.log("[eSIM Webhook] Order not found: " + orderNo);
+      console.log("[eSIM Webhook] Order not found for esimaccessOrderId: " + orderNo);
+      const orders = await prisma.order.findMany({ select: { id: true, esimaccessOrderId: true }, take: 10 });
+      console.log("[eSIM Webhook] Sample orders in DB:", JSON.stringify(orders));
       return NextResponse.json({ received: true }, { status: 200 });
     }
+
+    console.log("[eSIM Webhook] Found order ID: " + order.id + " with " + order.orderItems.length + " items");
 
     let esimData: OrderObj | null = null;
 

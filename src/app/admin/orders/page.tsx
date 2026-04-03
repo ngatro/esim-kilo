@@ -15,6 +15,7 @@ interface OrderItem {
   esimIccid: string | null;
   esimQrCode: string | null;
   esimQrImage: string | null;
+  esimStatus: string | null;
   activationCode: string | null;
   plan?: { name: string; packageCode: string } | null;
 }
@@ -168,9 +169,9 @@ export default function AdminOrdersPage() {
                               <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
                                 order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
                               }`}>{order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "✓" : "⏳"}</div>
-                              <div className="flex-1"><p className="text-white">eSIM Access</p><p className="text-slate-500">{order.esimaccessOrderStatus || "Pending"}</p></div>
-                              <span className={order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "text-green-400" : "text-yellow-400"}>
-                                {order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "Activated" : "Waiting"}
+                              <div className="flex-1"><p className="text-white">eSIM Access</p><p className="text-slate-500">{order.orderItems[0]?.esimStatus || order.esimaccessOrderStatus || "Pending"}</p></div>
+                              <span className={order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "text-green-400" : order.orderItems.some(i => i.esimStatus === "GOT_RESOURCE") ? "text-yellow-400" : "text-slate-400"}>
+                                {order.orderItems.some(i => i.esimStatus === "ACTIVATED") ? "Active" : order.orderItems.some(i => i.esimStatus === "GOT_RESOURCE") ? "Ready" : order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "Activated" : "Waiting"}
                               </span>
                             </div>
                             <div className="flex items-center gap-3 text-xs">
@@ -214,10 +215,12 @@ export default function AdminOrdersPage() {
                                   {item.esimIccid && (
                                     <div><p className="text-slate-500 text-xs">ICCID</p><p className="text-sky-400 text-xs font-mono">{item.esimIccid}</p></div>
                                   )}
+                                  {item.esimStatus && (
+                                    <div><p className="text-slate-500 text-xs">Status</p><p className={"text-xs font-medium " + (item.esimStatus === "ACTIVATED" ? "text-green-400" : item.esimStatus === "GOT_RESOURCE" ? "text-yellow-400" : "text-slate-400")}>{item.esimStatus}</p></div>
+                                  )}
                                   {item.activationCode && (
                                     <div><p className="text-slate-500 text-xs">Activation Code</p><p className="text-sky-400 text-xs font-mono break-all">{item.activationCode}</p></div>
                                   )}
-                                  <p className="text-green-400 text-xs">✓ eSIM activated</p>
                                 </div>
                               </div>
                             )}

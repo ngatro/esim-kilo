@@ -38,29 +38,52 @@ export default function OrdersPage() {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
   const [guestEmail, setGuestEmail] = useState("");
   const [searched, setSearched] = useState(false);
   const [newlyReady, setNewlyReady] = useState<number[]>([]);
 
+  async function fetchOrders() {
+    if (!refreshing) setLoading(true);
+    try {
+      const url = user ? "/api/orders" : (guestEmail ? "/api/orders?email=" + encodeURIComponent(guestEmail) : null);
+      if (!url) return;
+      const res = await fetch(url);
+      const data = await res.json();
+      setOrders(data.orders || []);
+      setSearched(true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }
+
+  function handleRefresh() {
+    setRefreshing(true);
+    fetchOrders();
+  }
+
   useEffect(() => {
-    if (user) {
+    if (user || searched) {
       fetchOrders();
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, searched]);
 
   useEffect(() => {
-    const hasPendingOrders = orders.some(o => o.orderItems.every(i => !i.esimIccid));
+    const hasPendingOrders = orders.some(o => o.orderItems.every(i => !i.esimQrImage));
     if (!hasPendingOrders || orders.length === 0) return;
 
     const interval = setInterval(() => {
       fetchOrders();
-    }, 30000);
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [orders, user]);
+  }, [orders, user, searched]);
 
   useEffect(() => {
     const previousOrders = orders.filter(o => !newlyReady.includes(o.id));
@@ -73,24 +96,10 @@ export default function OrdersPage() {
     }
   }, [orders]);
 
-  async function fetchOrders(email?: string) {
-    setLoading(true);
-    try {
-      const url = email ? `/api/orders?email=${encodeURIComponent(email)}` : "/api/orders";
-      const res = await fetch(url);
-      const data = await res.json();
-      setOrders(data.orders || []);
-      setSearched(true);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   function handleGuestSearch() {
     if (guestEmail) {
-      fetchOrders(guestEmail);
+      setSearched(true);
+      fetchOrders();
     }
   }
 
@@ -133,11 +142,20 @@ export default function OrdersPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-white">My Orders</h1>
             <p className="text-slate-400 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
           </div>
-          <Link href="/plans">
-            <motion.button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
-              Buy New eSIM
-            </motion.button>
-          </Link>
+          <div className="flex gap-2">
+            <button onClick={handleRefresh} disabled={refreshing}
+              className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2 disabled:opacity-50">
+              <svg className={"w-4 h-4 " + (refreshing ? "animate-spin" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
+            <Link href="/plans">
+              <motion.button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
+                Buy New eSIM
+              </motion.button>
+            </Link>
+          </div>
         </div>
 
         {newlyReady.length > 0 && (
