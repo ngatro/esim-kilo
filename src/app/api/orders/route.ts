@@ -110,7 +110,8 @@ export async function POST(request: Request) {
       include: { orderItems: true },
     });
 
-    if (updatedOrder?.customerEmail) {
+    const hasEsimData = updatedOrder?.orderItems.some(i => i.esimIccid);
+    if (updatedOrder?.customerEmail && hasEsimData) {
       await sendEmail({
         to: updatedOrder.customerEmail,
         subject: `OW SIM Order #${updatedOrder.id} - Your eSIM is ready!`,

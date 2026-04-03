@@ -36,6 +36,7 @@ export default function OrdersPage() {
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
   const [guestEmail, setGuestEmail] = useState("");
   const [searched, setSearched] = useState(false);
+  const [newlyReady, setNewlyReady] = useState<number[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -44,6 +45,28 @@ export default function OrdersPage() {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    const hasPendingOrders = orders.some(o => o.orderItems.every(i => !i.esimIccid));
+    if (!hasPendingOrders || orders.length === 0) return;
+
+    const interval = setInterval(() => {
+      fetchOrders();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [orders, user]);
+
+  useEffect(() => {
+    const previousOrders = orders.filter(o => !newlyReady.includes(o.id));
+    const newlyActivated = orders.filter(o => 
+      o.orderItems.every(i => i.esimIccid) && 
+      !previousOrders.some(p => p.id === o.id && p.orderItems.every(i => i.esimIccid))
+    );
+    if (newlyActivated.length > 0) {
+      setNewlyReady(prev => [...prev, ...newlyActivated.map(o => o.id)]);
+    }
+  }, [orders]);
 
   async function fetchOrders(email?: string) {
     setLoading(true);
@@ -111,6 +134,17 @@ export default function OrdersPage() {
             </motion.button>
           </Link>
         </div>
+
+        {newlyReady.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+            className="bg-green-500/20 border border-green-500/40 rounded-xl p-4 mb-4 flex items-center gap-3">
+            <span className="text-2xl">🎉</span>
+            <div>
+              <p className="text-green-400 font-medium">Your eSIM is ready!</p>
+              <p className="text-green-300/70 text-sm">Check your email or expand the order to view QR code.</p>
+            </div>
+          </motion.div>
+        )}
 
         {orders.length === 0 ? (
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-12 sm:p-16 text-center">
