@@ -28,10 +28,14 @@ interface OrderItem {
 }
 
 function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
-  if (item.esimStatus === "USED_UP") return { label: "Depleted", color: "text-red-400" };
-  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "text-slate-500" };
-
-  if (item.smdpStatus === "ENABLED" || item.esimStatus === "ACTIVATED" || item.esimStatus === "IN_USE") {
+  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") {
+    return { label: "Depleted", color: "text-red-400" };
+  }
+  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") {
+    return { label: "Terminated", color: "text-slate-500" };
+  }
+  
+  if (item.smdpStatus === "ENABLED" || item.esimStatus === "IN_USE") {
     return { label: "In Use", color: "text-green-400" };
   }
 
@@ -44,7 +48,7 @@ function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   }
   
   if (item.esimQrImage || item.esimIccid) {
-    return { label: "Code Issued", color: "text-yellow-400/80" };
+    return { label: "Issued", color: "text-yellow-400/80" };
   }
 
   return { label: "Processing", color: "text-slate-400" };

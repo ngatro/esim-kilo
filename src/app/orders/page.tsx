@@ -6,10 +6,14 @@ import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
-  if (item.esimStatus === "USED_UP") return { label: "Depleted", color: "bg-red-500/20 text-red-400" };
-  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "bg-slate-500/20 text-slate-500" };
-
-  if (item.smdpStatus === "ENABLED" || item.esimStatus === "ACTIVATED" || item.esimStatus === "IN_USE") {
+  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") {
+    return { label: "Depleted", color: "bg-red-500/20 text-red-400" };
+  }
+  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") {
+    return { label: "Terminated", color: "bg-slate-500/20 text-slate-500" };
+  }
+  
+  if (item.smdpStatus === "ENABLED" || item.esimStatus === "IN_USE") {
     return { label: "In Use", color: "bg-green-500/20 text-green-400" };
   }
 
@@ -22,7 +26,7 @@ function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   }
   
   if (item.esimQrImage || item.esimIccid) {
-    return { label: "Code Issued", color: "bg-yellow-500/20 text-yellow-400/80" };
+    return { label: "Issued", color: "bg-yellow-500/20 text-yellow-400/80" };
   }
 
   return { label: "Processing", color: "bg-slate-500/20 text-slate-400" };
