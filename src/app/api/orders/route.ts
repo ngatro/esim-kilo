@@ -79,17 +79,23 @@ export async function POST(request: Request) {
           await prisma.orderItem.update({
             where: { id: orderItem.id },
             data: {
-              esimIccid: esimOrder.iccid,
-              esimQrCode: esimOrder.qrcode,
-              esimQrImage: esimOrder.qrcodeUrl,
-              activationCode: esimOrder.activationCode,
+              esimIccid: esimOrder.iccid || null,
+              esimEid: esimOrder.eid || null,
+              esimTranNo: esimOrder.esimTranNo || null,
+              esimQrCode: esimOrder.qrCode || null,
+              esimQrImage: esimOrder.qrCodeUrl || null,
+              esimLpaString: esimOrder.ac || esimOrder.lpaString || null,
+              activationCode: esimOrder.activationCode || null,
+              totalVolume: esimOrder.totalVolume || null,
+              smdpStatus: esimOrder.smdpStatus || null,
+              esimStatus: esimOrder.esimStatus || null,
             },
           });
 
           esimResults.push({
             orderItem: orderItem.id,
-            status: esimOrder.orderStatus,
-            orderNo: esimOrder.orderNo,
+            status: esimOrder.esimStatus || "created",
+            orderNo: esimOrder.iccid ? "created" : "",
           });
 
           await prisma.order.update({

@@ -77,6 +77,8 @@ interface OrderObj {
 }
 
 interface EsimListItem {
+  orderNo?: string;
+  orderStatus?: string;
   iccid?: string;
   eid?: string;
   esimTranNo?: string;
@@ -182,7 +184,7 @@ export async function createOrder(params: {
   packageCode: string;
   count?: number;
   orderId?: string;
-}): Promise<OrderObj> {
+}): Promise<EsimListItem> {
   const transactionId = `OW-${params.orderId || Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   const res = await esimAccessPost("/esim/order", {
@@ -196,7 +198,24 @@ export async function createOrder(params: {
     throw new Error(res.message || "eSIM order creation failed");
   }
 
-  return res.obj as OrderObj;
+  const obj = res.obj as { esimList?: EsimListItem[] };
+  
+  if (obj.esimList && obj.esimList.length > 0) {
+    return obj.esimList[0];
+  }
+
+  const directObj = res.obj as EsimListItem;
+  if (directObj.iccid) {
+    return directObj;
+  }
+
+  await new Promise(r => setTimeout(r, 2000));
+  const orderNo = (res.obj as { orderNo?: string })?.orderNo;
+  if (orderNo) {
+    return await queryOrder(orderNo);
+  }
+
+  throw new Error("No eSIM data in response");
 }
 
 export async function queryOrder(orderNo: string): Promise<EsimListItem> {

@@ -97,10 +97,16 @@ export async function POST(request: Request) {
     await prisma.orderItem.update({
       where: { id: orderItemId },
       data: {
-        esimIccid: esimOrder.iccid,
+        esimIccid: esimOrder.iccid || null,
+        esimEid: esimOrder.eid || null,
+        esimTranNo: esimOrder.esimTranNo || null,
         esimQrCode: esimOrder.qrCode || null,
         esimQrImage: esimOrder.qrCodeUrl || null,
-        activationCode: esimOrder.activationCode,
+        esimLpaString: esimOrder.ac || esimOrder.lpaString || null,
+        activationCode: esimOrder.activationCode || null,
+        totalVolume: esimOrder.totalVolume || null,
+        smdpStatus: esimOrder.smdpStatus || null,
+        esimStatus: esimOrder.esimStatus || null,
       },
     });
 
@@ -108,8 +114,8 @@ export async function POST(request: Request) {
     await prisma.order.update({
       where: { id: orderItem.orderId },
       data: {
-        esimaccessOrderId: esimOrder.orderNo,
-        esimaccessOrderStatus: esimOrder.orderStatus || "activated",
+        esimaccessOrderId: esimOrder.orderNo || esimOrder.iccid,
+        esimaccessOrderStatus: esimOrder.esimStatus || esimOrder.orderStatus || "activated",
       },
     });
 
@@ -119,9 +125,12 @@ export async function POST(request: Request) {
       success: true,
       esim: {
         iccid: esimOrder.iccid,
-        qrCode: esimOrder.qrcode,
-        qrImage: esimOrder.qrcodeUrl,
+        qrCode: esimOrder.qrCode,
+        qrImage: esimOrder.qrCodeUrl,
         activationCode: esimOrder.activationCode,
+        lpaString: esimOrder.ac,
+        totalVolume: esimOrder.totalVolume,
+        esimStatus: esimOrder.esimStatus,
         orderNo: esimOrder.orderNo,
       },
     });
