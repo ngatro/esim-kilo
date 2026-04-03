@@ -62,13 +62,33 @@ interface OrderObj {
   eid?: string;
   tranNo?: string;
   qrcode: string;
-  qrcodeUrl: string;
+  qrCode?: string;
+  qrcodeUrl?: string;
+  qrCodeUrl?: string;
   lpaString?: string;
+  ac?: string;
   activationCode: string;
   packageName: string;
   price: number;
   esimStatus?: string;
   orderUsage?: number;
+  totalVolume?: number;
+  smdpStatus?: string;
+}
+
+interface EsimListItem {
+  iccid?: string;
+  eid?: string;
+  esimTranNo?: string;
+  qrCode?: string;
+  qrCodeUrl?: string;
+  ac?: string;
+  activationCode?: string;
+  smdpAddress?: string;
+  smdpStatus?: string;
+  totalVolume?: number;
+  orderUsage?: number;
+  esimStatus?: string;
 }
 
 function getAccessCode(): string {
@@ -177,25 +197,33 @@ export async function createOrder(params: {
   return res.obj as OrderObj;
 }
 
-export async function queryOrder(orderNo: string): Promise<OrderObj> {
+export async function queryOrder(orderNo: string): Promise<EsimListItem> {
   const res = await esimAccessPost("/esim/order/query", { 
     orderNo,
     pager: { page: 1, pageSize: 10 }
   });
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
-  return res.obj as OrderObj;
+  
+  const obj = res.obj as { esimList?: EsimListItem[] };
+  if (obj.esimList && obj.esimList.length > 0) {
+    return obj.esimList[0];
+  }
+  
+  return res.obj as EsimListItem;
 }
 
-export async function queryEsimUsage(iccid: string): Promise<{ esimStatus: string; orderUsage: number }> {
+export async function queryEsimUsage(iccid: string): Promise<{ esimStatus: string; orderUsage: number; totalVolume?: number; smdpStatus?: string }> {
   const res = await esimAccessPost("/esim/query", { 
     iccid,
     pager: { page: 1, pageSize: 10 }
   });
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
-  const obj = res.obj as { esimStatus?: string; orderUsage?: number };
+  const obj = res.obj as { esimStatus?: string; orderUsage?: number; totalVolume?: number; smdpStatus?: string };
   return {
     esimStatus: obj.esimStatus || "UNKNOWN",
     orderUsage: obj.orderUsage || 0,
+    totalVolume: obj.totalVolume,
+    smdpStatus: obj.smdpStatus,
   };
 }
 
@@ -209,4 +237,4 @@ export async function refundOrder(orderNo: string): Promise<boolean> {
   return res.success;
 }
 
-export type { EsimPackage, OrderObj, BalanceObj, LocationNetwork, PackageListObj };
+export type { EsimPackage, OrderObj, BalanceObj, LocationNetwork, PackageListObj, EsimListItem };

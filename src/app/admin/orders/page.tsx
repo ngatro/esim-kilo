@@ -13,10 +13,16 @@ interface OrderItem {
   price: number;
   quantity: number;
   esimIccid: string | null;
+  esimEid: string | null;
+  esimTranNo: string | null;
   esimQrCode: string | null;
   esimQrImage: string | null;
-  esimStatus: string | null;
+  esimLpaString: string | null;
   activationCode: string | null;
+  totalVolume: number | null;
+  smdpStatus: string | null;
+  esimStatus: string | null;
+  orderUsage: number | null;
   plan?: { name: string; packageCode: string } | null;
 }
 

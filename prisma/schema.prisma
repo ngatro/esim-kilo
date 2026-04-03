@@ -143,8 +143,10 @@ model OrderItem {
   esimLpaString   String?
   activationCode  String?
   
-  esimStatus      String?   // INIT, GOT_RESOURCE, ACTIVATED, etc.
-  orderUsage      Float?    // Data usage in bytes
+  totalVolume    Float?   // Total data volume in bytes (from API)
+  smdpStatus      String?  // RELEASED, DOWNLOADED, etc.
+  esimStatus      String?  // INIT, GOT_RESOURCE, ACTIVATED, CANCEL, COMPLETED
+  orderUsage      Float?   // Data usage in bytes
   lastUsageSync   DateTime?
 
   @@index([esimIccid])

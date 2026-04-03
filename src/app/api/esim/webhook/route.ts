@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { queryOrder, OrderObj } from "@/lib/esim-access";
+import { queryOrder, EsimListItem } from "@/lib/esim-access";
 import { sendEmail, getOrderConfirmationHtml, getOrderConfirmationAdminHtml } from "@/lib/email";
 
 export async function POST(request: Request) {
@@ -39,26 +39,34 @@ export async function POST(request: Request) {
 
     console.log("[eSIM Webhook] Found order ID: " + order.id + " with " + order.orderItems.length + " items");
 
-    let esimData: OrderObj | null = null;
+    let esimData: EsimListItem | null = null;
 
     if (orderStatus === "GOT_RESOURCE" || orderStatus === "ACTIVATED") {
       try {
         esimData = await queryOrder(orderNo);
-        console.log("[eSIM Webhook] Query result: iccid=" + (esimData?.iccid || "none"));
+        console.log("[eSIM Webhook] Query result: iccid=" + (esimData?.iccid || "none") + ", qrCodeUrl=" + (esimData?.qrCodeUrl ? "present" : "none") + ", ac=" + (esimData?.ac ? "present" : "none"));
 
         if (esimData?.iccid) {
+          const qrImageUrl = esimData.qrCodeUrl || esimData.qrCode || null;
+          const lpaStr = esimData.ac || esimData.lpaString || null;
+          
+          console.log("[eSIM Webhook] Mapping: qrCodeUrl=" + qrImageUrl + ", ac=" + lpaStr + ", esimTranNo=" + esimData.esimTranNo + ", totalVolume=" + esimData.totalVolume);
+
           await Promise.all(order.orderItems.map(item =>
             prisma.orderItem.update({
               where: { id: item.id },
               data: {
-                esimIccid: esimData.iccid,
-                esimEid: esimData.eid || null,
-                esimTranNo: esimData.tranNo || null,
-                esimQrCode: esimData.qrcode,
-                esimQrImage: esimData.qrcodeUrl,
-                esimLpaString: esimData.lpaString || null,
-                activationCode: esimData.activationCode,
-                esimStatus: esimData.esimStatus || orderStatus,
+                esimIccid: esimData!.iccid || null,
+                esimEid: esimData!.eid || null,
+                esimTranNo: esimData!.esimTranNo || null,
+                esimQrCode: esimData!.qrCode || null,
+                esimQrImage: qrImageUrl,
+                esimLpaString: lpaStr,
+                activationCode: esimData!.activationCode || null,
+                totalVolume: esimData!.totalVolume || null,
+                smdpStatus: esimData!.smdpStatus || null,
+                esimStatus: esimData!.esimStatus || orderStatus,
+                orderUsage: esimData!.orderUsage || 0,
               },
             })
           ));

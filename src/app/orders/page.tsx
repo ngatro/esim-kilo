@@ -18,6 +18,8 @@ interface OrderItem {
   esimQrImage: string | null;
   esimLpaString: string | null;
   activationCode: string | null;
+  totalVolume: number | null;
+  smdpStatus: string | null;
   esimStatus: string | null;
   orderUsage: number | null;
 }
@@ -246,7 +248,7 @@ export default function OrdersPage() {
                               )}
                             </div>
 
-                            {(item.esimQrCode || item.esimQrImage) ? (
+                            {(item.esimQrCode || item.esimQrImage || item.esimIccid) ? (
                               <div className="flex flex-col sm:flex-row items-start gap-4">
                                 <div className="bg-white rounded-xl p-3 sm:p-4 flex-shrink-0 mx-auto sm:mx-0">
                                   <img src={item.esimQrImage || item.esimQrCode || ""} alt="eSIM QR Code"
@@ -278,7 +280,7 @@ export default function OrdersPage() {
                                       <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Status: {item.esimStatus}</p>
                                       {item.orderUsage !== null && item.orderUsage !== undefined && (
                                         <div className="w-full bg-slate-700 rounded-full h-2">
-                                          <div className="bg-gradient-to-r from-sky-500 to-green-400 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage / (item.price * 1024 * 1024 * 1024)) * 100) + "%" }} />
+                                          <div className="bg-gradient-to-r from-sky-500 to-green-400 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage || 0) / (item.totalVolume || 1) * 100) + "%" }} />
                                         </div>
                                       )}
                                     </div>
