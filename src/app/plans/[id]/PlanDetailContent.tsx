@@ -117,7 +117,17 @@ export default function PlanDetailContent() {
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = (displayPrice / plan.durationDays).toFixed(2);
   const locations = Array.isArray(plan.locations) ? (plan.locations as string[]) : [];
-  const networkList = Array.isArray(plan.locationNetworkList) ? (plan.locationNetworkList as LocationNetwork[]) : [];
+  
+  let networkList: LocationNetwork[] = [];
+  try {
+    const parsed = typeof plan.locationNetworkList === 'string' 
+      ? JSON.parse(plan.locationNetworkList) 
+      : plan.locationNetworkList;
+    networkList = Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    networkList = [];
+  }
+  
   const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
 
   return (
