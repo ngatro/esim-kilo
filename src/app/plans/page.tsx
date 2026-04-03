@@ -51,7 +51,7 @@ function formatData(gb: number): string {
 
 function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const isUnlimited = plan.dataAmount >= 999;
-  const displayPrice = plan.retailPriceUsd || plan.priceUsd;
+  const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = (displayPrice / plan.durationDays).toFixed(2);
   const locations = Array.isArray(plan.locations) ? plan.locations : [];
 

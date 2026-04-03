@@ -40,6 +40,8 @@ function formatData(gb: number): string {
 
 function MiniPlanCard({ plan, index }: { plan: Plan; index: number }) {
   const isUnlimited = plan.dataAmount >= 999;
+  const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
+  const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
 
   return (
     <motion.div
@@ -65,10 +67,10 @@ function MiniPlanCard({ plan, index }: { plan: Plan; index: number }) {
           </p>
         </div>
         <div className="text-right">
-          {(plan.retailPriceUsd || 0) > plan.priceUsd && (
-            <p className="text-xs text-slate-500 line-through">${(plan.retailPriceUsd || plan.priceUsd).toFixed(2)}</p>
+          {hasDiscount && (
+            <p className="text-xs text-slate-500 line-through">${plan.priceUsd.toFixed(2)}</p>
           )}
-          <p className="text-xl font-bold text-white">${plan.priceUsd.toFixed(2)}</p>
+          <p className="text-xl font-bold text-white">${displayPrice.toFixed(2)}</p>
         </div>
       </div>
 
@@ -82,7 +84,7 @@ function MiniPlanCard({ plan, index }: { plan: Plan; index: number }) {
           <p className="text-[10px] text-slate-500">Days</p>
         </div>
         <div className="bg-slate-900/60 rounded-xl p-2 text-center">
-          <p className="text-sm font-bold text-emerald-400">${(plan.priceUsd / plan.durationDays).toFixed(2)}</p>
+          <p className="text-sm font-bold text-emerald-400">${(displayPrice / plan.durationDays).toFixed(2)}</p>
           <p className="text-[10px] text-slate-500">/Day</p>
         </div>
       </div>

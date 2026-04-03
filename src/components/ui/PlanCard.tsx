@@ -31,8 +31,8 @@ function formatData(gb: number): string {
 
 export default function PlanCard({ plan }: PlanCardProps) {
   const isUnlimited = plan.dataAmount >= 999;
-  const displayPrice = plan.retailPriceUsd || plan.priceUsd;
-  const hasDiscount = plan.retailPriceUsd > plan.priceUsd;
+  const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
+  const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
 
   return (
     <div
@@ -55,7 +55,7 @@ export default function PlanCard({ plan }: PlanCardProps) {
         </div>
         <div className="text-right">
           {hasDiscount && (
-            <p className="text-xs text-slate-500 line-through">${plan.priceUsd.toFixed(2)}</p>
+            <p className="text-xs text-slate-500 line-through">${hasDiscount ? plan.priceUsd.toFixed(2) : ""}</p>
           )}
           <p className="text-xl font-bold text-white">${displayPrice.toFixed(2)}</p>
         </div>

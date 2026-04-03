@@ -114,11 +114,11 @@ export default function PlanDetailContent() {
   }
 
   const isUnlimited = plan.dataAmount >= 999;
-  const displayPrice = plan.retailPriceUsd || plan.priceUsd;
+  const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = (displayPrice / plan.durationDays).toFixed(2);
   const locations = Array.isArray(plan.locations) ? (plan.locations as string[]) : [];
   const networkList = Array.isArray(plan.locationNetworkList) ? (plan.locationNetworkList as LocationNetwork[]) : [];
-  const hasDiscount = plan.retailPriceUsd > plan.priceUsd;
+  const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
