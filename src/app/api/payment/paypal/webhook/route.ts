@@ -47,10 +47,14 @@ async function activateEsimAndEmail(orderId: number, planId: string | null, quan
       await prisma.orderItem.update({
         where: { id: orderItem.id },
         data: {
-          esimIccid: esimOrder.iccid,
-          esimQrCode: esimOrder.qrcode,
-          esimQrImage: esimOrder.qrcodeUrl,
-          activationCode: esimOrder.activationCode,
+          esimIccid: esimOrder.iccid || null,
+          esimQrCode: esimOrder.qrCode || null,
+          esimQrImage: esimOrder.qrCodeUrl || null,
+          esimLpaString: esimOrder.ac || esimOrder.lpaString || null,
+          activationCode: esimOrder.activationCode || null,
+          esimStatus: esimOrder.esimStatus || "ACTIVATED",
+          smdpStatus: "ENABLED",
+          enabledAt: new Date(),
         },
       });
     }
@@ -59,11 +63,11 @@ async function activateEsimAndEmail(orderId: number, planId: string | null, quan
     await prisma.order.update({
       where: { id: orderId },
       data: {
-        esimaccessOrderStatus: esimOrder.orderStatus || "activated",
+        esimaccessOrderStatus: esimOrder.esimStatus || esimOrder.orderStatus || "ACTIVATED",
       },
     });
 
-    console.log(`[AUTO] Order ${orderId}: eSIM activated successfully`);
+    console.log("[AUTO] Order " + orderId + ": eSIM activated successfully");
 
     // Send email
     const order = await prisma.order.findUnique({

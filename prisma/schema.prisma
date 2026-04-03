@@ -144,14 +144,28 @@ model OrderItem {
   activationCode  String?
   
   totalVolume    Float?   // Total data volume in bytes (from API)
-  smdpStatus      String?  // RELEASED, DOWNLOADED, etc.
+  smdpStatus      String?  // RELEASED, DOWNLOADED, INSTALLED, ENABLED
   esimStatus      String?  // INIT, GOT_RESOURCE, ACTIVATED, CANCEL, COMPLETED
   orderUsage      Float?   // Data usage in bytes
   lastUsageSync   DateTime?
+  enabledAt       DateTime? // When eSIM was first enabled on device
 
   @@index([esimIccid])
   @@index([esimTranNo])
   @@index([orderId])
+}
+
+model WebhookLog {
+  id          Int      @id @default(autoincrement())
+  orderNo     String?
+  notifyType  String?
+  orderStatus String?
+  smdpStatus  String?
+  payload     Json
+  processedAt DateTime @default(now())
+
+  @@index([orderNo])
+  @@index([notifyType])
 }
 
 model CartItem {

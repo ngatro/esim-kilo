@@ -22,6 +22,7 @@ interface OrderItem {
   smdpStatus: string | null;
   esimStatus: string | null;
   orderUsage: number | null;
+  enabledAt: string | null;
 }
 
 interface Order {
@@ -265,11 +266,28 @@ export default function OrdersPage() {
                                     </div>
                                   )}
                                   {item.esimStatus && (
-                                    <div className="mt-3">
-                                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Status: {item.esimStatus}</p>
+                                    <div className="mt-3 space-y-2">
+                                      <div className="flex items-center justify-between">
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Status</p>
+                                        <span className={"text-xs font-medium px-2 py-0.5 rounded-full " + 
+                                          (item.smdpStatus === "ENABLED" ? "bg-green-500/20 text-green-400" : 
+                                           item.smdpStatus === "DOWNLOADED" ? "bg-yellow-500/20 text-yellow-400" : 
+                                           "bg-slate-500/20 text-slate-400")}>
+                                          {item.smdpStatus || item.esimStatus}
+                                        </span>
+                                      </div>
+                                      {item.enabledAt && (
+                                        <p className="text-[10px] text-green-400/70">✓ Activated on {new Date(item.enabledAt).toLocaleString()}</p>
+                                      )}
                                       {item.orderUsage !== null && item.orderUsage !== undefined && (
-                                        <div className="w-full bg-slate-700 rounded-full h-2">
-                                          <div className="bg-gradient-to-r from-sky-500 to-green-400 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage || 0) / (item.totalVolume || 1) * 100) + "%" }} />
+                                        <div>
+                                          <div className="flex justify-between text-[10px] text-slate-500 mb-1">
+                                            <span>Data: {((item.orderUsage || 0) / 1024 / 1024 / 1024).toFixed(2)} GB / {((item.totalVolume || 0) / 1024 / 1024 / 1024).toFixed(2)} GB</span>
+                                            <span>{Math.round((item.orderUsage || 0) / (item.totalVolume || 1) * 100)}%</span>
+                                          </div>
+                                          <div className="w-full bg-slate-700 rounded-full h-2">
+                                            <div className="bg-gradient-to-r from-sky-500 to-green-400 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage || 0) / (item.totalVolume || 1) * 100) + "%" }} />
+                                          </div>
                                         </div>
                                       )}
                                     </div>

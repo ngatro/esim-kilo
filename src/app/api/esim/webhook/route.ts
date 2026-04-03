@@ -8,117 +8,212 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("[eSIM Webhook] Received:", JSON.stringify(body));
 
-    if (body.notifyType === "CHECK_HEALTH" || body.content?.orderStatus === "Test" || body.orderStatus === "Test") {
-      console.log("[eSIM Webhook] Health Check / Test - URL validated");
-      return NextResponse.json({ received: true }, { status: 200 });
-    }
-
+    const notifyType = body.notifyType || body.notify_type;
     const orderNo = body.content?.orderNo || body.orderNo || body.order_no;
     const orderStatus = body.content?.orderStatus || body.orderStatus || body.order_status;
+    const smdpStatus = body.content?.smdpStatus || body.smdpStatus;
+    const iccid = body.content?.iccid || body.iccid;
 
-    if (!orderNo) {
-      console.log("[eSIM Webhook] Skip: Missing orderNo");
-      return NextResponse.json({ received: true }, { status: 200 });
-    }
-
-    console.log("[eSIM Webhook] Processing: " + orderNo + " | status=" + orderStatus);
-
-    console.log("[eSIM Webhook] Searching for order with esimaccessOrderId: " + orderNo);
-
-    const order = await prisma.order.findFirst({
-      where: { esimaccessOrderId: orderNo },
-      include: { orderItems: true },
+    await prisma.webhookLog.create({
+      data: {
+        orderNo: orderNo || null,
+        notifyType: notifyType || null,
+        orderStatus: orderStatus || null,
+        smdpStatus: smdpStatus || null,
+        payload: body,
+      },
     });
 
-    if (!order) {
-      console.log("[eSIM Webhook] Order not found for esimaccessOrderId: " + orderNo);
-      const orders = await prisma.order.findMany({ select: { id: true, esimaccessOrderId: true }, take: 10 });
-      console.log("[eSIM Webhook] Sample orders in DB:", JSON.stringify(orders));
+    if (notifyType === "CHECK_HEALTH") {
+      console.log("[eSIM Webhook] Health Check - URL validated");
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    console.log("[eSIM Webhook] Found order ID: " + order.id + " with " + order.orderItems.length + " items");
+    if (!orderNo && !iccid) {
+      console.log("[eSIM Webhook] Skip: Missing orderNo and iccid");
+      return NextResponse.json({ received: true }, { status: 200 });
+    }
 
-    let esimData: EsimListItem | null = null;
+    console.log("[eSIM Webhook] notifyType=" + notifyType + ", orderNo=" + orderNo + ", smdpStatus=" + smdpStatus);
 
-    if (orderStatus === "GOT_RESOURCE" || orderStatus === "ACTIVATED") {
-      try {
-        esimData = await queryOrder(orderNo);
-        console.log("[eSIM Webhook] Query result: iccid=" + (esimData?.iccid || "none") + ", qrCodeUrl=" + (esimData?.qrCodeUrl ? "present" : "none") + ", ac=" + (esimData?.ac ? "present" : "none"));
+    let order = null;
+    let orderItems = null;
 
-        if (esimData?.iccid) {
-          const qrImageUrl = esimData.qrCodeUrl || esimData.qrcodeUrl || esimData.qrCode || null;
-          const lpaStr = esimData.ac || esimData.lpaString || null;
-          
-          console.log("[eSIM Webhook] Mapping: qrCodeUrl=" + qrImageUrl + ", ac=" + lpaStr + ", esimTranNo=" + esimData.esimTranNo + ", totalVolume=" + esimData.totalVolume);
+    if (orderNo) {
+      order = await prisma.order.findFirst({
+        where: { esimaccessOrderId: orderNo },
+        include: { orderItems: true },
+      });
+    }
 
-          await Promise.all(order.orderItems.map(item =>
-            prisma.orderItem.update({
-              where: { id: item.id },
-              data: {
-                esimIccid: esimData!.iccid || null,
-                esimEid: esimData!.eid || null,
-                esimTranNo: esimData!.esimTranNo || null,
-                esimQrCode: esimData!.qrCode || null,
-                esimQrImage: qrImageUrl,
-                esimLpaString: lpaStr,
-                activationCode: esimData!.activationCode || null,
-                totalVolume: esimData!.totalVolume || null,
-                smdpStatus: esimData!.smdpStatus || null,
-                esimStatus: esimData!.esimStatus || orderStatus,
-                orderUsage: esimData!.orderUsage || 0,
-              },
-            })
-          ));
+    if (!order && iccid) {
+      orderItems = await prisma.orderItem.findMany({
+        where: { esimIccid: iccid },
+        include: { order: true },
+      });
+      if (orderItems.length > 0) {
+        order = orderItems[0].order;
+      }
+    }
 
-          await prisma.order.update({
-            where: { id: order.id },
-            data: { esimaccessOrderStatus: orderStatus },
-          });
+    if (!order) {
+      console.log("[eSIM Webhook] Order not found for orderNo=" + orderNo + ", iccid=" + iccid);
+      return NextResponse.json({ received: true }, { status: 200 });
+    }
 
-          if (order.customerEmail) {
-            try {
-              await sendEmail({
-                to: order.customerEmail,
-                subject: "OW SIM Order #" + order.id + " - Your eSIM is ready!",
-                html: getOrderConfirmationHtml({
-                  id: order.id,
-                  totalAmount: order.totalAmount,
-                  customerName: order.customerName,
-                  items: order.orderItems.map(item => ({
-                    planName: item.planName,
-                    price: item.price,
-                    quantity: item.quantity,
-                    qrImage: esimData!.qrCodeUrl || esimData!.qrcodeUrl || null,
-                    activationCode: esimData!.activationCode,
-                    iccid: esimData!.iccid,
-                  })),
-                }),
+    const items = orderItems || order.orderItems;
+
+    switch (notifyType) {
+      case "ORDER_STATUS":
+        if (orderStatus === "GOT_RESOURCE" || orderStatus === "ACTIVATED") {
+          try {
+            const esimData = orderNo ? await queryOrder(orderNo) : null;
+            console.log("[eSIM Webhook] ORDER_STATUS - Query result:", esimData?.iccid ? "found" : "not found");
+
+            if (esimData?.iccid) {
+              const qrImageUrl = esimData.qrCodeUrl || esimData.qrCode || null;
+              const lpaStr = esimData.ac || esimData.lpaString || null;
+
+              await Promise.all(items.map(item =>
+                prisma.orderItem.update({
+                  where: { id: item.id },
+                  data: {
+                    esimIccid: esimData.iccid || item.esimIccid,
+                    esimEid: esimData.eid || null,
+                    esimTranNo: esimData.esimTranNo || null,
+                    esimQrCode: esimData.qrCode || null,
+                    esimQrImage: qrImageUrl || item.esimQrImage,
+                    esimLpaString: lpaStr || item.esimLpaString,
+                    activationCode: esimData.activationCode || null,
+                    totalVolume: esimData.totalVolume || null,
+                    smdpStatus: esimData.smdpStatus || "RELEASED",
+                    esimStatus: orderStatus,
+                    orderUsage: esimData.orderUsage || 0,
+                  },
+                })
+              ));
+
+              await prisma.order.update({
+                where: { id: order.id },
+                data: { esimaccessOrderStatus: orderStatus },
               });
-              console.log("[eSIM Webhook] Customer email sent");
 
-              const adminEmail = process.env.ADMIN_EMAIL;
-              if (adminEmail) {
-                await sendEmail({
-                  to: adminEmail,
-                  subject: "New Order #" + order.id + " - $" + order.totalAmount.toFixed(2),
-                  html: getOrderConfirmationAdminHtml({
-                    id: order.id,
-                    totalAmount: order.totalAmount,
-                    customerName: order.customerName,
-                    customerEmail: order.customerEmail,
-                    items: order.orderItems.map(item => ({ planName: item.planName, price: item.price })),
-                  }),
-                });
+              if (order.customerEmail) {
+                try {
+                  await sendEmail({
+                    to: order.customerEmail,
+                    subject: "OW SIM Order #" + order.id + " - Your eSIM is ready!",
+                    html: getOrderConfirmationHtml({
+                      id: order.id,
+                      totalAmount: order.totalAmount,
+                      customerName: order.customerName,
+                      items: items.map(item => ({
+                        planName: item.planName,
+                        price: item.price,
+                        quantity: item.quantity,
+                        qrImage: qrImageUrl,
+                        activationCode: esimData.activationCode,
+                        iccid: esimData.iccid,
+                        lpaString: lpaStr,
+                      })),
+                    }),
+                  });
+                  console.log("[eSIM Webhook] Email sent to customer");
+                } catch (emailErr) {
+                  console.error("[eSIM Webhook] Email error:", emailErr);
+                }
               }
-            } catch (emailErr) {
-              console.error("[eSIM Webhook] Email error:", emailErr);
             }
+          } catch (queryErr) {
+            console.error("[eSIM Webhook] ORDER_STATUS query error:", queryErr);
           }
         }
-      } catch (queryErr) {
-        console.error("[eSIM Webhook] Query error:", queryErr);
-      }
+        break;
+
+      case "SMDP_EVENT":
+        if (smdpStatus) {
+          console.log("[eSIM Webhook] SMDP_EVENT - smdpStatus=" + smdpStatus);
+          
+          const updateData: Record<string, unknown> = { smdpStatus };
+          
+          if (smdpStatus === "ENABLED") {
+            const existingEnabled = items.some((item: { enabledAt: Date | null }) => item.enabledAt);
+            if (!existingEnabled) {
+              updateData.enabledAt = new Date();
+              console.log("[eSIM Webhook] eSIM enabled - setting enabledAt for dispute prevention");
+            }
+          }
+
+          await Promise.all(items.map(item =>
+            prisma.orderItem.update({
+              where: { id: item.id },
+              data: updateData,
+            })
+          ));
+        }
+        break;
+
+      case "DATA_USAGE":
+      case "ESIM_STATUS":
+        const usage = body.content?.orderUsage || body.orderUsage || 0;
+        const totalVol = body.content?.totalVolume || body.totalVolume || 0;
+        const status = body.content?.esimStatus || body.esimStatus;
+
+        console.log("[eSIM Webhook] DATA_USAGE/ESIM_STATUS - usage=" + usage + ", status=" + status);
+
+        await Promise.all(items.map(item =>
+          prisma.orderItem.update({
+            where: { id: item.id },
+            data: {
+              orderUsage: usage,
+              esimStatus: status || item.esimStatus,
+              lastUsageSync: new Date(),
+            },
+          })
+        ));
+
+        if (order.customerEmail && status === "USED_UP") {
+          try {
+            await sendEmail({
+              to: order.customerEmail,
+              subject: "OW SIM - Data Limit Reached",
+              html: "<h2>Your eSIM data has been used up</h2><p>Please purchase a new plan to continue using data.</p><p><a href='https://owsim.com/plans'>Browse Plans</a></p>",
+            });
+          } catch (emailErr) {
+            console.error("[eSIM Webhook] Usage email error:", emailErr);
+          }
+        }
+
+        if (order.customerEmail && usage >= totalVol * 0.8 && usage < totalVol * 0.9) {
+          try {
+            await sendEmail({
+              to: order.customerEmail,
+              subject: "OW SIM - 80% Data Used",
+              html: "<h2>You've used 80% of your data</h2><p>Consider purchasing more data to avoid interruption.</p><p><a href='https://owsim.com/plans'>Browse Plans</a></p>",
+            });
+          } catch (emailErr) {
+            console.error("[eSIM Webhook] 80% warning email error:", emailErr);
+          }
+        }
+        break;
+
+      case "VALIDITY_USAGE":
+        console.log("[eSIM Webhook] VALIDITY_USAGE - expiration warning");
+        if (order.customerEmail) {
+          try {
+            await sendEmail({
+              to: order.customerEmail,
+              subject: "OW SIM - Your eSIM is expiring soon",
+              html: "<h2>Your eSIM validity is about to expire</h2><p>Please renew your plan to continue using data.</p><p><a href='https://owsim.com/plans'>Renew Now</a></p>",
+            });
+          } catch (emailErr) {
+            console.error("[eSIM Webhook] Validity email error:", emailErr);
+          }
+        }
+        break;
+
+      default:
+        console.log("[eSIM Webhook] Unknown notifyType: " + notifyType);
     }
 
     return NextResponse.json({ received: true }, { status: 200 });
