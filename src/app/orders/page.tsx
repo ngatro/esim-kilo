@@ -12,9 +12,14 @@ interface OrderItem {
   price: number;
   quantity: number;
   esimIccid: string | null;
+  esimEid: string | null;
+  esimTranNo: string | null;
   esimQrCode: string | null;
   esimQrImage: string | null;
+  esimLpaString: string | null;
   activationCode: string | null;
+  esimStatus: string | null;
+  orderUsage: number | null;
 }
 
 interface Order {
@@ -240,6 +245,24 @@ export default function OrdersPage() {
                                       <div className="bg-slate-800 border border-slate-700 rounded-lg p-2 sm:p-3">
                                         <code className="text-sky-400 text-[10px] sm:text-xs break-all">{item.activationCode}</code>
                                       </div>
+                                    </div>
+                                  )}
+                                  {item.esimLpaString && (
+                                    <div>
+                                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">LPA String (Manual)</p>
+                                      <div className="bg-slate-800 border border-slate-700 rounded-lg p-2 sm:p-3">
+                                        <code className="text-green-400 text-[10px] sm:text-xs break-all">{item.esimLpaString}</code>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {item.esimStatus && (
+                                    <div className="mt-3">
+                                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Status: {item.esimStatus}</p>
+                                      {item.orderUsage !== null && item.orderUsage !== undefined && (
+                                        <div className="w-full bg-slate-700 rounded-full h-2">
+                                          <div className="bg-gradient-to-r from-sky-500 to-green-400 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage / (item.price * 1024 * 1024 * 1024)) * 100) + "%" }} />
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>

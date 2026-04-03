@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     if (orderStatus === "GOT_RESOURCE" || orderStatus === "ACTIVATED") {
       try {
         esimData = await queryOrder(orderNo);
-        console.log(`[eSIM Webhook] Query response: iccid=${esimData?.iccid}, qrcodeUrl=${esimData?.qrcodeUrl?.slice(0, 50)}...`);
+        console.log("[eSIM Webhook] Query response: iccid=" + esimData?.iccid + ", qrcodeUrl=" + (esimData?.qrcodeUrl?.slice(0, 50) || ""));
 
         if (esimData?.iccid) {
           for (const item of order.orderItems) {
@@ -41,9 +41,13 @@ export async function POST(request: Request) {
               where: { id: item.id },
               data: {
                 esimIccid: esimData!.iccid,
+                esimEid: esimData!.eid || null,
+                esimTranNo: esimData!.tranNo || null,
                 esimQrCode: esimData!.qrcode,
                 esimQrImage: esimData!.qrcodeUrl,
+                esimLpaString: esimData!.lpaString || null,
                 activationCode: esimData!.activationCode,
+                esimStatus: esimData!.esimStatus || orderStatus,
               },
             });
           }

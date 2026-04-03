@@ -44,7 +44,7 @@ export function getOrderConfirmationHtml(order: {
   id: number;
   totalAmount: number;
   customerName?: string | null;
-  items: { planName: string; price: number; quantity: number; qrImage?: string | null; activationCode?: string | null; iccid?: string | null }[];
+  items: { planName: string; price: number; quantity: number; qrImage?: string | null; activationCode?: string | null; iccid?: string | null; lpaString?: string | null }[];
 }): string {
   return `
 <!DOCTYPE html>
@@ -79,6 +79,7 @@ export function getOrderConfirmationHtml(order: {
 
         ${item.iccid ? `<p style="color: #64748b; font-size: 12px; margin: 8px 0 0 0;">ICCID: <span style="color: #0ea5e9;">${item.iccid}</span></p>` : ''}
         ${item.activationCode ? `<p style="color: #64748b; font-size: 12px; margin: 4px 0 0 0;">Activation: <span style="color: #0ea5e9;">${item.activationCode}</span></p>` : ''}
+        ${item.lpaString ? `<p style="color: #64748b; font-size: 12px; margin: 4px 0 0 0;">LPA: <span style="color: #10b981;">${item.lpaString}</span></p>` : ''}
       </div>
       `).join('')}
 

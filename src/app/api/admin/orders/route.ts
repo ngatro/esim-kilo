@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createOrder as createEsimOrder } from "@/lib/esim-access";
+import { createOrder as createEsimOrder, cancelOrder as cancelEsimOrder } from "@/lib/esim-access";
 
 export async function GET(request: Request) {
   try {
@@ -127,6 +127,51 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("[eSIM Activation] Error:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}
+
+// Admin: Cancel/Refund eSIM (unused only)
+export async function DELETE(request: Request) {
+  try {
+    const { orderItemId } = await request.json();
+
+    if (!orderItemId) {
+      return NextResponse.json({ error: "Order item ID required" }, { status: 400 });
+    }
+
+    const orderItem = await prisma.orderItem.findUnique({
+      where: { id: orderItemId },
+    });
+
+    if (!orderItem) {
+      return NextResponse.json({ error: "Order item not found" }, { status: 404 });
+    }
+
+    if (!orderItem.esimTranNo) {
+      return NextResponse.json({ error: "No esimTranNo - eSIM may not be activated" }, { status: 400 });
+    }
+
+    if (orderItem.orderUsage && orderItem.orderUsage > 0) {
+      return NextResponse.json({ error: "Cannot cancel - eSIM has been used", used: orderItem.orderUsage }, { status: 400 });
+    }
+
+    const canceled = await cancelEsimOrder(orderItem.esimTranNo);
+
+    if (!canceled) {
+      return NextResponse.json({ error: "Failed to cancel eSIM" }, { status: 500 });
+    }
+
+    await prisma.orderItem.update({
+      where: { id: orderItemId },
+      data: {
+        esimStatus: "CANCELED",
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[eSIM Cancel] Error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

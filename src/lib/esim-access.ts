@@ -59,11 +59,16 @@ interface OrderObj {
   orderNo: string;
   orderStatus: string;
   iccid: string;
+  eid?: string;
+  tranNo?: string;
   qrcode: string;
   qrcodeUrl: string;
+  lpaString?: string;
   activationCode: string;
   packageName: string;
   price: number;
+  esimStatus?: string;
+  orderUsage?: number;
 }
 
 function getAccessCode(): string {
@@ -173,9 +178,30 @@ export async function createOrder(params: {
 }
 
 export async function queryOrder(orderNo: string): Promise<OrderObj> {
-  const res = await esimAccessPost("/esim/order/query", { orderNo });
+  const res = await esimAccessPost("/esim/order/query", { 
+    orderNo,
+    pager: { page: 1, pageSize: 10 }
+  });
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
   return res.obj as OrderObj;
+}
+
+export async function queryEsimUsage(iccid: string): Promise<{ esimStatus: string; orderUsage: number }> {
+  const res = await esimAccessPost("/esim/query", { 
+    iccid,
+    pager: { page: 1, pageSize: 10 }
+  });
+  if (!res.success || !res.obj) throw new Error(res.message || "Failed");
+  const obj = res.obj as { esimStatus?: string; orderUsage?: number };
+  return {
+    esimStatus: obj.esimStatus || "UNKNOWN",
+    orderUsage: obj.orderUsage || 0,
+  };
+}
+
+export async function cancelOrder(tranNo: string): Promise<boolean> {
+  const res = await esimAccessPost("/esim/cancel", { esimTranNo: tranNo });
+  return res.success;
 }
 
 export async function refundOrder(orderNo: string): Promise<boolean> {

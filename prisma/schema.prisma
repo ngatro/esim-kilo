@@ -131,14 +131,25 @@ model OrderItem {
   plan            Plan?   @relation(fields: [planId], references: [id])
   
   planName        String
-  packageCode     String?   // saved directly for redundancy
+  packageCode     String?
   quantity        Int     @default(1)
   price           Float
   
   esimIccid       String?
+  esimEid         String?
+  esimTranNo      String?
   esimQrCode      String?
   esimQrImage     String?
+  esimLpaString   String?
   activationCode  String?
+  
+  esimStatus      String?   // INIT, GOT_RESOURCE, ACTIVATED, etc.
+  orderUsage      Float?    // Data usage in bytes
+  lastUsageSync   DateTime?
+
+  @@index([esimIccid])
+  @@index([esimTranNo])
+  @@index([orderId])
 }
 
 model CartItem {
