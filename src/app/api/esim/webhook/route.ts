@@ -8,15 +8,20 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("[eSIM Webhook] Received:", JSON.stringify(body));
 
-    const orderNo = body.orderNo || body.order_no;
-    const orderStatus = body.orderStatus || body.order_status;
-
-    if (!orderNo) {
-      console.log("[eSIM Webhook] Missing orderNo");
-      return NextResponse.json({ received: true });
+    if (body.notifyType === "CHECK_HEALTH" || body.content?.orderStatus === "Test") {
+      console.log("[eSIM Webhook] Health Check received. Validating URL...");
+      return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    console.log(`[eSIM Webhook] Order ${orderNo}: status=${orderStatus}`);
+    const orderNo = body.orderNo || body.order_no || body.content?.orderNo;
+    const orderStatus = body.orderStatus || body.order_status || body.content?.orderStatus;
+
+    if (!orderNo) {
+      console.log("[eSIM Webhook] Skip processing: Missing orderNo");
+      return NextResponse.json({ received: true }, { status: 200 });
+    }
+
+    console.log("[eSIM Webhook] Order " + orderNo + ": status=" + orderStatus);
 
     const order = await prisma.order.findFirst({
       where: { esimaccessOrderId: orderNo },
