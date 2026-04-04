@@ -12,6 +12,7 @@ import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/ui/LoginModal";
 import RegisterModal from "@/components/ui/RegisterModal";
 import CartModal from "@/components/ui/CartModal";
+import SupportWidget from "@/components/ui/SupportWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,6 +65,7 @@ export default async function RootLayout({
                 <LoginModal />
                 <RegisterModal />
                 <CartModal />
+                <SupportWidget />
               </UIProvider>
             </CartProvider>
           </AuthProvider>
