@@ -167,6 +167,11 @@ export default function OrdersPage() {
               </svg>
               Refresh
             </button>
+            <Link href="/topup">
+              <motion.button className="bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
+                Top-up
+              </motion.button>
+            </Link>
             <Link href="/plans">
               <motion.button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
                 Buy New eSIM

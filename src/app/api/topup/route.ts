@@ -1,0 +1,124 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { createOrder, getPackageList } from "@/lib/esim-access";
+
+export async function POST(request: Request) {
+  try {
+    const { orderItemId, packageCode } = await request.json();
+
+    if (!orderItemId || !packageCode) {
+      return NextResponse.json({ error: "orderItemId and packageCode required" }, { status: 400 });
+    }
+
+    const orderItem = await prisma.orderItem.findUnique({
+      where: { id: orderItemId },
+      include: { order: true },
+    });
+
+    if (!orderItem) {
+      return NextResponse.json({ error: "Order item not found" }, { status: 404 });
+    }
+
+    if (!orderItem.esimIccid) {
+      return NextResponse.json({ error: "No ICCID found for this order" }, { status: 400 });
+    }
+
+    const packages = await getPackageList({ type: "TOPUP" });
+    const packageList = packages.packageList || [];
+    const topUpPackage = packageList.find((p: { packageCode: string }) => p.packageCode === packageCode);
+
+    if (!topUpPackage) {
+      return NextResponse.json({ error: "Invalid top-up package" }, { status: 400 });
+    }
+
+    const priceUSD = topUpPackage.price / 10000;
+
+    const esimOrder = await createOrder({
+      packageCode,
+      iccid: orderItem.esimIccid,
+      count: 1,
+    });
+
+    if (!esimOrder?.qrCodeUrl) {
+      return NextResponse.json({ error: "Top-up activation failed" }, { status: 500 });
+    }
+
+    const newOrderItem = await prisma.orderItem.create({
+      data: {
+        orderId: orderItem.orderId,
+        planId: `topup-${packageCode}`,
+        planName: `Top-up: ${topUpPackage.name || packageCode}`,
+        price: priceUSD,
+        quantity: 1,
+        esimIccid: orderItem.esimIccid,
+        esimQrImage: esimOrder.qrCodeUrl,
+        esimStatus: "IN_USE",
+      },
+    });
+
+    const updatedOrder = await prisma.order.update({
+      where: { id: orderItem.orderId },
+      data: { totalAmount: { increment: priceUSD } },
+    });
+
+    return NextResponse.json({
+      success: true,
+      topUp: {
+        id: newOrderItem.id,
+        packageCode,
+        price: priceUSD,
+        qrCode: esimOrder.qrCodeUrl,
+        iccid: orderItem.esimIccid,
+      },
+    });
+  } catch (error) {
+    console.error("[Top-up] Error:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const iccid = url.searchParams.get("iccid");
+
+    if (!iccid) {
+      return NextResponse.json({ error: "ICCID required" }, { status: 400 });
+    }
+
+    const orderItem = await prisma.orderItem.findFirst({
+      where: { esimIccid: iccid },
+      include: { order: { include: { orderItems: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!orderItem) {
+      return NextResponse.json({ error: "No order found for this ICCID" }, { status: 404 });
+    }
+
+    const packages = await getPackageList({ type: "TOPUP" });
+    const packageList = packages.packageList || [];
+    const topUpPackages = packageList.map((p: { packageCode: string; name: string; price: number; volume: number; duration: number }) => ({
+      packageCode: p.packageCode,
+      name: p.name,
+      priceUSD: p.price / 10000,
+      volume: p.volume,
+      duration: p.duration,
+    }));
+
+    return NextResponse.json({
+      currentPlan: {
+        planName: orderItem.planName,
+        iccid: orderItem.esimIccid,
+        esimStatus: orderItem.esimStatus,
+        smdpStatus: orderItem.smdpStatus,
+        totalVolume: orderItem.totalVolume,
+        orderUsage: orderItem.orderUsage,
+      },
+      topUpPackages,
+    });
+  } catch (error) {
+    console.error("[Top-up GET] Error:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}

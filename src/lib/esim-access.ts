@@ -185,15 +185,22 @@ export async function createOrder(params: {
   packageCode: string;
   count?: number;
   orderId?: string;
+  iccid?: string;
 }): Promise<EsimListItem> {
   const transactionId = `OW-${params.orderId || Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  const res = await esimAccessPost("/esim/order", {
+  const body: Record<string, unknown> = {
     transactionId,
     packageInfoList: [
       { packageCode: params.packageCode, count: params.count || 1 }
     ],
-  });
+  };
+
+  if (params.iccid) {
+    body.iccid = params.iccid;
+  }
+
+  const res = await esimAccessPost("/esim/order", body);
 
   if (!res.success || !res.obj) {
     throw new Error(res.message || "eSIM order creation failed");
