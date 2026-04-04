@@ -7,27 +7,27 @@ export const LOCALE_TO_CURRENCY: Record<Locale, string> = {
   fr: "EUR",
 };
 
-export const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: "$",
-  VND: "₫",
-  EUR: "€",
-  JPY: "¥",
-  GBP: "£",
-};
-
-export const CURRENCY_DECIMALS: Record<string, number> = {
-  USD: 2,
-  VND: 0,
-  EUR: 2,
-  JPY: 0,
-  GBP: 2,
-};
-
 export interface ExchangeRates {
   [key: string]: number;
 }
 
 export const DEFAULT_RATES: ExchangeRates = { USD: 1, VND: 24500, EUR: 0.92, JPY: 150, GBP: 0.79 };
+
+function getRate(currency: string, rates?: ExchangeRates): number {
+  const upper = currency.toUpperCase();
+  const exchangeRates = { ...DEFAULT_RATES, ...rates };
+  
+  if (exchangeRates[upper] !== undefined) {
+    return exchangeRates[upper];
+  }
+  
+  const lower = currency.toLowerCase();
+  if (exchangeRates[lower] !== undefined) {
+    return exchangeRates[lower];
+  }
+  
+  return 1;
+}
 
 export function formatCurrency(
   amountUSD: number,
@@ -35,21 +35,30 @@ export function formatCurrency(
   rates?: ExchangeRates
 ): string {
   const currency = targetCurrency.toUpperCase();
-  const exchangeRates = rates || DEFAULT_RATES;
-  
-  const rate = exchangeRates[currency] || 1;
+  const rate = getRate(currency, rates);
   const converted = amountUSD * rate;
-  const decimals = CURRENCY_DECIMALS[currency] || 2;
-  const symbol = CURRENCY_SYMBOLS[currency] || currency;
 
-  const formatted = converted.toLocaleString(undefined, {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
+  const localeMap: Record<string, string> = {
+    USD: "en-US",
+    VND: "vi-VN",
+    EUR: "de-DE",
+    JPY: "ja-JP",
+    GBP: "en-GB",
+  };
 
-  if (currency === "VND" || currency === "JPY") {
-    return `${symbol}${formatted}`;
+  const locale = localeMap[currency] || "en-US";
+
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: currency,
+      maximumFractionDigits: currency === "VND" || currency === "JPY" ? 0 : 2,
+    }).format(converted);
+  } catch {
+    const fallback = converted.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+    return `${currency} ${fallback}`;
   }
-  
-  return `${symbol}${formatted}`;
 }
