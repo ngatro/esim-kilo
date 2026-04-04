@@ -179,7 +179,10 @@ export async function GET(request: Request) {
     const minPrice = url.searchParams.get("minPrice");
     const maxPrice = url.searchParams.get("maxPrice");
     const minData = url.searchParams.get("minData");
+    const maxData = url.searchParams.get("maxData");
     const dataType = url.searchParams.get("dataType");
+    const dataAmount = url.searchParams.get("dataAmount");
+    const durationDays = url.searchParams.get("durationDays");
     const sortBy = url.searchParams.get("sortBy") || "best";
     const id = url.searchParams.get("id");
     const slugParam = url.searchParams.get("slug");
@@ -212,6 +215,21 @@ export async function GET(request: Request) {
     }
     if (networkType) where.networkType = { contains: networkType };
     if (dataType) where.dataType = parseInt(dataType);
+    
+    if (dataAmount) {
+      const da = parseInt(dataAmount);
+      if (da === 999) {
+        where.dataAmount = { gte: 999 };
+      } else {
+        where.dataAmount = { gte: da - 1, lte: da + 1 };
+      }
+    }
+    
+    if (durationDays) {
+      const dd = parseInt(durationDays);
+      where.durationDays = { gte: dd - 2, lte: dd + 2 };
+    }
+    
     if (minPrice || maxPrice) {
       where.priceUsd = {};
       if (minPrice) (where.priceUsd as Record<string, unknown>).gte = parseFloat(minPrice);

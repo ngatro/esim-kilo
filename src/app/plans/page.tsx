@@ -204,6 +204,8 @@ export default function PlansPage() {
   const [networkFilter, setNetworkFilter] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [dataType, setDataType] = useState("");
+  const [dataFilter, setDataFilter] = useState("");
+  const [durationFilter, setDurationFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -222,6 +224,8 @@ export default function PlansPage() {
       if (searchQuery) params.set("search", searchQuery);
       if (networkFilter) params.set("networkType", networkFilter);
       if (dataType) params.set("dataType", dataType);
+      if (dataFilter) params.set("dataAmount", dataFilter);
+      if (durationFilter) params.set("durationDays", durationFilter);
       if (sortBy) params.set("sortBy", sortBy);
 
       if (priceRange) {
@@ -238,7 +242,7 @@ export default function PlansPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedRegion, selectedCountry, searchQuery, networkFilter, priceRange, sortBy, dataType]);
+  }, [selectedRegion, selectedCountry, searchQuery, networkFilter, priceRange, sortBy, dataType, dataFilter, durationFilter]);
 
   useEffect(() => {
     fetchPlans();
@@ -302,11 +306,13 @@ export default function PlansPage() {
     setPriceRange("");
     setSortBy("best");
     setDataType("");
+    setDataFilter("");
+    setDurationFilter("");
   }
 
   const currentRegion = regions.find((r) => r.id === selectedRegion);
   const countries = currentRegion?.countries || [];
-  const hasActiveFilters = selectedRegion !== "all" || selectedCountry || searchQuery || networkFilter || priceRange || dataType;
+  const hasActiveFilters = selectedRegion !== "all" || selectedCountry || searchQuery || networkFilter || priceRange || dataType || dataFilter || durationFilter;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -442,6 +448,34 @@ export default function PlansPage() {
               </div>
 
               <div className="min-w-[130px]">
+                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Data</label>
+                <select value={dataFilter} onChange={(e) => setDataFilter(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
+                  <option value="">Any</option>
+                  <option value="1">1GB</option>
+                  <option value="3">3GB</option>
+                  <option value="5">5GB</option>
+                  <option value="10">10GB</option>
+                  <option value="20">20GB</option>
+                  <option value="999">Unlimited</option>
+                </select>
+              </div>
+
+              <div className="min-w-[130px]">
+                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Duration</label>
+                <select value={durationFilter} onChange={(e) => setDurationFilter(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
+                  <option value="">Any</option>
+                  <option value="7">7 days</option>
+                  <option value="15">15 days</option>
+                  <option value="30">30 days</option>
+                  <option value="90">90 days</option>
+                  <option value="180">180 days</option>
+                  <option value="365">365 days</option>
+                </select>
+              </div>
+
+              <div className="min-w-[130px]">
                 <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Sort</label>
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
@@ -509,6 +543,29 @@ export default function PlansPage() {
                       <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
                         <option value="best">Best</option><option value="price-low">Price ↑</option>
                         <option value="price-high">Price ↓</option><option value="data">Data</option><option value="duration">Duration</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Data</label>
+                      <select value={dataFilter} onChange={(e) => setDataFilter(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
+                        <option value="">Any</option>
+                        <option value="1">1GB</option>
+                        <option value="3">3GB</option>
+                        <option value="5">5GB</option>
+                        <option value="10">10GB</option>
+                        <option value="999">Unlimited</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Duration</label>
+                      <select value={durationFilter} onChange={(e) => setDurationFilter(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
+                        <option value="">Any</option>
+                        <option value="7">7 days</option>
+                        <option value="15">15 days</option>
+                        <option value="30">30 days</option>
+                        <option value="90">90 days</option>
                       </select>
                     </div>
                   </div>
