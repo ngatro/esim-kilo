@@ -1,5 +1,3 @@
-import { prisma } from "./prisma";
-
 export type Locale = "en" | "vi" | "de" | "fr";
 
 export const LOCALE_TO_CURRENCY: Record<Locale, string> = {
@@ -29,32 +27,7 @@ export interface ExchangeRates {
   [key: string]: number;
 }
 
-let cachedRates: ExchangeRates = { USD: 1, VND: 24500, EUR: 0.92, JPY: 150 };
-let ratesLastFetched: number = 0;
-const RATES_CACHE_TTL = 5 * 60 * 1000;
-
-export async function getExchangeRates(): Promise<ExchangeRates> {
-  const now = Date.now();
-  if (cachedRates && now - ratesLastFetched < RATES_CACHE_TTL) {
-    return cachedRates;
-  }
-
-  try {
-    const setting = await prisma.setting.findUnique({
-      where: { key: "currency_rates" },
-    });
-
-    if (setting?.value) {
-      cachedRates = JSON.parse(setting.value);
-      ratesLastFetched = now;
-      return cachedRates;
-    }
-  } catch (error) {
-    console.error("[Currency] Failed to fetch rates:", error);
-  }
-
-  return { USD: 1, VND: 24500, EUR: 0.92, JPY: 150 };
-}
+export const DEFAULT_RATES: ExchangeRates = { USD: 1, VND: 24500, EUR: 0.92, JPY: 150, GBP: 0.79 };
 
 export function formatCurrency(
   amountUSD: number,
@@ -62,7 +35,7 @@ export function formatCurrency(
   rates?: ExchangeRates
 ): string {
   const currency = targetCurrency.toUpperCase();
-  const exchangeRates = rates || { USD: 1, VND: 24500, EUR: 0.92, JPY: 150 };
+  const exchangeRates = rates || DEFAULT_RATES;
   
   const rate = exchangeRates[currency] || 1;
   const converted = amountUSD * rate;
@@ -79,12 +52,4 @@ export function formatCurrency(
   }
   
   return `${symbol}${formatted}`;
-}
-
-export async function formatCurrencyWithRates(
-  amountUSD: number,
-  targetCurrency: string
-): Promise<string> {
-  const rates = await getExchangeRates();
-  return formatCurrency(amountUSD, targetCurrency, rates);
 }

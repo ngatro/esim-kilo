@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { prisma } from "@/lib/prisma";
+import { DEFAULT_RATES, type ExchangeRates } from "@/lib/currency";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/components/providers/CartProvider";
@@ -26,17 +28,33 @@ export const metadata: Metadata = {
   description: "Affordable eSIM data plans for international travel. Instant activation in 190+ countries. No roaming fees, no contracts.",
 };
 
-export default function RootLayout({
+async function getRates(): Promise<ExchangeRates> {
+  try {
+    const setting = await prisma.setting.findUnique({
+      where: { key: "currency_rates" },
+    });
+    if (setting?.value) {
+      return JSON.parse(setting.value);
+    }
+  } catch (error) {
+    console.error("[Layout] Failed to fetch rates:", error);
+  }
+  return DEFAULT_RATES;
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const rates = await getRates();
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <I18nProvider>
+        <I18nProvider initialRates={rates}>
           <AuthProvider>
             <CartProvider>
               <UIProvider>

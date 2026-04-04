@@ -5,7 +5,7 @@ import en from "@/messages/en.json";
 import vi from "@/messages/vi.json";
 import de from "@/messages/de.json";
 import fr from "@/messages/fr.json";
-import { formatCurrency, getExchangeRates, LOCALE_TO_CURRENCY, type ExchangeRates } from "@/lib/currency";
+import { formatCurrency, LOCALE_TO_CURRENCY, DEFAULT_RATES, type ExchangeRates } from "@/lib/currency";
 
 export type Locale = "en" | "vi" | "de" | "fr";
 
@@ -48,10 +48,15 @@ function getNestedValue(obj: Record<string, unknown>, path: string): string {
   return typeof result === "string" ? result : path;
 }
 
-export function I18nProvider({ children }: { children: ReactNode }) {
+interface I18nProviderProps {
+  children: ReactNode;
+  initialRates?: ExchangeRates;
+}
+
+export function I18nProvider({ children, initialRates }: I18nProviderProps) {
   const [locale, setLocaleState] = useState<Locale>("en");
   const [isReady, setIsReady] = useState(false);
-  const [rates, setRates] = useState<ExchangeRates>({ USD: 1, VND: 24500, EUR: 0.92, JPY: 150 });
+  const rates = initialRates || DEFAULT_RATES;
 
   useEffect(() => {
     try {
@@ -63,10 +68,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       // ignore
     }
     setIsReady(true);
-  }, []);
-
-  useEffect(() => {
-    getExchangeRates().then(setRates).catch(console.error);
   }, []);
 
   const setLocale = (newLocale: Locale) => {
