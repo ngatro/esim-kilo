@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 interface Plan {
   id: string;
@@ -27,6 +28,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { formatPrice } = useI18n();
   const planId = searchParams.get("planId");
 
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -384,7 +386,7 @@ export default function CheckoutPage() {
                     {isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`} · {plan.durationDays} days · {plan.speed || "4G LTE"}
                   </p>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-white flex-shrink-0">${plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd.toFixed(2)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-white flex-shrink-0">{formatPrice(plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd)}</p>
               </div>
             </div>
 
@@ -540,7 +542,7 @@ export default function CheckoutPage() {
               <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 <div className="flex justify-between text-slate-300 text-sm">
                   <span>{plan.destination} eSIM × {quantity}</span>
-                  <span>${(plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd * quantity).toFixed(2)}</span>
+                  <span>{formatPrice((plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd) * quantity)}</span>
                 </div>
                 <div className="flex justify-between text-slate-300 text-sm">
                   <span>Activation</span>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "bg-red-500/20 text-red-400" };
@@ -62,6 +63,7 @@ interface Order {
 
 export default function OrdersPage() {
   const { user } = useAuth();
+  const { formatPrice } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -216,7 +218,7 @@ export default function OrdersPage() {
                   </div>
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="text-right">
-                      <p className="text-base sm:text-lg font-bold text-white">${order.totalAmount.toFixed(2)}</p>
+                      <p className="text-base sm:text-lg font-bold text-white">{formatPrice(order.totalAmount)}</p>
                       <div className="flex gap-1 mt-1">
                         <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${
                           order.status === "completed" ? "bg-green-500/20 text-green-400" :
@@ -253,7 +255,7 @@ export default function OrdersPage() {
                             <div className="flex items-center justify-between mb-4">
                               <div>
                                 <h4 className="text-white font-medium text-sm sm:text-base">{item.planName}</h4>
-                                <p className="text-slate-500 text-xs sm:text-sm">${item.price.toFixed(2)} × {item.quantity}</p>
+                                <p className="text-slate-500 text-xs sm:text-sm">{formatPrice(item.price)} × {item.quantity}</p>
                               </div>
                               {item.esimIccid && (
                                 <div className="text-right">
@@ -331,7 +333,7 @@ export default function OrdersPage() {
                         {/* Payment info */}
                         <div className="bg-slate-900/50 rounded-xl p-3 sm:p-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs">
-                            <div><p className="text-slate-500">Amount</p><p className="text-white font-semibold">${order.totalAmount.toFixed(2)}</p></div>
+                            <div><p className="text-slate-500">Amount</p><p className="text-white font-semibold">{formatPrice(order.totalAmount)}</p></div>
                             <div><p className="text-slate-500">Payment</p><p className={order.status === "completed" ? "text-green-400" : "text-yellow-400"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
                             <div><p className="text-slate-500">eSIM</p><p className={order.orderItems.every(i => i.smdpStatus === "ENABLED") ? "text-green-400" : order.orderItems.some(i => i.esimQrImage) ? "text-yellow-400" : "text-slate-400"}>{order.orderItems.every(i => i.smdpStatus === "ENABLED") ? "✅ In Use" : order.orderItems.some(i => i.esimQrImage) ? "✅ Ready" : "⏳ Processing"}</p></div>
                             {order.esimaccessOrderId && (

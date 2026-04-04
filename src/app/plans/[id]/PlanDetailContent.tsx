@@ -72,7 +72,7 @@ function getDataTypeLabel(type: number): string {
 }
 
 export default function PlanDetailContent() {
-  const { t } = useI18n();
+  const { t, formatPrice } = useI18n();
   const params = useParams();
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -252,12 +252,12 @@ export default function PlanDetailContent() {
               <motion.div className="sticky top-20 sm:top-24 bg-slate-800/70 border border-slate-700/60 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 {hasDiscount && (
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-slate-500 line-through text-lg">${(plan.retailPriceUsd || plan.priceUsd).toFixed(2)}</span>
+                    <span className="text-slate-500 line-through text-lg">{formatPrice(plan.retailPriceUsd || plan.priceUsd)}</span>
                     <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-0.5 rounded-full">-{Math.round((1 - plan.priceUsd / (plan.retailPriceUsd || plan.priceUsd)) * 100)}%</span>
                   </div>
                 )}
                 <div className="flex items-baseline justify-between mb-1">
-                  <p className="text-3xl sm:text-4xl font-bold text-white">${displayPrice.toFixed(2)}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-white">{formatPrice(displayPrice)}</p>
                   <p className="text-sm text-slate-500">one-time</p>
                 </div>
                 <p className="text-slate-500 text-sm mb-5 sm:mb-6">{isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`} · {plan.durationDays} days</p>

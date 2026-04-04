@@ -50,9 +50,10 @@ function formatData(gb: number): string {
 }
 
 function PlanCard({ plan, index }: { plan: Plan; index: number }) {
+  const { formatPrice } = useI18n();
   const isUnlimited = plan.dataAmount >= 999;
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
-  const pricePerDay = (displayPrice / plan.durationDays).toFixed(2);
+  const pricePerDay = formatPrice(displayPrice / plan.durationDays);
   const locations = Array.isArray(plan.locations) ? plan.locations : [];
 
   return (
@@ -161,7 +162,7 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
         {/* Price + CTA */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-700/50 mt-auto">
           <div>
-            <p className="text-xl sm:text-2xl font-bold text-white">${displayPrice.toFixed(2)}</p>
+            <p className="text-xl sm:text-2xl font-bold text-white">{formatPrice(displayPrice)}</p>
             <p className="text-[10px] text-slate-500">one-time</p>
           </div>
           <div className="flex gap-2">
