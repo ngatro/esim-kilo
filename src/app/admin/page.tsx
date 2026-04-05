@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { useRouter } from "next/navigation";
 
 interface Stats {
   totalUsers: number;
@@ -22,13 +21,14 @@ interface RecentOrder {
   status: string;
   customerEmail: string | null;
   createdAt: string;
+  orderItems?: { planName: string }[];
 }
 
 interface RegionStat {
   id: string;
   name: string;
   emoji: string;
-  _count: { plans: number };
+  planCount: number;
 }
 
 interface AdminData {
@@ -37,25 +37,23 @@ interface AdminData {
   regions: RegionStat[];
 }
 
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 export default function AdminDashboardPage() {
   const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== "admin")) {
-      router.push("/");
-    }
-  }, [user, authLoading, router]);
-
-  useEffect(() => {
-    if (user?.role === "admin") {
+    if (!authLoading && user?.role === "admin") {
       fetchStats();
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   async function fetchStats() {
     try {
@@ -71,38 +69,39 @@ export default function AdminDashboardPage() {
 
   async function syncPlans() {
     setSyncing(true);
-    setSyncResult("Fetching packages from eSIM Access...");
+    setSyncResult("Syncing from eSIM Access...");
     try {
       const res = await fetch("/api/plans?sync=true");
       const data = await res.json();
       if (data.success) {
-        setSyncResult(`Done! ${data.synced} plans synced, ${data.deleted} old plans deleted (${data.elapsed})`);
+        setSyncResult(`✓ Synced ${data.synced} plans (${data.elapsed})`);
       } else {
-        setSyncResult(`Error: ${data.error || "Unknown"}`);
+        setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
       }
       await fetchStats();
     } catch (error) {
       console.error("Sync failed:", error);
-      setSyncResult("Sync failed - check console");
+      setSyncResult("✗ Sync failed");
     } finally {
       setSyncing(false);
     }
   }
 
-  if (authLoading || (!user && !authLoading)) {
+  if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full" />
       </div>
     );
   }
 
-  if (!user || user.role !== "admin") return null;
-
-  if (loading) {
+  if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-slate-600 text-lg">Access denied</p>
+          <Link href="/" className="text-orange-500 hover:underline mt-2 inline-block">Go to Home</Link>
+        </div>
       </div>
     );
   }
@@ -110,134 +109,130 @@ export default function AdminDashboardPage() {
   const stats = data?.stats;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-slate-400 text-sm mt-1">Welcome back, {user.name}</p>
+    <div className="min-h-screen bg-slate-50">
+      {/* Top Bar */}
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/admin" className="text-xl font-bold text-slate-800">Admin Dashboard</Link>
+            <span className="text-slate-400">|</span>
+            <span className="text-sm text-slate-500">Welcome, {user.name}</span>
           </div>
           <div className="flex items-center gap-3">
-            {syncResult && (
-              <span className="text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-lg">{syncResult}</span>
-            )}
             <button
               onClick={syncPlans}
               disabled={syncing}
-              className="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+              className="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
             >
               {syncing ? (
-                <span className="flex items-center gap-2">
+                <>
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
                   Syncing...
-                </span>
+                </>
               ) : "🔄 Sync Plans"}
             </button>
+            <Link href="/" className="text-slate-500 hover:text-slate-700 text-sm">View Site</Link>
           </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Sync Result */}
+        {syncResult && (
+          <div className="mb-6 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
+            {syncResult}
+          </div>
+        )}
+
+        {/* Stats Grid */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             {[
-              { label: "Users", value: stats.totalUsers, icon: "👥", color: "from-blue-500/20 to-blue-600/10" },
-              { label: "Orders", value: stats.totalOrders, icon: "📦", color: "from-green-500/20 to-green-600/10" },
-              { label: "Plans", value: stats.activePlans, icon: "📱", color: "from-purple-500/20 to-purple-600/10" },
-              { label: "Revenue", value: `$${(stats.totalRevenue || 0).toFixed(2)}`, icon: "💰", color: "from-amber-500/20 to-amber-600/10" },
-              { label: "Balance", value: `$${(stats.balance || 0).toFixed(2)}`, icon: "🏦", color: "from-sky-500/20 to-sky-600/10" },
-              { label: "Total Plans", value: stats.totalPlans, icon: "📋", color: "from-pink-500/20 to-pink-600/10" },
+              { label: "Users", value: stats.totalUsers, icon: "👥", bg: "bg-blue-50" },
+              { label: "Orders", value: stats.totalOrders, icon: "📦", bg: "bg-green-50" },
+              { label: "Active Plans", value: stats.activePlans, icon: "📱", bg: "bg-purple-50" },
+              { label: "Revenue", value: `$${(stats.totalRevenue || 0).toFixed(0)}`, icon: "💰", bg: "bg-amber-50" },
+              { label: "Balance", value: `$${(stats.balance || 0).toFixed(0)}`, icon: "🏦", bg: "bg-sky-50" },
+              { label: "Total Plans", value: stats.totalPlans, icon: "📋", bg: "bg-pink-50" },
             ].map((stat) => (
-              <motion.div
-                key={stat.label}
-                className={`bg-gradient-to-br ${stat.color} border border-slate-700/50 rounded-2xl p-5`}
-                whileHover={{ scale: 1.02 }}
-              >
-                <p className="text-2xl mb-2">{stat.icon}</p>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wider">{stat.label}</p>
-              </motion.div>
+              <div key={stat.label} className={`${stat.bg} rounded-xl p-4 border border-slate-200`}>
+                <p className="text-2xl mb-1">{stat.icon}</p>
+                <p className="text-xl font-bold text-slate-800">{stat.value}</p>
+                <p className="text-xs text-slate-500">{stat.label}</p>
+              </div>
             ))}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Link href="/admin/plans">
-            <motion.div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 hover:border-sky-500/30 transition-colors cursor-pointer" whileHover={{ y: -3 }}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-sky-500/20 rounded-xl flex items-center justify-center text-xl">📱</div>
-                <h3 className="text-lg font-semibold text-white">Plans Management</h3>
+            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-lg">📱</div>
+                <h3 className="font-semibold text-slate-800">Plans</h3>
               </div>
-              <p className="text-slate-400 text-sm mb-3">Set Hot, Best Seller, Popular labels. Toggle active status.</p>
-              <span className="text-sky-400 text-sm font-medium">Manage Plans →</span>
-            </motion.div>
-          </Link>
-
-          <Link href="/admin/blog">
-            <motion.div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 hover:border-sky-500/30 transition-colors cursor-pointer" whileHover={{ y: -3 }}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-xl">📝</div>
-                <h3 className="text-lg font-semibold text-white">Blog Management</h3>
-              </div>
-              <p className="text-slate-400 text-sm mb-3">Create and manage blog posts, travel tips, eSIM guides.</p>
-              <span className="text-sky-400 text-sm font-medium">Manage Blog →</span>
-            </motion.div>
+              <p className="text-sm text-slate-500">Manage eSIM plans & pricing</p>
+            </div>
           </Link>
 
           <Link href="/admin/orders">
-            <motion.div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 hover:border-sky-500/30 transition-colors cursor-pointer" whileHover={{ y: -3 }}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center text-xl">📦</div>
-                <h3 className="text-lg font-semibold text-white">Orders</h3>
+            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-lg">📦</div>
+                <h3 className="font-semibold text-slate-800">Orders</h3>
               </div>
-              <p className="text-slate-400 text-sm mb-3">View all customer orders, track eSIM delivery status.</p>
-              <span className="text-sky-400 text-sm font-medium">View Orders →</span>
-            </motion.div>
+              <p className="text-sm text-slate-500">View & manage customer orders</p>
+            </div>
+          </Link>
+
+          <Link href="/admin/blog">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-lg">📝</div>
+                <h3 className="font-semibold text-slate-800">Blog</h3>
+              </div>
+              <p className="text-sm text-slate-500">Manage blog posts & guides</p>
+            </div>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Recent Orders</h2>
-            {data?.recentOrders && data.recentOrders.length > 0 ? (
-              <div className="space-y-3">
-                {data.recentOrders.slice(0, 8).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between py-2 border-b border-slate-700/30 last:border-0">
-                    <div>
-                      <p className="text-white text-sm font-medium">#{order.id}</p>
-                      <p className="text-slate-500 text-xs">{order.customerEmail || "Guest"}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white text-sm font-semibold">${(order.totalAmount || 0).toFixed(2)}</p>
-                      <span className={`text-xs ${order.status === "completed" ? "text-green-400" : "text-yellow-400"}`}>
+        {/* Recent Orders */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h2 className="font-semibold text-slate-800">Recent Orders</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase">Order ID</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase">Customer</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase">Amount</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {data?.recentOrders?.slice(0, 5).map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50">
+                    <td className="px-5 py-3 text-sm text-slate-800 font-medium">#{order.id}</td>
+                    <td className="px-5 py-3 text-sm text-slate-600">{order.customerEmail || "N/A"}</td>
+                    <td className="px-5 py-3 text-sm text-slate-800 font-medium">${order.totalAmount.toFixed(2)}</td>
+                    <td className="px-5 py-3">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        order.status === "completed" ? "bg-green-100 text-green-700" :
+                        order.status === "pending" ? "bg-amber-100 text-amber-700" :
+                        "bg-slate-100 text-slate-600"
+                      }`}>
                         {order.status}
                       </span>
-                    </div>
-                  </div>
+                    </td>
+                    <td className="px-5 py-3 text-sm text-slate-500">{formatDate(order.createdAt)}</td>
+                  </tr>
                 ))}
-              </div>
-            ) : (
-              <p className="text-slate-500 text-sm">No orders yet</p>
-            )}
-          </div>
-
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Plans by Region</h2>
-            {data?.regions && data.regions.length > 0 ? (
-              <div className="space-y-3">
-                {data.regions.map((region) => (
-                  <div key={region.id} className="flex items-center justify-between py-2 border-b border-slate-700/30 last:border-0">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{region.emoji}</span>
-                      <span className="text-white text-sm">{region.name}</span>
-                    </div>
-                    <span className="bg-sky-500/20 text-sky-400 text-xs font-medium px-2.5 py-1 rounded-full">
-                      {region._count.plans} plans
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-slate-500 text-sm">No data. Click Sync Plans to import from eSIM Access.</p>
-            )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
