@@ -3,17 +3,28 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const countryCode = params.id;
-    const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get("limit") || "15");
+    const countryCode = params.id.toUpperCase();
+    
+    // Check if country exists
+    const country = await prisma.country.findUnique({
+      where: { code: countryCode },
+    });
 
+    if (!country) {
+      return NextResponse.json({ 
+        dataAmounts: [], 
+        durations: [],
+        count: 0 
+      });
+    }
+
+    // Get plans for this country
     const plans = await prisma.plan.findMany({
       where: { 
-        countryId: countryCode.toUpperCase(),
+        countryId: countryCode,
         isActive: true 
       },
       select: { dataAmount: true, durationDays: true },
-      take: limit,
     });
 
     // Extract unique data amounts and durations

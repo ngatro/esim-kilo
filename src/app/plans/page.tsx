@@ -303,10 +303,18 @@ export default function PlansPage() {
   function handleCountrySelect(country: { id: string; code: string; name: string }) {
     setSelectedCountry(country.code);
     setSelectedCountryName(country.name);
+    // Load filters immediately for the selected country
+    fetch(`/api/countries/${country.code}`)
+      .then(r => r.json())
+      .then(data => {
+        setDynamicDataOptions(data.dataAmounts || []);
+        setDynamicDurationOptions(data.durations || []);
+      })
+      .catch(console.error);
     // Find region from country code
     const countryData = countrySearchResults.find(c => c.code === country.code);
     if (countryData) {
-      fetch(`/api/regions`)
+      fetch("/api/regions")
         .then(r => r.json())
         .then(data => {
           const region = data.regions?.find((r: Region) => r.countries?.some((c: { id: string }) => c.id === country.code));
