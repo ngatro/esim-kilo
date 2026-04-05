@@ -258,7 +258,7 @@ export default function PlanDetailContent() {
     );
   }
 
-  const isUnlimited = plan.dataAmount >= 999;
+  const isUnlimited = !!plan.fupPolicy || plan.dataAmount >= 999;
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
   const pricePerDay = (displayPrice / plan.durationDays).toFixed(2);
@@ -404,7 +404,13 @@ export default function PlanDetailContent() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-50 rounded-xl p-4">
                     <p className="text-xs text-slate-500 mb-1">Data</p>
-                    <p className="text-lg font-semibold text-slate-800">{formatData(plan.dataAmount)}</p>
+                    <p className="text-lg font-semibold text-slate-800">
+                      {plan.fupPolicy ? (
+                        <>Unlimited <span className="text-green-600 text-sm">({plan.fupPolicy} after)</span></>
+                      ) : (
+                        formatData(plan.dataAmount)
+                      )}
+                    </p>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
                     <p className="text-xs text-slate-500 mb-1">Validity</p>
@@ -485,7 +491,9 @@ export default function PlanDetailContent() {
                 <h2 className="text-xl font-bold text-slate-800 mb-4">What&apos;s Included</h2>
                 <ul className="space-y-3">
                   {[
-                    isUnlimited ? "Unlimited Data" : `${plan.dataAmount}GB Data`,
+                    plan.fupPolicy 
+                      ? `Unlimited Data (high speed, then ${plan.fupPolicy})` 
+                      : `${plan.dataAmount}GB Data`,
                     `${plan.durationDays} Days Validity`,
                     plan.speed || "4G LTE Network",
                     "Instant QR Code Delivery via Email",

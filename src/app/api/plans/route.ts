@@ -208,6 +208,7 @@ export async function GET(request: Request) {
           unusedValidTime: pkg.unusedValidTime || 0,
           ipExport: pkg.ipExport || null,
           fupPolicy: pkg.fupPolicy || null,
+          badge: pkg.fupPolicy && pkg.fupPolicy.trim().length > 0 ? "unlimited" : null,
           locationNetworkList: JSON.stringify(pkg.locationNetworkList || []),
           isActive: true,
         };
