@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const countryCode = params.id.toUpperCase();
+    const { id: countryCode } = await params;
+    const code = countryCode.toUpperCase();
     
     // Check if country exists
     const country = await prisma.country.findUnique({
-      where: { code: countryCode },
+      where: { code },
     });
 
     if (!country) {
@@ -21,7 +22,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // Get plans for this country
     const plans = await prisma.plan.findMany({
       where: { 
-        countryId: countryCode,
+        countryId: code,
         isActive: true 
       },
       select: { dataAmount: true, durationDays: true },

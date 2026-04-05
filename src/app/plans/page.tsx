@@ -215,23 +215,29 @@ export default function PlansPage() {
   }
 
   function clearFilters() {
+    setDataFilter("");
+    setDurationFilter("");
+    setSortBy("best");
+  }
+
+  function clearAll() {
     setSelectedRegion("all");
     setSelectedCountry("");
     setSelectedCountryName("");
     setSearchQuery("");
     setNetworkFilter("");
     setPriceRange("");
-    setSortBy("best");
     setDataType("");
     setDataFilter("");
     setDurationFilter("");
+    setSortBy("best");
     setDynamicDataOptions([]);
     setDynamicDurationOptions([]);
   }
 
   const currentRegion = regions.find((r) => r.id === selectedRegion);
   const countries = currentRegion?.countries || [];
-  const hasActiveFilters = selectedRegion !== "all" || selectedCountry || selectedCountryName || searchQuery || networkFilter || priceRange || dataType || dataFilter || durationFilter;
+  const hasActiveFilters = selectedCountryName && (dataFilter || durationFilter || sortBy !== "best");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-cyan-50 text-slate-800">
@@ -288,82 +294,58 @@ export default function PlansPage() {
             </div>
           </div>
 
-          {/* Simple Filter Bar */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-            {/* Region Select */}
-            <select 
-              value={selectedRegion} 
-              onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCountry(""); }}
-              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
-            >
-              <option value="all">🌍 All Regions</option>
-              {regions.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>)}
-            </select>
-
-            {/* Country Select */}
-            {countries.length > 0 && (
+          {/* Simple Filter Bar - Only show when country is selected */}
+          {selectedCountryName && (
+            <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+              {/* Duration Filter */}
               <select 
-                value={selectedCountry} 
-                onChange={(e) => {
-                  setSelectedCountry(e.target.value);
-                  const country = countries.find(c => c.id === e.target.value);
-                  setSelectedCountryName(country?.name || "");
-                }}
+                value={durationFilter} 
+                onChange={(e) => setDurationFilter(e.target.value)}
                 className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
               >
-                <option value="">🏳️ All Countries</option>
-                {countries.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                <option value="">⏱️ Duration</option>
+                {dynamicDurationOptions.map((dd) => (
+                  <option key={dd} value={dd}>{dd} days</option>
+                ))}
               </select>
-            )}
 
-            {/* Duration Filter */}
-            <select 
-              value={durationFilter} 
-              onChange={(e) => setDurationFilter(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
-            >
-              <option value="">⏱️ Duration</option>
-              {dynamicDurationOptions.map((dd) => (
-                <option key={dd} value={dd}>{dd} days</option>
-              ))}
-            </select>
-
-            {/* Data Filter */}
-            <select 
-              value={dataFilter} 
-              onChange={(e) => setDataFilter(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
-            >
-              <option value="">📊 Data</option>
-              {dynamicDataOptions.map((da) => (
-                <option key={da} value={da}>
-                  {da === 999 ? "∞ Unlimited" : `${da}GB`}
-                </option>
-              ))}
-            </select>
-
-            {/* Sort */}
-            <select 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
-            >
-              <option value="best">⚡ Best Match</option>
-              <option value="price-low">💰 Price: Low to High</option>
-              <option value="price-high">💰 Price: High to Low</option>
-              <option value="data">📈 Most Data</option>
-              <option value="duration">📅 Longest Duration</option>
-            </select>
-
-            {hasActiveFilters && (
-              <button 
-                onClick={clearFilters} 
-                className="text-sm text-slate-400 hover:text-orange-500 transition-colors"
+              {/* Data Filter */}
+              <select 
+                value={dataFilter} 
+                onChange={(e) => setDataFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
               >
-                ✕ Clear
-              </button>
-            )}
-          </div>
+                <option value="">📊 Data</option>
+                {dynamicDataOptions.map((da) => (
+                  <option key={da} value={da}>
+                    {da === 999 ? "∞ Unlimited" : `${da}GB`}
+                  </option>
+                ))}
+              </select>
+
+              {/* Sort */}
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
+              >
+                <option value="best">⚡ Best Match</option>
+                <option value="price-low">💰 Price: Low to High</option>
+                <option value="price-high">💰 Price: High to Low</option>
+                <option value="data">📈 Most Data</option>
+                <option value="duration">📅 Longest Duration</option>
+              </select>
+
+              {hasActiveFilters && (
+                <button 
+                  onClick={clearAll} 
+                  className="text-sm text-slate-400 hover:text-orange-500 transition-colors"
+                >
+                  ✕ Clear
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Active Filter Display */}
           {selectedCountryName && (
@@ -371,7 +353,7 @@ export default function PlansPage() {
               <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm">
                 <span className="text-lg">📍</span>
                 {selectedCountryName}
-                <button onClick={() => { setSelectedCountry(""); setSelectedCountryName(""); }} className="hover:text-orange-900">
+                <button onClick={clearAll} className="hover:text-orange-900">
                   ✕
                 </button>
               </span>
@@ -412,7 +394,7 @@ export default function PlansPage() {
               <p className="text-4xl sm:text-5xl mb-4">📦</p>
               <h3 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">No plans found</h3>
               <p className="text-slate-500 text-sm mb-6">Try adjusting your filters or browse all regions</p>
-              <button onClick={clearFilters} className="bg-orange-500 hover:bg-orange-400 text-white px-6 py-2.5 rounded-xl text-sm transition-colors">Clear Filters</button>
+              <button onClick={clearAll} className="bg-orange-500 hover:bg-orange-400 text-white px-6 py-2.5 rounded-xl text-sm transition-colors">Clear Filters</button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
