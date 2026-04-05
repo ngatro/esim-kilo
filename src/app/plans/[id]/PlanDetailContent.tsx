@@ -307,7 +307,12 @@ export default function PlanDetailContent() {
               unoptimized
             />
             <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-              {plan.isBestSeller && (
+              {plan.badge === "unlimited" && (
+                <span className="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                  ∞ Unlimited
+                </span>
+              )}
+              {plan.isBestSeller && plan.badge !== "unlimited" && (
                 <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
                   ⭐ Best Seller
                 </span>
@@ -317,7 +322,7 @@ export default function PlanDetailContent() {
                   🔥 Hot
                 </span>
               )}
-              {plan.isPopular && !plan.isBestSeller && (
+              {plan.isPopular && !plan.isBestSeller && plan.badge !== "unlimited" && (
                 <span className="bg-cyan-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
                   Popular
                 </span>

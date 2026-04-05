@@ -155,7 +155,27 @@ export default function Header() {
           </nav>
 
           {/* Right Side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Language Selector */}
+            <div className="relative group">
+              <button className="flex items-center gap-1 px-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                <span className="text-xs">EN</span>
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden group-hover:block min-w-[120px]">
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">English</button>
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">中文</button>
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">日本語</button>
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">한국어</button>
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">Tiếng Việt</button>
+              </div>
+            </div>
+
             {/* Cart */}
             <Link href="/checkout" className="relative p-2 text-slate-600 hover:text-orange-500 transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -171,7 +191,7 @@ export default function Header() {
             {/* Auth */}
             {mounted && !authLoading && user && (
               <div className="hidden md:flex items-center gap-2">
-                <span className="text-sm text-slate-600">{user.name}</span>
+                <Link href="/orders" className="text-sm text-slate-600 hover:text-orange-500 transition-colors">My Orders</Link>
                 <button
                   onClick={() => logout()}
                   className="text-sm font-medium text-slate-400 hover:text-orange-500 transition-colors"
@@ -184,8 +204,11 @@ export default function Header() {
             {mounted && !authLoading && !user && (
               <button 
                 onClick={openLogin}
-                className="hidden md:block text-sm font-medium text-slate-600 hover:text-orange-500 transition-colors"
+                className="hidden md:flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
                 Login
               </button>
             )}

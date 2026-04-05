@@ -80,7 +80,7 @@ function formatVolume(bytes: number): string {
 
 export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const { formatPrice } = useI18n();
-  const isUnlimited = plan.badge === "Unlimited";
+  const isUnlimited = plan.badge === "unlimited";
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = formatPrice(displayPrice / plan.durationDays);
   const locations = Array.isArray(plan.locations) ? plan.locations : [];
@@ -106,7 +106,12 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
         
         {/* Badges */}
         <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
-          {plan.isBestSeller && (
+          {isUnlimited && (
+            <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
+              ∞ Unlimited
+            </span>
+          )}
+          {plan.isBestSeller && !isUnlimited && (
             <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
               ⭐ Best Seller
             </span>
@@ -116,7 +121,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
               🔥 Hot
             </span>
           )}
-          {plan.isPopular && !plan.isBestSeller && (
+          {plan.isPopular && !plan.isBestSeller && !isUnlimited && (
             <span className="bg-cyan-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
               Popular
             </span>
