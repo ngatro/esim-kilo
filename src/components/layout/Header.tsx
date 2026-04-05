@@ -7,12 +7,33 @@ import { useCart } from "@/components/providers/CartProvider";
 import { useUI } from "@/components/providers/UIProvider";
 import { useState, useEffect } from "react";
 
+const HOT_COUNTRIES = [
+  { code: "JP", name: "Japan", emoji: "🇯🇵" },
+  { code: "KR", name: "Korea", emoji: "🇰🇷" },
+  { code: "TH", name: "Thailand", emoji: "🇹🇭" },
+  { code: "SG", name: "Singapore", emoji: "🇸🇬" },
+  { code: "VN", name: "Vietnam", emoji: "🇻🇳" },
+  { code: "US", name: "USA", emoji: "🇺🇸" },
+  { code: "GB", name: "UK", emoji: "🇬🇧" },
+  { code: "FR", name: "France", emoji: "🇫🇷" },
+  { code: "DE", name: "Germany", emoji: "🇩🇪" },
+];
+
+const REGIONS = [
+  { id: "asia", name: "Asia", emoji: "🌏" },
+  { id: "europe", name: "Europe", emoji: "🏰" },
+  { id: "americas", name: "Americas", emoji: "🌎" },
+  { id: "oceania", name: "Oceania", emoji: "🌴" },
+  { id: "global", name: "Global", emoji: "🌐" },
+];
+
 export default function Header() {
   const { user, logout, loading: authLoading } = useAuth();
   const { items } = useCart();
   const { openLogin } = useUI();
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -20,18 +41,35 @@ export default function Header() {
 
   const cartCount = mounted ? items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/plans", label: "Plans" },
-    { href: "/blog", label: "Blog" },
+  const navItems = [
+    { 
+      label: "Home", 
+      href: "/",
+      children: null 
+    },
+    { 
+      label: "Plans", 
+      href: "/plans",
+      children: [
+        { label: "All Plans", href: "/plans" },
+        { label: "divider", href: "" },
+        { label: "Popular Regions", href: "", children: REGIONS.map(r => ({ label: r.name, href: `/plans?regionId=${r.id}`, emoji: r.emoji })) },
+        { label: "Hot Countries", href: "", children: HOT_COUNTRIES.map(c => ({ label: c.name, href: `/plans?countryId=${c.code}`, emoji: c.emoji })) },
+      ]
+    },
+    { 
+      label: "Blog", 
+      href: "/blog",
+      children: null 
+    },
   ];
 
-  const userLinks = mounted && user ? [
-    { href: "/orders", label: "My Orders" },
-    ...(user.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
+  const userItems = mounted && user ? [
+    { label: "My Orders", href: "/orders", children: null },
+    ...(user.role === "admin" ? [{ label: "Admin", href: "/admin", children: null }] : []),
   ] : [];
 
-  const allLinks = [...navLinks, ...userLinks];
+  const allItems = [...navItems, ...userItems];
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-100">
@@ -49,16 +87,70 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
-            {allLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-slate-600 hover:text-orange-500 transition-colors"
+          {/* Desktop Nav with Dropdown */}
+          <nav className="hidden md:flex items-center gap-1">
+            {allItems.map((item) => (
+              <div 
+                key={item.href} 
+                className="relative"
+                onMouseEnter={() => item.children && setActiveDropdown(item.href)}
+                onMouseLeave={() => setActiveDropdown(null)}
               >
-                {link.label}
-              </Link>
+                {item.children ? (
+                  <button className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-600 hover:text-orange-500 transition-colors">
+                    {item.label}
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                ) : (
+                  <Link href={item.href} className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-orange-500 transition-colors">
+                    {item.label}
+                  </Link>
+                )}
+
+                {/* Dropdown */}
+                <AnimatePresence>
+                  {item.children && activeDropdown === item.href && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      className="absolute top-full left-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-50"
+                    >
+                      {item.children.map((child, idx) => (
+                        child.label === "divider" ? (
+                          <div key={idx} className="my-1 border-t border-slate-100" />
+                        ) : child.children ? (
+                          <div key={idx} className="px-4 py-1">
+                            <p className="text-xs font-semibold text-slate-400 uppercase mb-1">{child.label}</p>
+                            <div className="space-y-0.5">
+                              {child.children.map((sub: { label: string; href: string; emoji?: string }, subIdx: number) => (
+                                <Link
+                                  key={subIdx}
+                                  href={sub.href}
+                                  className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
+                                >
+                                  {sub.emoji && <span>{sub.emoji}</span>}
+                                  {sub.label}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <Link
+                            key={idx}
+                            href={child.href}
+                            className="block px-4 py-2 text-sm text-slate-600 hover:text-orange-500 hover:bg-orange-50 transition-colors"
+                          >
+                            {child.label}
+                          </Link>
+                        )
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ))}
           </nav>
 
@@ -125,24 +217,65 @@ export default function Header() {
             exit={{ opacity: 0, height: 0 }}
           >
             <div className="px-4 py-4 space-y-2">
-              {allLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2.5 text-slate-600 font-medium hover:text-orange-500 transition-colors"
-                >
-                  {link.label}
-                </Link>
+              {navItems.map((item) => (
+                <div key={item.href}>
+                  {item.children ? (
+                    <details className="group">
+                      <summary className="flex items-center justify-between py-2.5 text-slate-600 font-medium cursor-pointer list-none">
+                        <span>{item.label}</span>
+                        <svg className="w-4 h-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="pl-4 space-y-1 mt-1">
+                        {item.children.filter(c => c.label !== "divider").map((child, idx) => (
+                          <div key={idx}>
+                            {child.children ? (
+                              <div className="py-1">
+                                <p className="text-xs font-semibold text-slate-400 uppercase mb-1">{child.label}</p>
+                                {child.children.map((sub: { label: string; href: string; emoji?: string }, subIdx: number) => (
+                                  <Link
+                                    key={subIdx}
+                                    href={sub.href}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex items-center gap-2 py-1.5 text-sm text-slate-500"
+                                  >
+                                    {sub.emoji} {sub.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            ) : (
+                              <Link
+                                href={child.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="block py-1.5 text-sm text-slate-500"
+                              >
+                                {child.label}
+                              </Link>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block py-2.5 text-slate-600 font-medium"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </div>
               ))}
-              
+
               {mounted && !authLoading && !user && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
                     openLogin();
                   }}
-                  className="w-full py-2.5 text-left text-slate-600 font-medium hover:text-orange-500 transition-colors"
+                  className="w-full py-2.5 text-left text-slate-600 font-medium"
                 >
                   Login
                 </button>
@@ -154,7 +287,7 @@ export default function Header() {
                     logout();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full py-2.5 text-left text-slate-600 font-medium hover:text-orange-500 transition-colors"
+                  className="w-full py-2.5 text-left text-slate-600 font-medium"
                 >
                   Logout
                 </button>
