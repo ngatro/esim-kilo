@@ -226,90 +226,60 @@ export default function PlanDetailContent() {
 
           {/* Right - Product Info */}
           <div className="flex flex-col">
-            {/* Breadcrumb (match reference layout) */}
-            <div className="mb-4">
-              <div className="flex items-center gap-2 text-sm text-slate-500">
-                <Link href="/" className="hover:text-orange-500">Home</Link>
-                <span>/</span>
-                <Link href="/plans" className="hover:text-orange-500">Local eSIMs</Link>
-                <span>/</span>
-                <span className="text-slate-800">{plan.destination} eSIM</span>
-              </div>
-            </div>
-
             {/* Title */}
             <div className="mb-4">
-              <h1 className="text-4xl font-bold text-slate-800 mb-3">{plan.destination} eSIM</h1>
+              <h1 className="text-4xl font-bold text-slate-800 mb-2">{plan.destination} eSIM</h1>
               <div className="flex items-center gap-2 text-base">
-                <span className="font-medium">Excellent</span>
+                <span className="font-medium text-slate-600">Excellent</span>
                 <span className="text-slate-700">4.8 out of 5</span>
                 <span className="text-green-600">★ Trustpilot</span>
               </div>
             </div>
 
-            {/* Top 3 Column Stats Card */}
-            <div className="grid grid-cols-3 bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-              <div className="text-center px-2">
-                <p className="text-sm text-slate-500 font-medium mb-1">PREMIUM NETWORK</p>
-                <p className="text-xl font-bold text-slate-800">KDDI / SoftBank</p>
-                <p className="text-sm text-slate-600 mt-1">Coverage #1</p>
-              </div>
-              <div className="text-center px-2 border-x border-slate-200">
-                <p className="text-sm text-slate-500 font-medium mb-1">DATA OPTIONS</p>
-                <p className="text-xl font-bold text-slate-800">Daily / Total / <span className="text-green-600">Unlimited</span></p>
-                <p className="text-sm text-slate-600 mt-1">Flexible Choice</p>
-              </div>
-              <div className="text-center px-2">
-                <p className="text-sm text-slate-500 font-medium mb-1">MAX SPEED</p>
-                <p className="text-xl font-bold text-slate-800"><span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-sm">5G</span> / 4G LTE</p>
-                <p className="text-sm text-slate-600 mt-1">⚡ High Speed</p>
+            {/* Network Info */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Network</p>
+                  <p className="text-lg font-bold text-slate-800">5G / 4G LTE</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-slate-500 mb-1">Speed</p>
+                  <p className="text-lg font-bold text-cyan-600">Up to 300Mbps</p>
+                </div>
               </div>
             </div>
 
-            {/* Technical Specifications Header */}
-            <h2 className="text-xl font-bold text-slate-800 mb-4">Technical Specifications</h2>
-            <p className="text-base text-slate-500 mb-4">NETWORK SELECTION</p>
-
-            {/* Network Selection 2 Column Cards */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
-                <p className="text-sm font-semibold text-blue-700 mb-2">FOR DAILY PLANS</p>
-                <p className="text-lg font-bold text-slate-800 mb-2">SoftBank 5G</p>
-                <div className="inline-flex items-center gap-1 bg-blue-600 text-white text-xs px-2 py-1 rounded-md mb-3">
-                  🇯🇵 Native IP
-                </div>
-                <p className="text-sm text-slate-700">Ultra-Low Latency. Best for <strong>Local Apps & Gaming</strong>.</p>
+            {/* Plan Details - Clean List */}
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <span className="text-slate-500">Data</span>
+                <span className="font-semibold text-slate-800">{isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`}</span>
               </div>
-              <div className="bg-green-50 border border-green-100 rounded-xl p-5">
-                <p className="text-sm font-semibold text-green-700 mb-2">TOTAL / UNLIMITED</p>
-                <p className="text-lg font-bold text-slate-800 mb-2">KDDI 5G + SoftBank 5G</p>
-                <div className="inline-flex items-center gap-1 bg-green-600 text-white text-xs px-2 py-1 rounded-md mb-3">
-                  🐉 Dual Coverage
-                </div>
-                <p className="text-sm text-slate-700">Widest Signal. Auto-switch. Best for <strong>Sakura & Rural Areas</strong>.</p>
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <span className="text-slate-500">Validity</span>
+                <span className="font-semibold text-slate-800">{plan.durationDays} Days</span>
               </div>
-            </div>
-
-            {/* Specifications List */}
-            <div className="space-y-0 mb-6">
-              <div className="py-4 border-t border-slate-200 grid grid-cols-3">
-                <p className="text-base text-slate-500 font-medium">Plan Type</p>
-                <div className="col-span-2">
-                  <p className="text-base font-semibold text-slate-800">Data Only</p>
-                  <p className="text-sm text-slate-600">Use WhatsApp/VoIP for calls. No phone number provided.</p>
-                </div>
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <span className="text-slate-500">Activation</span>
+                <span className="font-semibold text-green-600">Automatic</span>
               </div>
-              <div className="py-4 border-t border-slate-200 grid grid-cols-3">
-                <p className="text-base text-slate-500 font-medium">Activation</p>
-                <div className="col-span-2">
-                  <p className="text-base font-semibold text-green-600">Automatic</p>
-                  <p className="text-sm text-slate-600">Auto-start on arrival; turn on data roaming for ByteSIM.</p>
-                </div>
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <span className="text-slate-500">Plan Type</span>
+                <span className="font-semibold text-slate-800">Data Only</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                <span className="text-slate-500">Top-Up</span>
+                <span className="font-semibold text-slate-800">{plan.supportTopUp ? "Supported" : "Not supported"}</span>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <span className="text-slate-500">Tethering</span>
+                <span className="font-semibold text-slate-800">{plan.ipExport || "Not supported"}</span>
               </div>
             </div>
 
             {/* Quantity & Buy */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-2">
+            <div className="flex flex-col sm:flex-row gap-4 mt-auto">
               <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 w-fit">
                 <span className="text-sm text-slate-500">Qty:</span>
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-orange-400 flex items-center justify-center text-slate-600">-</button>
@@ -325,6 +295,21 @@ export default function PlanDetailContent() {
                   Buy Now - {formatPrice(displayPrice * quantity)}
                 </motion.button>
               </Link>
+            </div>
+
+            {/* Features */}
+            <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
+              {[
+                { icon: "✓", text: "Instant QR code delivery", color: "text-green-600" },
+                { icon: "✓", text: "Secure checkout", color: "text-green-600" },
+                { icon: "✓", text: "7-day refund policy", color: "text-green-600" },
+                { icon: "✓", text: "Works on all eSIM devices", color: "text-green-600" },
+              ].map((item) => (
+                <div key={item.text} className="flex items-center gap-2 text-sm text-slate-600">
+                  <span className={item.color}>{item.icon}</span>
+                  <span>{item.text}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
