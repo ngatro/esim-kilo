@@ -329,7 +329,7 @@ export async function GET(request: Request) {
       default: orderBy = [{ isBestSeller: "desc" }, { isPopular: "desc" }, { priceUsd: "asc" }];
     }
 
-    const take = limit ? Math.min(parseInt(limit), 500) : 500;
+    const take = limit ? Math.min(parseInt(limit), 5000) : 5000;
     const plans = await prisma.plan.findMany({ where, orderBy, take });
 
     // Serialize BigInt to number for JSON
