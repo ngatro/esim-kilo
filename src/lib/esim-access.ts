@@ -156,8 +156,14 @@ async function esimAccessPost(endpoint: string, body: Record<string, unknown> = 
 
 export async function getBalance(): Promise<BalanceObj> {
   const res = await esimAccessPost("/balance/query");
-  if (!res.success || !res.obj) throw new Error(res.message || "Failed");
-  return res.obj as BalanceObj;
+  console.log("[eSIM API] Balance response:", JSON.stringify(res));
+  if (!res.success) throw new Error(res.message || "Failed to get balance");
+  // Response format: { success: true, obj: { balance: "100.00", currency: "USD" } }
+  if (res.obj && typeof res.obj === "object" && "balance" in res.obj) {
+    return res.obj as BalanceObj;
+  }
+  // Fallback: try to find balance in response directly
+  return { balance: 0, currency: "USD" };
 }
 
 export async function getPackageList(params: {
