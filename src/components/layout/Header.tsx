@@ -191,7 +191,11 @@ export default function Header() {
             </Link>
 
             {/* Auth */}
-            {mounted && !authLoading && user && (
+            {mounted && authLoading ? (
+              <div className="hidden md:flex items-center gap-2">
+                <div className="w-8 h-8 bg-slate-100 rounded-lg animate-pulse" />
+              </div>
+            ) : mounted && !authLoading && user ? (
               <div className="hidden md:flex items-center gap-2">
                 <Link href="/orders" className="text-sm text-slate-600 hover:text-orange-500 transition-colors">{t("header.myOrders")}</Link>
                 <button
@@ -201,9 +205,7 @@ export default function Header() {
                   {t("header.logout")}
                 </button>
               </div>
-            )}
-
-            {mounted && !authLoading && !user && (
+            ) : mounted && !authLoading && !user ? (
               <button 
                 onClick={openLogin}
                 className="hidden md:flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
@@ -213,7 +215,7 @@ export default function Header() {
                 </svg>
                 {t("header.login")}
               </button>
-            )}
+            ) : null}
 
             {/* Mobile Menu Toggle */}
             <button 
