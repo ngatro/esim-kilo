@@ -132,29 +132,32 @@ export default function PlanDetailContent() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
-        <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mb-6 sm:mb-10">
-            <Link href="/" className="hover:text-slate-300">Home</Link>
-            <span>/</span>
-            <Link href="/plans" className="hover:text-slate-300">Plans</Link>
-            <span>/</span>
-            <span className="text-slate-300">{plan.destination}</span>
-          </nav>
+      {/* Hero Banner */}
+      <div className="relative h-48 sm:h-64 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-sky-900/60 to-slate-900 z-10" />
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ 
+            backgroundImage: `url('https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=1200&q=80')`,
+          }}
+        />
+        <div className="relative z-20 max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-end pb-6">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {plan.isBestSeller && <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">⭐ Best Seller</span>}
+              {plan.isHot && <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">🔥 Hot</span>}
+              {plan.isPopular && <span className="bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-full">Popular</span>}
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-bold text-white drop-shadow-lg">{plan.destination}</h1>
+            <p className="text-slate-300 text-lg mt-1 drop-shadow">{plan.name}</p>
+          </div>
+        </div>
+      </div>
 
+      <main className="pt-8 sm:pt-12 pb-16 sm:pb-24">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10">
             <div className="lg:col-span-3 space-y-5 sm:space-y-6">
-              <div>
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  {plan.isBestSeller && <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">BEST SELLER</span>}
-                  {plan.isHot && <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">HOT</span>}
-                  {plan.isPopular && <span className="bg-gradient-to-r from-sky-500 to-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">POPULAR</span>}
-                </div>
-                <h1 className="text-2xl sm:text-4xl font-bold text-white">{plan.destination} eSIM</h1>
-                <p className="text-slate-400 text-sm mt-1">{plan.name}</p>
-                {plan.description && <p className="text-slate-500 text-xs mt-1">{plan.description}</p>}
-              </div>
-
               <div className="grid grid-cols-3 gap-3 sm:gap-4">
                 {[
                   { label: "Data", value: formatData(plan.dataAmount), color: "text-sky-400" },

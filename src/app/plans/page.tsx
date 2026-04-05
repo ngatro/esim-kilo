@@ -252,9 +252,9 @@ export default function PlansPage() {
         if (max) params.set("maxPrice", max);
       }
 
-      // Limit to 15 plans when a country is selected
+      // Limit to 20 plans
       if (selectedCountry) {
-        params.set("limit", "15");
+        params.set("limit", "20");
       }
 
       const res = await fetch(`/api/plans?${params.toString()}`);
@@ -351,54 +351,39 @@ export default function PlansPage() {
             <p className="text-slate-500 text-xs sm:text-sm mt-1">{plans.length} plans available</p>
           </div>
 
-          {/* Smart Search */}
-          <div className="mb-4 sm:mb-6" ref={searchRef}>
-            <div className="relative">
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => { setSearchQuery(e.target.value); setShowSearchDropdown(true); }}
-                    onFocus={() => setShowSearchDropdown(true)}
-                    onKeyDown={(e) => { if (e.key === "Enter") setShowSearchDropdown(false); }}
-                    placeholder="Search country or region... (e.g. Japan, Europe, US)"
-                    className="w-full bg-slate-800/60 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
-                  />
-                </div>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`sm:hidden flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-sm transition-colors ${
-                    showFilters || hasActiveFilters ? "bg-sky-500/20 border-sky-500/40 text-sky-400" : "bg-slate-800/60 border-slate-700 text-slate-400"
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
-                  {hasActiveFilters && <span className="w-2 h-2 bg-sky-400 rounded-full" />}
-                </button>
-              </div>
-
+          {/* Simple Search Bar */}
+          <div className="mb-6" ref={searchRef}>
+            <div className="relative max-w-xl mx-auto">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setShowSearchDropdown(true); }}
+                onFocus={() => setShowSearchDropdown(true)}
+                onKeyDown={(e) => { if (e.key === "Enter") setShowSearchDropdown(false); }}
+                placeholder="Search destination... (e.g. Japan, Thailand, Europe)"
+                className="w-full bg-slate-800/80 border border-slate-700/50 rounded-2xl pl-12 pr-4 py-4 text-white text-base placeholder:text-slate-500 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/30 transition-all shadow-lg"
+              />
+              
               <AnimatePresence>
                 {showSearchDropdown && searchQuery.trim() && countrySearchResults.length > 0 && (
                   <motion.div
-                    initial={{ opacity: 0, y: -5 }}
+                    initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto"
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto"
                   >
                     {countrySearchResults.map((country) => (
                       <button
                         key={country.id}
                         onClick={() => handleCountrySelect(country)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700/50 transition-colors text-left"
                       >
-                        <span className="text-lg">{country.emoji}</span>
+                        <span className="text-xl">{country.emoji}</span>
                         <div>
-                          <p className="text-white text-sm font-medium">{country.name}</p>
+                          <p className="text-white font-medium">{country.name}</p>
                           <p className="text-slate-500 text-xs">{country.regionName}</p>
                         </div>
                       </button>
@@ -409,179 +394,95 @@ export default function PlansPage() {
             </div>
           </div>
 
-          {/* Desktop Filters */}
-          <div className="hidden sm:block bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 mb-6">
-            <div className="flex flex-wrap gap-3 items-end">
-              <div className="min-w-[160px]">
-                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Region</label>
-                <select value={selectedRegion} onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCountry(""); }}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
-                  <option value="all">All Regions</option>
-                  {regions.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>)}
-                </select>
-              </div>
+          {/* Simple Filter Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+            {/* Region Select */}
+            <select 
+              value={selectedRegion} 
+              onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCountry(""); }}
+              className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+            >
+              <option value="all">🌍 All Regions</option>
+              {regions.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>)}
+            </select>
 
-              {countries.length > 0 && (
-                <div className="min-w-[160px]">
-                  <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Country</label>
-                  <select value={selectedCountry} onChange={(e) => setSelectedCountry(e.target.value)}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
-                    <option value="">All Countries</option>
-                    {countries.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
-                  </select>
-                </div>
-              )}
+            {/* Country Select */}
+            {countries.length > 0 && (
+              <select 
+                value={selectedCountry} 
+                onChange={(e) => {
+                  setSelectedCountry(e.target.value);
+                  const country = countries.find(c => c.id === e.target.value);
+                  setSelectedCountryName(country?.name || "");
+                }}
+                className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+              >
+                <option value="">🏳️ All Countries</option>
+                {countries.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+              </select>
+            )}
 
-              <div className="min-w-[130px]">
-                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Network</label>
-                <select value={networkFilter} onChange={(e) => setNetworkFilter(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
-                  <option value="">All</option><option value="5G">5G</option><option value="4G">4G</option><option value="3G">3G</option>
-                </select>
-              </div>
+            {/* Duration Filter */}
+            <select 
+              value={durationFilter} 
+              onChange={(e) => setDurationFilter(e.target.value)}
+              className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+            >
+              <option value="">⏱️ Duration</option>
+              {dynamicDurationOptions.map((dd) => (
+                <option key={dd} value={dd}>{dd} days</option>
+              ))}
+            </select>
 
-              <div className="min-w-[130px]">
-                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Price</label>
-                <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
-                  <option value="">Any</option><option value="0-5">Under $5</option><option value="5-15">$5-$15</option>
-                  <option value="15-30">$15-$30</option><option value="30-100">$30-$100</option><option value="100-999">$100+</option>
-                </select>
-              </div>
+            {/* Data Filter */}
+            <select 
+              value={dataFilter} 
+              onChange={(e) => setDataFilter(e.target.value)}
+              className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+            >
+              <option value="">📊 Data</option>
+              {dynamicDataOptions.map((da) => (
+                <option key={da} value={da}>
+                  {da === 999 ? "∞ Unlimited" : `${da}GB`}
+                </option>
+              ))}
+            </select>
 
-              <div className="min-w-[130px]">
-                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Type</label>
-                <select value={dataType} onChange={(e) => setDataType(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
-                  <option value="">All</option><option value="1">Fixed Data</option><option value="2">Day Pass</option>
-                </select>
-              </div>
+            {/* Sort */}
+            <select 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+            >
+              <option value="best">⚡ Best Match</option>
+              <option value="price-low">💰 Price: Low to High</option>
+              <option value="price-high">💰 Price: High to Low</option>
+              <option value="data">📈 Most Data</option>
+              <option value="duration">📅 Longest Duration</option>
+            </select>
 
-              <div className="min-w-[130px]">
-                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Data</label>
-                <select value={dataFilter} onChange={(e) => setDataFilter(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
-                  <option value="">Any</option>
-                  {dynamicDataOptions.map((da) => (
-                    <option key={da} value={da}>
-                      {da === 999 ? "Unlimited" : `${da}GB`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="min-w-[130px]">
-                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Duration</label>
-                <select value={durationFilter} onChange={(e) => setDurationFilter(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
-                  <option value="">Any</option>
-                  {dynamicDurationOptions.map((dd) => (
-                    <option key={dd} value={dd}>{dd} days</option>
-                  ))}
-                  <option value="90">90 days</option>
-                  <option value="180">180 days</option>
-                  <option value="365">365 days</option>
-                </select>
-              </div>
-
-              <div className="min-w-[130px]">
-                <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Sort</label>
-                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
-                  <option value="best">Best Match</option><option value="price-low">Price ↑</option>
-                  <option value="price-high">Price ↓</option><option value="data">Most Data</option><option value="duration">Duration</option>
-                </select>
-              </div>
-
-              {hasActiveFilters && (
-                <button onClick={clearFilters} className="text-xs text-slate-400 hover:text-white underline underline-offset-2 transition-colors">
-                  Clear all
-                </button>
-              )}
-            </div>
+            {hasActiveFilters && (
+              <button 
+                onClick={clearFilters} 
+                className="text-sm text-slate-400 hover:text-white transition-colors"
+              >
+                ✕ Clear
+              </button>
+            )}
           </div>
 
-          {/* Mobile Filters */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                className="sm:hidden bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 mb-4 overflow-hidden">
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Region</label>
-                    <select value={selectedRegion} onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCountry(""); }}
-                      className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
-                      <option value="all">All Regions</option>
-                      {regions.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>)}
-                    </select>
-                  </div>
-                  {countries.length > 0 && (
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Country</label>
-                      <select value={selectedCountry} onChange={(e) => setSelectedCountry(e.target.value)}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
-                        <option value="">All Countries</option>
-                        {countries.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
-                      </select>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Network</label>
-                      <select value={networkFilter} onChange={(e) => setNetworkFilter(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
-                        <option value="">All</option><option value="5G">5G</option><option value="4G">4G</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Price</label>
-                      <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
-                        <option value="">Any</option><option value="0-5">Under $5</option><option value="5-15">$5-$15</option>
-                        <option value="15-30">$15-$30</option><option value="30-100">$30-$100</option><option value="100-999">$100+</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Type</label>
-                      <select value={dataType} onChange={(e) => setDataType(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
-                        <option value="">All</option><option value="1">Fixed</option><option value="2">Day Pass</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Sort</label>
-                      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
-                        <option value="best">Best</option><option value="price-low">Price ↑</option>
-                        <option value="price-high">Price ↓</option><option value="data">Data</option><option value="duration">Duration</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Data</label>
-                      <select value={dataFilter} onChange={(e) => setDataFilter(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
-                        <option value="">Any</option>
-                        {dynamicDataOptions.map((da) => (
-                          <option key={da} value={da}>{da === 999 ? "Unlimited" : `${da}GB`}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1 uppercase tracking-wider">Duration</label>
-                      <select value={durationFilter} onChange={(e) => setDurationFilter(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500">
-                        <option value="">Any</option>
-                        {dynamicDurationOptions.map((dd) => (
-                          <option key={dd} value={dd}>{dd} days</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  {hasActiveFilters && (
-                    <button onClick={clearFilters} className="w-full text-sm text-sky-400 hover:text-sky-300 py-2">Clear all filters</button>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Active Filter Display */}
+          {selectedCountryName && (
+            <div className="text-center mb-6">
+              <span className="inline-flex items-center gap-2 bg-sky-500/20 text-sky-300 px-4 py-2 rounded-full text-sm">
+                <span className="text-lg">📍</span>
+                {selectedCountryName}
+                <button onClick={() => { setSelectedCountry(""); setSelectedCountryName(""); }} className="hover:text-white">
+                  ✕
+                </button>
+              </span>
+            </div>
+          )}
 
           {/* Region chips */}
           <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap">
