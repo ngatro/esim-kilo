@@ -56,7 +56,7 @@ export default function PlansSection() {
 
         {/* Popular Regions */}
         <div className="mb-10">
-          <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">🗺️ Popular Regions</h3>
+          <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">{t("coverage.popular")}</h3>
           <div className="flex flex-wrap justify-center gap-3">
             {REGIONS.map((region) => (
               <Link key={region.id} href={`/plans?regionId=${region.id}`}>
@@ -75,7 +75,7 @@ export default function PlansSection() {
 
         {/* Hot Countries */}
         <div className="mb-10">
-          <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">🔥 Top Destinations</h3>
+          <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">{t("coverage.title")}</h3>
           <div className="flex flex-wrap justify-center gap-3">
             {HOT_COUNTRIES.map((country) => (
               <Link key={country.code} href={`/plans?countryId=${country.code}`}>

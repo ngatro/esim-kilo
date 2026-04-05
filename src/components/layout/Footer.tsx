@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 export default function Footer() {
+  const { t } = useI18n();
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="bg-slate-950 border-t border-slate-800 mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -15,7 +19,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed">
-              OpenWorld eSIM — Stay connected anywhere in the world with affordable data plans for 190+ countries.
+              {t("footer.description")}
             </p>
             <div className="mt-4 flex items-center gap-4">
               <a href="#" className="text-slate-500 hover:text-white transition-colors">
@@ -31,40 +35,40 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Plans</h3>
+            <h3 className="text-sm font-semibold text-white mb-4">{t("footer.plans")}</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><Link href="/plans" className="hover:text-slate-300 transition-colors">Browse All Plans</Link></li>
-              <li><Link href="/plans?regionId=global" className="hover:text-slate-300 transition-colors">Global Plans</Link></li>
-              <li><Link href="/plans?planType=region" className="hover:text-slate-300 transition-colors">Regional Plans</Link></li>
-              <li><Link href="/plans?planType=local" className="hover:text-slate-300 transition-colors">Country Plans</Link></li>
+              <li><Link href="/plans" className="hover:text-slate-300 transition-colors">{t("footer.browseAllPlans")}</Link></li>
+              <li><Link href="/plans?regionId=global" className="hover:text-slate-300 transition-colors">{t("footer.globalPlans")}</Link></li>
+              <li><Link href="/plans?planType=region" className="hover:text-slate-300 transition-colors">{t("footer.regionalPlans")}</Link></li>
+              <li><Link href="/plans?planType=local" className="hover:text-slate-300 transition-colors">{t("footer.countryPlans")}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Support</h3>
+            <h3 className="text-sm font-semibold text-white mb-4">{t("footer.support")}</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">Blog</Link></li>
-              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">FAQ</Link></li>
-              <li><Link href="#" className="hover:text-slate-300 transition-colors">Device Compatibility</Link></li>
-              <li><Link href="mailto:support@openworldesim.com" className="hover:text-slate-300 transition-colors">Contact Us</Link></li>
+              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">{t("common.blog")}</Link></li>
+              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">{t("footer.faq")}</Link></li>
+              <li><Link href="#" className="hover:text-slate-300 transition-colors">{t("footer.deviceCompatibility")}</Link></li>
+              <li><Link href="mailto:support@openworldesim.com" className="hover:text-slate-300 transition-colors">{t("footer.contactUs")}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Company</h3>
+            <h3 className="text-sm font-semibold text-white mb-4">{t("footer.company")}</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><Link href="/" className="hover:text-slate-300 transition-colors">About</Link></li>
-              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">Blog</Link></li>
-              <li><Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link></li>
-              <li><Link href="/refund" className="hover:text-slate-300 transition-colors">Refund Policy</Link></li>
+              <li><Link href="/" className="hover:text-slate-300 transition-colors">{t("footer.about")}</Link></li>
+              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">{t("common.blog")}</Link></li>
+              <li><Link href="/privacy" className="hover:text-slate-300 transition-colors">{t("footer.privacy")}</Link></li>
+              <li><Link href="/terms" className="hover:text-slate-300 transition-colors">{t("footer.terms")}</Link></li>
+              <li><Link href="/refund" className="hover:text-slate-300 transition-colors">{t("footer.refund")}</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-600">
-          <p>&copy; {new Date().getFullYear()} OpenWorld eSIM — owsim.com. All rights reserved.</p>
-          <p>Made for travelers. Powered by global networks.</p>
+          <p>&copy; {currentYear} OpenWorld eSIM — owsim.com. {t("footer.copyright")}</p>
+          <p>{t("footer.madeFor")}</p>
         </div>
       </div>
     </footer>

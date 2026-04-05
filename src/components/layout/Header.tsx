@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useUI } from "@/components/providers/UIProvider";
+import { useI18n } from "@/components/providers/I18nProvider";
 import { useState, useEffect } from "react";
 
 const HOT_COUNTRIES = [
@@ -28,6 +29,7 @@ const REGIONS = [
 ];
 
 export default function Header() {
+  const { t } = useI18n();
   const { user, logout, loading: authLoading } = useAuth();
   const { items } = useCart();
   const { openLogin } = useUI();
@@ -43,30 +45,30 @@ export default function Header() {
 
   const navItems = [
     { 
-      label: "Home", 
+      label: t("common.home"), 
       href: "/",
       children: null 
     },
     { 
-      label: "Plans", 
+      label: t("common.plans"), 
       href: "/plans",
       children: [
-        { label: "All Plans", href: "/plans" },
+        { label: t("header.allPlans"), href: "/plans" },
         { label: "divider", href: "" },
-        { label: "Popular Regions", href: "", children: REGIONS.map(r => ({ label: r.name, href: `/plans?regionId=${r.id}`, emoji: r.emoji })) },
-        { label: "Hot Countries", href: "", children: HOT_COUNTRIES.map(c => ({ label: c.name, href: `/plans?countryId=${c.code}`, emoji: c.emoji })) },
+        { label: t("header.popularRegions"), href: "", children: REGIONS.map(r => ({ label: r.name, href: `/plans?regionId=${r.id}`, emoji: r.emoji })) },
+        { label: t("header.hotCountries"), href: "", children: HOT_COUNTRIES.map(c => ({ label: c.name, href: `/plans?countryId=${c.code}`, emoji: c.emoji })) },
       ]
     },
     { 
-      label: "Blog", 
+      label: t("common.blog"), 
       href: "/blog",
       children: null 
     },
   ];
 
   const userItems = mounted && user ? [
-    { label: "My Orders", href: "/orders", children: null },
-    ...(user.role === "admin" ? [{ label: "Admin", href: "/admin", children: null }] : []),
+    { label: t("header.myOrders"), href: "/orders", children: null },
+    ...(user.role === "admin" ? [{ label: t("common.admin"), href: "/admin", children: null }] : []),
   ] : [];
 
   const allItems = [...navItems, ...userItems];
@@ -191,12 +193,12 @@ export default function Header() {
             {/* Auth */}
             {mounted && !authLoading && user && (
               <div className="hidden md:flex items-center gap-2">
-                <Link href="/orders" className="text-sm text-slate-600 hover:text-orange-500 transition-colors">My Orders</Link>
+                <Link href="/orders" className="text-sm text-slate-600 hover:text-orange-500 transition-colors">{t("header.myOrders")}</Link>
                 <button
                   onClick={() => logout()}
                   className="text-sm font-medium text-slate-400 hover:text-orange-500 transition-colors"
                 >
-                  Logout
+                  {t("header.logout")}
                 </button>
               </div>
             )}
@@ -209,7 +211,7 @@ export default function Header() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                Login
+                {t("header.login")}
               </button>
             )}
 
