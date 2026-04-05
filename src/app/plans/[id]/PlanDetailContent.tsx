@@ -297,7 +297,7 @@ export default function PlanDetailContent() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           
           {/* Left - Image */}
-          <div className="relative aspect-[3/4] lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
+          <div className="relative aspect-[1/1] lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
             <Image
               src={getHeroImage(plan.countryId)}
               alt={plan.destination}
