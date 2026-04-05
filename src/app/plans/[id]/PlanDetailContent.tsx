@@ -258,7 +258,7 @@ export default function PlanDetailContent() {
     );
   }
 
-  const isUnlimited = !!plan.fupPolicy || plan.dataAmount >= 999;
+  const isUnlimited = !!plan.fupPolicy;
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
   const pricePerDay = (displayPrice / plan.durationDays).toFixed(2);
