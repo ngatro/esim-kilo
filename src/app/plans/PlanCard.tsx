@@ -101,6 +101,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           unoptimized
+          priority={index === 0}
         />
           <div className="absolute inset-0 bg-black/40" />
         
