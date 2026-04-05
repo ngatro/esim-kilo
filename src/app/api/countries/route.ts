@@ -16,18 +16,23 @@ export async function GET(request: Request) {
 
     const countries = await prisma.country.findMany({
       where,
-      include: { region: true },
+      include: { 
+        plans: {
+          where: { isActive: true },
+          select: { regionName: true },
+          take: 1,
+        }
+      },
       take: limit,
       orderBy: { name: "asc" },
     });
 
-    const results = countries.map((c: { id: string; code: string; name: string; emoji: string; regionId: string; region: { name: string } }) => ({
+    const results = countries.map((c: { id: string; code: string; name: string; emoji: string; plans: { regionName: string | null }[] }) => ({
       id: c.id,
       code: c.code,
       name: c.name,
       emoji: c.emoji,
-      regionId: c.regionId,
-      regionName: c.region.name,
+      regionName: c.plans[0]?.regionName || null,
     }));
 
     return NextResponse.json({ countries: results });

@@ -24,7 +24,10 @@ model Region {
   id        String   @id
   name      String
   emoji     String
-  countries Country[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  plans     Plan[]
 }
 
 model Country {
@@ -32,9 +35,10 @@ model Country {
   name      String
   code      String   @unique
   emoji     String
-  regionId  String
-  region    Region   @relation(fields: [regionId], references: [id])
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  plans     Plan[]
 }
 
 model Plan {
@@ -45,10 +49,12 @@ model Plan {
   description     String?
   destination     String
   
-  regionId        String?   // "europe", "asia", "americas", etc - no FK
-  countryId       String?   // "JP", "US", etc - no FK
-  regionName      String?   // "Europe", "Asia" - for display
-  countryName     String?   // "Japan", "United States" - for display
+  regionId        String?
+  region          Region?  @relation(fields: [regionId], references: [id])
+  countryId       String?
+  country         Country? @relation(fields: [countryId], references: [id])
+  regionName      String?
+  countryName     String?
   
   dataType        Int      @default(1)
   dataVolume      BigInt   @default(0)

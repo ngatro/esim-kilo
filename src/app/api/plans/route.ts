@@ -139,7 +139,7 @@ export async function GET(request: Request) {
       if (packages.length === 0) return NextResponse.json({ success: false, error: "No packages" });
 
       const regionMap: Record<string, { id: string; name: string; emoji: string }> = {};
-      const countryMap: Record<string, { id: string; name: string; code: string; emoji: string; regionId: string }> = {};
+      const countryMap: Record<string, { id: string; name: string; code: string; emoji: string }> = {};
 
       const plans = packages.map((pkg) => {
         const dataAmount = bytesToGB(pkg.volume);
@@ -152,19 +152,19 @@ export async function GET(request: Request) {
         const locations = (pkg.location || "").split(",").map((s: string) => s.trim()).filter(Boolean);
         const locationCount = locations.length || 1;
 
-        // Build regional data
-        const regionKey = loc.regionId?.toUpperCase() || "GLOBAL";
-        if (loc.regionId && loc.regionName) {
+        // Build regional data - only for plans with 2+ locations (regional plans)
+        if (locationCount >= 2 && loc.regionId && loc.regionName) {
+          const regionKey = loc.regionId.toUpperCase();
           if (!regionMap[regionKey]) {
             regionMap[regionKey] = { id: loc.regionId, name: loc.regionName, emoji: getRegionEmoji(loc.regionId) };
           }
         }
 
-        // For single country plans, add to country map
+        // Build country data - only for plans with 1 location (single country plans)
         if (loc.countryId && loc.countryName && locationCount === 1) {
           const countryKey = loc.countryId.toUpperCase();
           if (!countryMap[countryKey]) {
-            countryMap[countryKey] = { id: loc.countryId.toUpperCase(), name: loc.countryName, code: loc.countryId, emoji: getCountryEmoji(loc.countryId), regionId: loc.regionId || "global" };
+            countryMap[countryKey] = { id: loc.countryId.toUpperCase(), name: loc.countryName, code: loc.countryId, emoji: getCountryEmoji(loc.countryId) };
           }
         }
 
@@ -175,10 +175,10 @@ export async function GET(request: Request) {
           packageCode: pkg.packageCode,
           description: pkg.description || null,
           destination: loc.destination,
-          regionId: loc.regionId,
-          regionName: loc.regionName,
-          countryId: loc.countryId,
-          countryName: loc.countryName,
+          regionId: locationCount >= 2 ? loc.regionId : null,  // Only set regionId for regional plans (2+ countries)
+          countryId: locationCount === 1 ? loc.countryId?.toUpperCase() : null,  // Only set countryId for single country plans
+          regionName: locationCount >= 2 ? loc.regionName : null,
+          countryName: locationCount === 1 ? loc.countryName : null,
           dataType: pkg.dataType,
           dataVolume: BigInt(Math.floor(pkg.volume)),
           dataAmount,
@@ -228,8 +228,8 @@ export async function GET(request: Request) {
       for (const country of Object.values(countryMap)) {
         await prisma.country.upsert({
           where: { code: country.code },
-          update: { name: country.name, emoji: country.emoji, regionId: country.regionId },
-          create: { id: country.id, name: country.name, code: country.code, emoji: country.emoji, regionId: country.regionId },
+          update: { name: country.name, emoji: country.emoji },
+          create: { id: country.id, name: country.name, code: country.code, emoji: country.emoji },
         });
       }
 
