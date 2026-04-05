@@ -30,12 +30,12 @@ function DeviceCompatibility() {
   ];
 
   return (
-    <section className="py-24 bg-slate-950">
+    <section className="py-24 bg-gradient-to-b from-white to-cyan-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">{t("device.title")}</h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold text-slate-800 mb-4">{t("device.title")}</h2>
+            <p className="text-slate-600 text-lg max-w-2xl mx-auto">
               {t("device.subtitle")}
             </p>
           </div>
@@ -45,19 +45,19 @@ function DeviceCompatibility() {
           {devices.map((device, index) => (
             <FadeIn key={index} delay={index * 0.1}>
               <motion.div 
-                className={`bg-slate-900 border rounded-2xl p-6 ${device.supported ? 'border-slate-700 hover:border-sky-500/50' : 'border-slate-800 opacity-60'}`}
+                className={`bg-white border rounded-2xl p-6 ${device.supported ? 'border-slate-200 hover:border-orange-400 hover:shadow-lg' : 'border-slate-100 opacity-60'}`}
                 whileHover={{ scale: 1.02 }}
               >
                 <div className="flex items-start gap-4">
                   <div className="text-3xl">{device.icon}</div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-semibold text-white">{device.name}</h3>
+                      <h3 className="text-lg font-semibold text-slate-800">{device.name}</h3>
                       {device.supported && (
-                        <span className="bg-green-500/20 text-green-400 text-xs px-2 py-0.5 rounded-full">Supported</span>
+                        <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full">Supported</span>
                       )}
                     </div>
-                    <p className="text-sm text-slate-400">{device.models}</p>
+                    <p className="text-sm text-slate-500">{device.models}</p>
                   </div>
                 </div>
               </motion.div>
@@ -66,9 +66,9 @@ function DeviceCompatibility() {
         </div>
 
         <FadeIn delay={0.3}>
-          <div className="mt-12 bg-slate-900/50 border border-slate-700 rounded-2xl p-8 text-center">
-            <p className="text-slate-300 mb-4">Not sure if your device supports eSIM?</p>
-            <a href="#" className="inline-flex items-center gap-2 text-sky-400 hover:text-sky-300 font-medium">
+          <div className="mt-12 bg-gradient-to-r from-orange-50 to-cyan-50 border border-slate-200 rounded-2xl p-8 text-center">
+            <p className="text-slate-600 mb-4">Not sure if your device supports eSIM?</p>
+            <a href="#" className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium">
               Check full compatibility list
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
