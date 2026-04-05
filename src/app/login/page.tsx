@@ -22,7 +22,7 @@ export default function LoginPage() {
   }, [user, authLoading, router, openLogin]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-cyan-50">
+    <div className="min-h-screen flex items-center justify-center bg-orange-50">
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
           <svg className="w-8 h-8 text-orange-500 animate-spin" fill="none" viewBox="0 0 24 24">

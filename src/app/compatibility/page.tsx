@@ -126,7 +126,7 @@ export default function DeviceCompatibilityPage() {
   }, [search]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
+    <div className="min-h-screen bg-orange-50 text-slate-800">
       <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
           

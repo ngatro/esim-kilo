@@ -8,7 +8,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 py-12">
+      <div className="min-h-screen bg-orange-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-slate-800 mb-8">Shopping Cart</h1>
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
@@ -23,7 +23,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 py-12">
+    <div className="min-h-screen bg-orange-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-slate-800 mb-8">Shopping Cart</h1>
         

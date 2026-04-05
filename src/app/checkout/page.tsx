@@ -361,7 +361,7 @@ export default function CheckoutPage() {
   const isUnlimited = plan.dataAmount >= 999;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800 py-6 sm:py-12">
+    <div className="min-h-screen bg-orange-50 text-slate-800 py-6 sm:py-12">
       <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
         <nav className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mb-6 sm:mb-8">
           <Link href="/" className="hover:text-orange-600">Home</Link>

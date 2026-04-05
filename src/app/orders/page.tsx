@@ -122,7 +122,7 @@ export default function OrdersPage() {
 
   if (loading && !searched) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 flex items-center justify-center">
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full" />
       </div>
     );
@@ -131,7 +131,7 @@ export default function OrdersPage() {
   // Not logged in - show email search
   if (!user && !searched) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800 py-12">
+      <div className="min-h-screen bg-orange-50 text-slate-800 py-12">
         <div className="max-w-md mx-auto px-4 text-center">
           <p className="text-5xl mb-4">📱</p>
           <h1 className="text-2xl font-bold mb-3">View Your Orders</h1>
@@ -152,7 +152,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800 py-8 sm:py-12">
+    <div className="min-h-screen bg-orange-50 text-slate-800 py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-3 sm:px-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>

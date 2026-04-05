@@ -30,7 +30,7 @@ function DeviceCompatibility() {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-cyan-50">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
@@ -66,7 +66,7 @@ function DeviceCompatibility() {
         </div>
 
         <FadeIn delay={0.3}>
-          <div className="mt-12 bg-gradient-to-r from-orange-50 to-cyan-50 border border-slate-200 rounded-2xl p-8 text-center">
+          <div className="mt-12 bg-orange-50 border border-slate-200 rounded-2xl p-8 text-center">
             <p className="text-slate-600 mb-4">Not sure if your device supports eSIM?</p>
             <a href="#" className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium">
               Check full compatibility list
@@ -562,8 +562,8 @@ export default function Home() {
     <div className="min-h-screen bg-white text-slate-800">
       <main>
         <section className="relative pt-32 pb-20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-100/50 via-white to-cyan-100/50" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNHoiIGZpbGw9IiMyMDIzYjYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-30" />
+          <div className="absolute inset-0 bg-orange-50/30" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNHoiIGZpbGw9IiMyMDIzYjYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-20" />
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
@@ -589,7 +589,7 @@ export default function Home() {
                 transition={{ delay: 0.3 }}
               >
                 Stay Connected
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-cyan-500"> Anywhere </span>
+                <span className="text-orange-500"> Anywhere </span>
                 You Go
               </motion.h1>
               
@@ -715,7 +715,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <FadeIn>
               <motion.div 
-                className="bg-gradient-to-br from-orange-100 to-cyan-100 border border-orange-200 rounded-3xl p-12"
+                className="bg-orange-50 border border-orange-200 rounded-3xl p-12"
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >

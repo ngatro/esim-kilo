@@ -173,7 +173,7 @@ export default function PlanDetailContent() {
   const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
+    <div className="min-h-screen bg-orange-50 text-slate-800">
       {/* Hero Banner */}
       <div className="relative h-48 sm:h-64 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-white/80 z-10" />

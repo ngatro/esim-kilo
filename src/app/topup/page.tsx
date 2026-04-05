@@ -96,7 +96,7 @@ export default function TopUpPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
+      <div className="min-h-screen bg-orange-50 text-slate-800">
         <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
           <div className="max-w-lg mx-auto px-3 sm:px-6 text-center">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -123,7 +123,7 @@ export default function TopUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
+    <div className="min-h-screen bg-orange-50 text-slate-800">
       <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
         <div className="max-w-2xl mx-auto px-3 sm:px-6">
           
