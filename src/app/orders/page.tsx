@@ -15,7 +15,7 @@ function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   }
 
   if (item.smdpStatus === "DOWNLOAD" || item.smdpStatus === "INSTALLATION") {
-    return { label: "Installing...", color: "bg-sky-500/20 text-sky-400" };
+    return { label: "Installing...", color: "bg-orange-500/20 text-orange-400" };
   }
 
   if (item.esimStatus === "GOT_RESOURCE") {
@@ -122,8 +122,8 @@ export default function OrdersPage() {
 
   if (loading && !searched) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -131,37 +131,37 @@ export default function OrdersPage() {
   // Not logged in - show email search
   if (!user && !searched) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white py-12">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800 py-12">
         <div className="max-w-md mx-auto px-4 text-center">
           <p className="text-5xl mb-4">📱</p>
           <h1 className="text-2xl font-bold mb-3">View Your Orders</h1>
-          <p className="text-slate-400 text-sm mb-6">Enter the email you used during checkout</p>
+          <p className="text-slate-600 text-sm mb-6">Enter the email you used during checkout</p>
           <div className="flex gap-2">
             <input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)}
               placeholder="your@email.com" onKeyDown={(e) => e.key === "Enter" && handleGuestSearch()}
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-sky-500" />
+              className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 text-sm placeholder:text-slate-500 focus:outline-none focus:border-orange-400" />
             <button onClick={handleGuestSearch}
-              className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors">
+              className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors">
               View
             </button>
           </div>
-          <p className="text-slate-500 text-xs mt-4">or <Link href="/login" className="text-sky-400 hover:text-sky-300">Login</Link> to see all orders</p>
+          <p className="text-slate-500 text-xs mt-4">or <Link href="/login" className="text-orange-500 hover:text-orange-400">Login</Link> to see all orders</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white py-8 sm:py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800 py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-3 sm:px-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">My Orders</h1>
-            <p className="text-slate-400 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">My Orders</h1>
+            <p className="text-slate-600 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
           </div>
           <div className="flex gap-2">
             <button onClick={handleRefresh} disabled={refreshing}
-              className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2 disabled:opacity-50">
+              className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2 disabled:opacity-50">
               <svg className={"w-4 h-4 " + (refreshing ? "animate-spin" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
@@ -173,7 +173,7 @@ export default function OrdersPage() {
               </motion.button>
             </Link>
             <Link href="/plans">
-              <motion.button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
+              <motion.button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
                 Buy New eSIM
               </motion.button>
             </Link>
@@ -192,12 +192,12 @@ export default function OrdersPage() {
         )}
 
         {orders.length === 0 ? (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-12 sm:p-16 text-center">
+          <div className="bg-white/80 border border-slate-200 rounded-2xl p-12 sm:p-16 text-center">
             <p className="text-5xl mb-4">📱</p>
-            <h3 className="text-xl font-semibold text-white mb-2">No orders found</h3>
-            <p className="text-slate-400 mb-6 text-sm">Your eSIM orders will appear here after purchase</p>
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">No orders found</h3>
+            <p className="text-slate-600 mb-6 text-sm">Your eSIM orders will appear here after purchase</p>
             <Link href="/plans">
-              <button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors text-sm">
+              <button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors text-sm">
                 Browse Plans
               </button>
             </Link>
@@ -205,9 +205,9 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-3 sm:space-y-4">
             {orders.map((order) => (
-              <motion.div key={order.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden" layout>
+              <motion.div key={order.id} className="bg-white/80 border border-slate-200 rounded-2xl overflow-hidden" layout>
                 <button onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                  className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-slate-800/60 transition-colors text-left">
+                  className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-slate-100 transition-colors text-left">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${
                       order.status === "completed" ? "bg-green-500/20" : "bg-yellow-500/20"
@@ -215,7 +215,7 @@ export default function OrdersPage() {
                       <span className="text-lg sm:text-xl">{order.status === "completed" ? "✅" : "⏳"}</span>
                     </div>
                     <div>
-                      <p className="text-white font-semibold text-sm sm:text-base">Order #{order.id}</p>
+                      <p className="text-slate-800 font-semibold text-sm sm:text-base">Order #{order.id}</p>
                       <p className="text-slate-500 text-xs sm:text-sm">
                         {new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
@@ -223,7 +223,7 @@ export default function OrdersPage() {
                   </div>
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="text-right">
-                      <p className="text-base sm:text-lg font-bold text-white">{formatPrice(order.totalAmount)}</p>
+                      <p className="text-base sm:text-lg font-bold text-slate-800">{formatPrice(order.totalAmount)}</p>
                       <div className="flex gap-1 mt-1">
                         <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${
                           order.status === "completed" ? "bg-green-500/20 text-green-400" :
@@ -254,18 +254,18 @@ export default function OrdersPage() {
                   {expandedOrder === order.id && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-                      <div className="border-t border-slate-700/50 p-4 sm:p-5 space-y-4">
+                      <div className="border-t border-slate-200 p-4 sm:p-5 space-y-4">
                         {order.orderItems.map((item) => (
-                          <div key={item.id} className="bg-slate-900/50 rounded-xl p-4 sm:p-5">
+                          <div key={item.id} className="bg-slate-50/80 rounded-xl p-4 sm:p-5">
                             <div className="flex items-center justify-between mb-4">
                               <div>
-                                <h4 className="text-white font-medium text-sm sm:text-base">{item.planName}</h4>
+                                <h4 className="text-slate-800 font-medium text-sm sm:text-base">{item.planName}</h4>
                                 <p className="text-slate-500 text-xs sm:text-sm">{formatPrice(item.price)} × {item.quantity}</p>
                               </div>
                               {item.esimIccid && (
                                 <div className="text-right">
                                   <p className="text-[10px] text-slate-500">ICCID</p>
-                                  <code className="text-sky-400 text-[10px] sm:text-xs">{item.esimIccid}</code>
+                                  <code className="text-orange-500 text-[10px] sm:text-xs">{item.esimIccid}</code>
                                 </div>
                               )}
                             </div>
@@ -279,21 +279,21 @@ export default function OrdersPage() {
                                 <div className="flex-1 space-y-2 sm:space-y-3 text-center sm:text-left">
                                   <div>
                                     <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Scan to Activate</p>
-                                    <p className="text-slate-400 text-xs sm:text-sm">Settings → Cellular → Add eSIM → Scan QR Code</p>
+                                    <p className="text-slate-500 text-xs sm:text-sm">Settings → Cellular → Add eSIM → Scan QR Code</p>
                                   </div>
                                   {item.activationCode && (
                                     <div>
                                       <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Manual Activation Code</p>
-                                      <div className="bg-slate-800 border border-slate-700 rounded-lg p-2 sm:p-3">
-                                        <code className="text-sky-400 text-[10px] sm:text-xs break-all">{item.activationCode}</code>
+                                      <div className="bg-white border border-slate-200 rounded-lg p-2 sm:p-3">
+                                        <code className="text-orange-500 text-[10px] sm:text-xs break-all">{item.activationCode}</code>
                                       </div>
                                     </div>
                                   )}
                                   {item.esimLpaString && (
                                     <div>
                                       <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">LPA String (Manual)</p>
-                                      <div className="bg-slate-800 border border-slate-700 rounded-lg p-2 sm:p-3">
-                                        <code className="text-green-400 text-[10px] sm:text-xs break-all">{item.esimLpaString}</code>
+                                      <div className="bg-white border border-slate-200 rounded-lg p-2 sm:p-3">
+                                        <code className="text-cyan-500 text-[10px] sm:text-xs break-all">{item.esimLpaString}</code>
                                       </div>
                                     </div>
                                   )}
@@ -317,8 +317,8 @@ export default function OrdersPage() {
                                             <span>Data: {((item.orderUsage || 0) / 1024 / 1024 / 1024).toFixed(2)} GB / {((item.totalVolume || 0) / 1024 / 1024 / 1024).toFixed(2)} GB</span>
                                             <span>{Math.round((item.orderUsage || 0) / (item.totalVolume || 1) * 100)}%</span>
                                           </div>
-                                          <div className="w-full bg-slate-700 rounded-full h-2">
-                                            <div className="bg-gradient-to-r from-sky-500 to-green-400 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage || 0) / (item.totalVolume || 1) * 100) + "%" }} />
+                                          <div className="w-full bg-slate-200 rounded-full h-2">
+                                            <div className="bg-gradient-to-r from-orange-500 to-cyan-400 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage || 0) / (item.totalVolume || 1) * 100) + "%" }} />
                                           </div>
                                         </div>
                                       )}
@@ -328,7 +328,7 @@ export default function OrdersPage() {
                               </div>
                             ) : (
                               <div className="text-center py-6">
-                                <div className="animate-spin w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full mx-auto mb-2" />
+                                <div className="animate-spin w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full mx-auto mb-2" />
                                 <p className="text-slate-500 text-xs">Processing your eSIM...</p>
                               </div>
                             )}
@@ -336,13 +336,13 @@ export default function OrdersPage() {
                         ))}
 
                         {/* Payment info */}
-                        <div className="bg-slate-900/50 rounded-xl p-3 sm:p-4">
+                        <div className="bg-slate-50/80 rounded-xl p-3 sm:p-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs">
-                            <div><p className="text-slate-500">Amount</p><p className="text-white font-semibold">{formatPrice(order.totalAmount)}</p></div>
+                            <div><p className="text-slate-500">Amount</p><p className="text-slate-800 font-semibold">{formatPrice(order.totalAmount)}</p></div>
                             <div><p className="text-slate-500">Payment</p><p className={order.status === "completed" ? "text-green-400" : "text-yellow-400"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
                             <div><p className="text-slate-500">eSIM</p><p className={order.orderItems.every(i => i.smdpStatus === "ENABLED") ? "text-green-400" : order.orderItems.some(i => i.esimQrImage) ? "text-yellow-400" : "text-slate-400"}>{order.orderItems.every(i => i.smdpStatus === "ENABLED") ? "✅ In Use" : order.orderItems.some(i => i.esimQrImage) ? "✅ Ready" : "⏳ Processing"}</p></div>
                             {order.esimaccessOrderId && (
-                              <div><p className="text-slate-500">Order ID</p><p className="text-slate-300 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
+                              <div><p className="text-slate-500">Order ID</p><p className="text-slate-600 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
                             )}
                           </div>
                         </div>

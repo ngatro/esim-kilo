@@ -217,37 +217,37 @@ export default function PlanDetailContent() {
                 <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Plan Details</h2>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><p className="text-slate-500 text-xs">Data</p><p className="text-slate-800">{formatData(plan.dataAmount)}</p></div>
-                  <div><p className="text-slate-500 text-xs">Validity</p><p className="text-white">{plan.durationDays} Days</p></div>
-                  <div><p className="text-slate-500 text-xs">Speed</p><p className="text-white">{plan.speed || "4G LTE"}</p></div>
-                  <div><p className="text-slate-500 text-xs">Plan Type</p><p className="text-white">{plan.smsStatus === 0 ? "Data Only" : "Data + SMS"}</p></div>
-                  <div><p className="text-slate-500 text-xs">Tethering</p><p className="text-white">{plan.ipExport ? "Supported" : "Not supported"}</p></div>
-                  <div><p className="text-slate-500 text-xs">Activation</p><p className="text-white">{plan.activeType === 1 ? "First installation" : "First network connection"}</p></div>
-                  {plan.unusedValidTime > 0 && <div><p className="text-slate-500 text-xs">Valid After Purchase</p><p className="text-white">{plan.unusedValidTime} days</p></div>}
-                  <div><p className="text-slate-500 text-xs">Top-Up</p><p className="text-white">{plan.supportTopUp ? "Supported" : "Not supported"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Validity</p><p className="text-slate-800">{plan.durationDays} Days</p></div>
+                  <div><p className="text-slate-500 text-xs">Speed</p><p className="text-slate-800">{plan.speed || "4G LTE"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Plan Type</p><p className="text-slate-800">{plan.smsStatus === 0 ? "Data Only" : "Data + SMS"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Tethering</p><p className="text-slate-800">{plan.ipExport ? "Supported" : "Not supported"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Activation</p><p className="text-slate-800">{plan.activeType === 1 ? "First installation" : "First network connection"}</p></div>
+                  {plan.unusedValidTime > 0 && <div><p className="text-slate-500 text-xs">Valid After Purchase</p><p className="text-slate-800">{plan.unusedValidTime} days</p></div>}
+                  <div><p className="text-slate-500 text-xs">Top-Up</p><p className="text-slate-800">{plan.supportTopUp ? "Supported" : "Not supported"}</p></div>
                   <div><p className="text-slate-500 text-xs">Package Code</p><p className="text-slate-400 text-xs font-mono">{plan.packageCode}</p></div>
                 </div>
               </div>
 
               {plan.fupPolicy && (
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 sm:p-6">
-                  <h2 className="text-base sm:text-lg font-semibold text-amber-400 mb-2">Fair Use Policy</h2>
-                  <p className="text-amber-200 text-sm">After full speed is depleted, speed will be reduced to <strong>{plan.fupPolicy}</strong></p>
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-6">
+                  <h2 className="text-base sm:text-lg font-semibold text-amber-600 mb-2">Fair Use Policy</h2>
+                  <p className="text-amber-700 text-sm">After full speed is depleted, speed will be reduced to <strong>{plan.fupPolicy}</strong></p>
                 </div>
               )}
 
               {networkList.length > 0 && (
-                <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 sm:p-6">
-                  <h2 className="text-base sm:text-lg font-semibold text-white mb-4">Network Operators</h2>
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-md">
+                  <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4">Network Operators</h2>
                   <div className="space-y-4">
                     {networkList.map((net) => (
                       <div key={net.locationCode} className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0 text-xs">{net.locationCode}</div>
+                        <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 text-xs">{net.locationCode}</div>
                         <div className="flex-1">
-                          <p className="text-white text-sm font-medium">Location: {net.locationName}</p>
+                          <p className="text-slate-800 text-sm font-medium">Location: {net.locationName}</p>
                           <div className="flex flex-wrap gap-2 mt-2">
                             {net.operatorList?.map((op, i) => (
-                              <span key={i} className="bg-green-500/10 text-green-400 text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                              <span key={i} className="bg-green-50 text-green-600 text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                 {op.operatorName} ({op.networkType})
                               </span>
                             ))}
@@ -260,18 +260,18 @@ export default function PlanDetailContent() {
               )}
 
               {locations.length > 0 && (
-                <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 sm:p-6">
-                  <h2 className="text-base sm:text-lg font-semibold text-white mb-3">Coverage ({locations.length} countries)</h2>
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-md">
+                  <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Coverage ({locations.length} countries)</h2>
                   <div className="flex flex-wrap gap-2">
                     {locations.map((loc) => (
-                      <span key={loc} className="bg-slate-700/50 text-slate-300 text-xs px-2.5 py-1 rounded-full">{loc}</span>
+                      <span key={loc} className="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full">{loc}</span>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 sm:p-6">
-                <h2 className="text-base sm:text-lg font-semibold text-white mb-3">What&apos;s Included</h2>
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-md">
+                <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">What&apos;s Included</h2>
                 <ul className="space-y-2 sm:space-y-3">
                   {[
                     isUnlimited ? "Unlimited Data" : `${plan.dataAmount}GB Data`,
@@ -284,8 +284,8 @@ export default function PlanDetailContent() {
                     plan.smsStatus > 0 ? "SMS Supported" : null,
                     `Activation: ${plan.activeType === 1 ? "First installation" : "First network connection"}`,
                   ].filter(Boolean).map((f) => (
-                    <li key={f} className="flex items-start gap-2 sm:gap-3 text-slate-300 text-sm">
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sky-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                    <li key={f} className="flex items-start gap-2 sm:gap-3 text-slate-600 text-sm">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                       {f}
                     </li>
                   ))}
@@ -294,7 +294,7 @@ export default function PlanDetailContent() {
             </div>
 
             <div className="lg:col-span-2">
-              <motion.div className="sticky top-20 sm:top-24 bg-slate-800/70 border border-slate-700/60 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <motion.div className="sticky top-20 sm:top-24 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xl" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 {hasDiscount && (
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-slate-500 line-through text-lg">{formatPrice(plan.retailPriceUsd || plan.priceUsd)}</span>

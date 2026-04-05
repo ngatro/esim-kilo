@@ -126,22 +126,22 @@ export default function DeviceCompatibilityPage() {
   }, [search]);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
       <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
           
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-2xl sm:text-4xl font-bold text-white mb-3">
+            <h1 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-3">
               {t("compatibility.title") || "Device Compatibility"}
             </h1>
-            <p className="text-slate-400 text-sm sm:text-lg max-w-2xl mx-auto">
+            <p className="text-slate-600 text-sm sm:text-lg max-w-2xl mx-auto">
               {t("compatibility.subtitle") || "Check if your device supports eSIM before purchasing. Most modern smartphones support eSIM technology."}
             </p>
           </div>
 
           {/* Search */}
           <div className="relative mb-8">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -149,7 +149,7 @@ export default function DeviceCompatibilityPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search your device (e.g., iPhone 15, Samsung S24)..."
-              className="w-full bg-slate-800/60 border border-slate-700 rounded-2xl pl-12 pr-4 py-4 text-white text-base placeholder:text-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+              className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-4 text-slate-800 text-base placeholder:text-slate-400 focus:outline-none focus:border-orange-500 transition-colors"
             />
           </div>
 
@@ -157,17 +157,17 @@ export default function DeviceCompatibilityPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-5 text-center">
               <div className="text-3xl mb-2">✓</div>
-              <p className="text-green-400 font-semibold">eSIM Supported</p>
+              <p className="text-green-600 font-semibold">eSIM Supported</p>
               <p className="text-slate-500 text-sm mt-1">Ready to use</p>
             </div>
-            <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 text-center">
+            <div className="bg-white/80 border border-slate-200 rounded-2xl p-5 text-center">
               <div className="text-3xl mb-2">🔷</div>
-              <p className="text-white font-semibold">Dual SIM</p>
+              <p className="text-slate-800 font-semibold">Dual SIM</p>
               <p className="text-slate-500 text-sm mt-1">Physical + eSIM</p>
             </div>
             <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 text-center">
               <div className="text-3xl mb-2">✗</div>
-              <p className="text-red-400 font-semibold">Not Supported</p>
+              <p className="text-red-600 font-semibold">Not Supported</p>
               <p className="text-slate-500 text-sm mt-1">Physical SIM only</p>
             </div>
           </div>
@@ -180,25 +180,25 @@ export default function DeviceCompatibilityPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="bg-slate-800/40 border border-slate-700/50 rounded-2xl overflow-hidden"
+                className="bg-white/80 border border-slate-200 rounded-2xl overflow-hidden"
               >
-                <div className="bg-slate-800/60 px-5 py-3 border-b border-slate-700/50">
-                  <h2 className="text-lg font-semibold text-white">{brand.brand}</h2>
+                <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
+                  <h2 className="text-lg font-semibold text-slate-800">{brand.brand}</h2>
                 </div>
-                <div className="divide-y divide-slate-700/30">
+                <div className="divide-y divide-slate-200/50">
                   {brand.models.map((model, modelIdx) => (
-                    <div key={modelIdx} className="px-5 py-3 flex items-center justify-between hover:bg-slate-800/30 transition-colors">
-                      <span className="text-white">{model.name}</span>
+                    <div key={modelIdx} className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                      <span className="text-slate-800">{model.name}</span>
                       <div className="flex items-center gap-3">
                         {model.esim ? (
                           <>
-                            <span className="text-green-400 text-sm">✓ eSIM</span>
+                            <span className="text-green-600 text-sm">✓ eSIM</span>
                             {model.dual && (
-                              <span className="bg-sky-500/20 text-sky-400 text-xs px-2 py-0.5 rounded-full">Dual</span>
+                              <span className="bg-orange-500/20 text-orange-600 text-xs px-2 py-0.5 rounded-full">Dual</span>
                             )}
                           </>
                         ) : (
-                          <span className="text-red-400 text-sm">✗ Not supported</span>
+                          <span className="text-red-500 text-sm">✗ Not supported</span>
                         )}
                       </div>
                     </div>
@@ -210,16 +210,16 @@ export default function DeviceCompatibilityPage() {
 
           {filteredDevices.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-slate-400 text-lg">No devices found matching "{search}"</p>
+              <p className="text-slate-600 text-lg">No devices found matching &quot;{search}&quot;</p>
               <p className="text-slate-500 text-sm mt-2">Try searching for a different model</p>
             </div>
           )}
 
           {/* CTA */}
           <div className="mt-12 text-center">
-            <p className="text-slate-400 mb-4">Ready to get your eSIM?</p>
+            <p className="text-slate-600 mb-4">Ready to get your eSIM?</p>
             <Link href="/plans">
-              <button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+              <button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
                 Browse Plans
               </button>
             </Link>

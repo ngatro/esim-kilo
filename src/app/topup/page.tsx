@@ -96,22 +96,22 @@ export default function TopUpPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
         <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
           <div className="max-w-lg mx-auto px-3 sm:px-6 text-center">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <span className="text-4xl">✓</span>
             </motion.div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-4">Top-up Successful!</h1>
-            <p className="text-slate-400 mb-8">Your eSIM data has been extended. A new QR code has been sent to your email.</p>
+            <p className="text-slate-600 mb-8">Your eSIM data has been extended. A new QR code has been sent to your email.</p>
             <div className="flex gap-4 justify-center">
               <Link href="/orders">
-                <button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-6 py-3 rounded-xl">
+                <button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl">
                   View Orders
                 </button>
               </Link>
               <Link href="/plans">
-                <button className="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-6 py-3 rounded-xl">
+                <button className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-6 py-3 rounded-xl">
                   Browse More Plans
                 </button>
               </Link>
@@ -123,24 +123,24 @@ export default function TopUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
       <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
         <div className="max-w-2xl mx-auto px-3 sm:px-6">
           
           <div className="text-center mb-8">
             <h1 className="text-2xl sm:text-4xl font-bold mb-3">Top-up Your eSIM</h1>
-            <p className="text-slate-400">Enter your ICCID to see available top-up packages</p>
+            <p className="text-slate-600">Enter your ICCID to see available top-up packages</p>
           </div>
 
           {/* ICCID Input */}
-          <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 mb-6">
-            <label className="block text-sm text-slate-400 mb-2">Your eSIM ICCID</label>
+          <div className="bg-white/80 border border-slate-200 rounded-2xl p-5 mb-6">
+            <label className="block text-sm text-slate-600 mb-2">Your eSIM ICCID</label>
             <input
               type="text"
               value={iccid}
               onChange={(e) => setIccid(e.target.value.replace(/\D/g, ""))}
               placeholder="Enter 19-20 digit ICCID"
-              className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-sky-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-mono text-sm focus:outline-none focus:border-orange-500"
             />
             <p className="text-slate-500 text-xs mt-2">Find ICCID in your order confirmation email or in Settings → Cellular</p>
           </div>
@@ -153,20 +153,20 @@ export default function TopUpPage() {
 
           {/* Current Plan Info */}
           {currentPlan && (
-            <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 mb-6">
-              <h3 className="text-white font-semibold mb-3">Current Plan</h3>
+            <div className="bg-white/80 border border-slate-200 rounded-2xl p-5 mb-6">
+              <h3 className="text-slate-800 font-semibold mb-3">Current Plan</h3>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">ICCID</span>
-                <span className="text-sky-400 font-mono">{currentPlan.iccid}</span>
+                <span className="text-slate-600">ICCID</span>
+                <span className="text-orange-500 font-mono">{currentPlan.iccid}</span>
               </div>
               {currentPlan.totalVolume > 0 && (
                 <div className="mt-3">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-400">Data Used</span>
-                    <span className="text-white">{formatData(currentPlan.orderUsage)} / {formatData(currentPlan.totalVolume)}</span>
+                    <span className="text-slate-600">Data Used</span>
+                    <span className="text-slate-800">{formatData(currentPlan.orderUsage)} / {formatData(currentPlan.totalVolume)}</span>
                   </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div className="bg-sky-500 h-2 rounded-full" style={{ width: `${Math.min(100, (currentPlan.orderUsage / currentPlan.totalVolume) * 100)}%` }} />
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-gradient-to-r from-orange-500 to-cyan-400 h-2 rounded-full" style={{ width: `${Math.min(100, (currentPlan.orderUsage / currentPlan.totalVolume) * 100)}%` }} />
                   </div>
                 </div>
               )}
@@ -176,11 +176,11 @@ export default function TopUpPage() {
           {/* Top-up Packages */}
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full mx-auto" />
+              <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto" />
             </div>
           ) : packages.length > 0 ? (
             <div className="space-y-3">
-              <h3 className="text-white font-semibold mb-4">Select Top-up Package</h3>
+              <h3 className="text-slate-800 font-semibold mb-4">Select Top-up Package</h3>
               {packages.map((pkg) => (
                 <motion.button
                   key={pkg.packageCode}
@@ -189,16 +189,16 @@ export default function TopUpPage() {
                   whileTap={{ scale: 0.98 }}
                   className={`w-full p-5 rounded-2xl border text-left transition-all ${
                     selectedPackage?.packageCode === pkg.packageCode
-                      ? "bg-sky-500/20 border-sky-500/50"
-                      : "bg-slate-800/40 border-slate-700/50 hover:border-slate-600"
+                      ? "bg-orange-500/20 border-orange-500/50"
+                      : "bg-white/80 border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-white font-semibold">{formatData(pkg.volume)}</p>
-                      <p className="text-slate-400 text-sm">{pkg.duration} days validity</p>
+                      <p className="text-slate-800 font-semibold">{formatData(pkg.volume)}</p>
+                      <p className="text-slate-600 text-sm">{pkg.duration} days validity</p>
                     </div>
-                    <p className="text-xl font-bold text-sky-400">{formatPrice(pkg.priceUSD)}</p>
+                    <p className="text-xl font-bold text-orange-500">{formatPrice(pkg.priceUSD)}</p>
                   </div>
                 </motion.button>
               ))}
@@ -206,19 +206,19 @@ export default function TopUpPage() {
               <button
                 onClick={handleTopUp}
                 disabled={!selectedPackage || processing}
-                className="w-full bg-sky-500 hover:bg-sky-400 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl mt-4 transition-colors"
+                className="w-full bg-orange-500 hover:bg-orange-400 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl mt-4 transition-colors"
               >
                 {processing ? "Processing..." : selectedPackage ? `Top-up for ${formatPrice(selectedPackage.priceUSD)}` : "Select a package"}
               </button>
             </div>
           ) : iccid.length >= 19 && !loading && !error ? (
-            <div className="text-center py-8 text-slate-400">
+            <div className="text-center py-8 text-slate-600">
               No top-up packages found for this ICCID
             </div>
           ) : null}
 
           <div className="mt-8 text-center">
-            <Link href="/orders" className="text-sky-400 hover:text-sky-300 text-sm">
+            <Link href="/orders" className="text-orange-500 hover:text-orange-400 text-sm">
               View my orders →
             </Link>
           </div>

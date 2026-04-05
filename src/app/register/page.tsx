@@ -37,14 +37,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-cyan-50 py-12 px-4">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-800">
             Create your account
           </h2>
-          <p className="mt-2 text-center text-sm text-slate-400">
-            Already have an account? <Link href="/login" className="font-medium text-sky-400 hover:text-sky-300">
+          <p className="mt-2 text-center text-sm text-slate-600">
+            Already have an account? <Link href="/login" className="font-medium text-orange-500 hover:text-orange-400">
               Sign in
             </Link>
           </p>
@@ -52,7 +52,7 @@ export default function RegisterPage() {
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
               {error}
             </div>
           )}
@@ -62,7 +62,7 @@ export default function RegisterPage() {
               <input
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-700 bg-slate-800 text-white placeholder-slate-400 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-200 bg-white text-slate-800 placeholder-slate-400 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Full name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -72,7 +72,7 @@ export default function RegisterPage() {
               <input
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-700 bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -82,7 +82,7 @@ export default function RegisterPage() {
               <input
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-700 bg-slate-800 text-white placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -92,7 +92,7 @@ export default function RegisterPage() {
               <input
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-700 bg-slate-800 text-white placeholder-slate-400 rounded-b-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-200 bg-white text-slate-800 placeholder-slate-400 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Confirm password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -103,7 +103,7 @@ export default function RegisterPage() {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
             >
               Create account
             </button>
