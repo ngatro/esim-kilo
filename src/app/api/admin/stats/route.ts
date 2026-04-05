@@ -18,12 +18,14 @@ export async function GET() {
       _sum: { totalAmount: true },
     });
 
-    const regions = await prisma.region.findMany({ include: { countries: true } });
+    const regions = await prisma.region.findMany();
 
     // Count plans per region
     const regionsWithCount = await Promise.all(
-      regions.map(async (r) => ({
-        ...r,
+      regions.map(async (r: { id: string; name: string; emoji: string }) => ({
+        id: r.id,
+        name: r.name,
+        emoji: r.emoji,
         planCount: await prisma.plan.count({ where: { regionId: r.id, isActive: true } }),
       }))
     );
