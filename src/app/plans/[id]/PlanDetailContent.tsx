@@ -173,10 +173,10 @@ export default function PlanDetailContent() {
   const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
       {/* Hero Banner */}
       <div className="relative h-48 sm:h-64 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-sky-900/60 to-slate-900 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-white/80 z-10" />
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ 
@@ -186,12 +186,12 @@ export default function PlanDetailContent() {
         <div className="relative z-20 max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-end pb-6">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              {plan.isBestSeller && <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">⭐ Best Seller</span>}
+              {plan.isBestSeller && <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">⭐ Best Seller</span>}
               {plan.isHot && <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">🔥 Hot</span>}
-              {plan.isPopular && <span className="bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-full">Popular</span>}
+              {plan.isPopular && <span className="bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-full">Popular</span>}
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold text-white drop-shadow-lg">{plan.destination}</h1>
-            <p className="text-slate-300 text-lg mt-1 drop-shadow">{plan.name}</p>
+            <p className="text-white/80 text-lg mt-1 drop-shadow">{plan.name}</p>
           </div>
         </div>
       </div>
@@ -202,21 +202,21 @@ export default function PlanDetailContent() {
             <div className="lg:col-span-3 space-y-5 sm:space-y-6">
               <div className="grid grid-cols-3 gap-3 sm:gap-4">
                 {[
-                  { label: "Data", value: formatData(plan.dataAmount), color: "text-sky-400" },
-                  { label: "Duration", value: `${plan.durationDays} ${plan.durationUnit === "DAY" ? "Days" : plan.durationUnit}`, color: "text-white" },
-                  { label: "Per Day", value: `$${pricePerDay}`, color: "text-emerald-400" },
+                  { label: "Data", value: formatData(plan.dataAmount), color: "text-orange-600" },
+                  { label: "Duration", value: `${plan.durationDays} ${plan.durationUnit === "DAY" ? "Days" : plan.durationUnit}`, color: "text-slate-700" },
+                  { label: "Per Day", value: `$${pricePerDay}`, color: "text-cyan-600" },
                 ].map((s) => (
-                  <div key={s.label} className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5 text-center">
+                  <div key={s.label} className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 text-center shadow-md">
                     <p className={`text-xl sm:text-2xl font-bold ${s.color}`}>{s.value}</p>
                     <p className="text-xs sm:text-sm text-slate-500 mt-1">{s.label}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 sm:p-6">
-                <h2 className="text-base sm:text-lg font-semibold text-white mb-3">Plan Details</h2>
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-md">
+                <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Plan Details</h2>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><p className="text-slate-500 text-xs">Data</p><p className="text-white">{formatData(plan.dataAmount)}</p></div>
+                  <div><p className="text-slate-500 text-xs">Data</p><p className="text-slate-800">{formatData(plan.dataAmount)}</p></div>
                   <div><p className="text-slate-500 text-xs">Validity</p><p className="text-white">{plan.durationDays} Days</p></div>
                   <div><p className="text-slate-500 text-xs">Speed</p><p className="text-white">{plan.speed || "4G LTE"}</p></div>
                   <div><p className="text-slate-500 text-xs">Plan Type</p><p className="text-white">{plan.smsStatus === 0 ? "Data Only" : "Data + SMS"}</p></div>

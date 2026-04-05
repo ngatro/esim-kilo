@@ -4,8 +4,36 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { PlanCard } from "./PlanCard";
 
 interface Plan {
+  id: string;
+  name: string;
+  slug: string | null;
+  packageCode: string;
+  destination: string;
+  dataAmount: number;
+  dataVolume: number;
+  durationDays: number;
+  priceUsd: number;
+  retailPriceUsd: number;
+  speed: string | null;
+  networkType: string | null;
+  dataType: number;
+  coverageCount: number;
+  countryId: string | null;
+  countryName: string | null;
+  locations: unknown;
+  ipExport: string | null;
+  supportTopUp: boolean;
+  unusedValidTime: number;
+  isPopular: boolean;
+  isBestSeller: boolean;
+  isHot: boolean;
+  badge: string | null;
+}
+
+interface Region {
   id: string;
   name: string;
   slug: string | null;
@@ -43,149 +71,7 @@ interface Region {
   _count?: { plans: number };
 }
 
-function formatData(gb: number): string {
-  if (gb >= 999) return "Unlimited";
-  if (gb < 1) return `${Math.round(gb * 1024)}MB`;
-  return `${gb}GB`;
-}
-
-function PlanCard({ plan, index }: { plan: Plan; index: number }) {
-  const { formatPrice } = useI18n();
-  const isUnlimited = plan.dataAmount >= 999;
-  const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
-  const pricePerDay = formatPrice(displayPrice / plan.durationDays);
-  const locations = Array.isArray(plan.locations) ? plan.locations : [];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03, duration: 0.3 }}
-      className="group relative bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-sky-500/40 transition-all duration-300 hover:-translate-y-1 flex flex-col"
-    >
-      {/* Badges */}
-      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
-        {plan.isBestSeller && (
-          <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
-            BEST SELLER
-          </span>
-        )}
-        {plan.isHot && (
-          <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
-            HOT
-          </span>
-        )}
-        {plan.isPopular && !plan.isBestSeller && (
-          <span className="bg-gradient-to-r from-sky-500 to-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
-            POPULAR
-          </span>
-        )}
-        {plan.badge && !plan.isBestSeller && !plan.isHot && (
-          <span className="bg-slate-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {plan.badge}
-          </span>
-        )}
-      </div>
-
-      <div className="p-4 sm:p-5 flex flex-col flex-1">
-        {/* Header */}
-        <div className="mb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xl sm:text-2xl">{plan.countryId ? "🏳️" : plan.coverageCount > 1 ? "🌍" : "📱"}</span>
-            <h3 className="text-base sm:text-lg font-semibold text-white truncate">{plan.destination}</h3>
-          </div>
-          <p className="text-slate-500 text-xs">
-            {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.countryName || plan.destination}
-            {plan.speed && ` · ${plan.speed}`}
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="bg-slate-900/60 rounded-xl p-2.5 text-center">
-            <p className="text-lg sm:text-xl font-bold text-sky-400">{isUnlimited ? "∞" : plan.dataAmount}</p>
-            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{isUnlimited ? "Unlimited" : "GB"}</p>
-          </div>
-          <div className="bg-slate-900/60 rounded-xl p-2.5 text-center">
-            <p className="text-lg sm:text-xl font-bold text-white">{plan.durationDays}</p>
-            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">Days</p>
-          </div>
-          <div className="bg-slate-900/60 rounded-xl p-2.5 text-center">
-            <p className="text-lg sm:text-xl font-bold text-emerald-400">${pricePerDay}</p>
-            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">/Day</p>
-          </div>
-        </div>
-
-        {/* Features */}
-        <div className="space-y-1.5 mb-4 flex-1">
-          {plan.supportTopUp && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-              Supports Top-Up
-            </div>
-          )}
-          {plan.ipExport && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-              IP: {plan.ipExport}
-            </div>
-          )}
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-            Instant Activation
-          </div>
-          {plan.unusedValidTime > 0 && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-              Valid {plan.unusedValidTime} days after purchase
-            </div>
-          )}
-        </div>
-
-        {/* Countries preview */}
-        {locations.length > 1 && (
-          <div className="mb-3">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Coverage</p>
-            <div className="flex flex-wrap gap-1">
-              {(locations as string[]).slice(0, 6).map((loc) => (
-                <span key={loc} className="bg-slate-700/50 text-slate-400 text-[10px] px-1.5 py-0.5 rounded">
-                  {loc}
-                </span>
-              ))}
-              {locations.length > 6 && (
-                <span className="text-slate-500 text-[10px]">+{locations.length - 6} more</span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Price + CTA */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-700/50 mt-auto">
-          <div>
-            <p className="text-xl sm:text-2xl font-bold text-white">{formatPrice(displayPrice)}</p>
-            <p className="text-[10px] text-slate-500">one-time</p>
-          </div>
-          <div className="flex gap-2">
-            <Link href={`/plans/${plan.slug || plan.id}`}>
-              <button className="bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl transition-colors">
-                Details
-              </button>
-            </Link>
-            <Link href={`/checkout?planId=${plan.id}`}>
-              <motion.button
-                className="bg-sky-500 hover:bg-sky-400 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 rounded-xl transition-colors shadow-lg shadow-sky-500/20"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                Buy
-              </motion.button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+// Remove old PlanCard function - using imported PlanCard from PlanCard.tsx
 
 export default function PlansPage() {
   const { t } = useI18n();
