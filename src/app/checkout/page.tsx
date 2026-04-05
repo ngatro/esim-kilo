@@ -361,100 +361,100 @@ export default function CheckoutPage() {
   const isUnlimited = plan.dataAmount >= 999;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white py-6 sm:py-12">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800 py-6 sm:py-12">
       <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
         <nav className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mb-6 sm:mb-8">
-          <Link href="/" className="hover:text-slate-300">Home</Link>
+          <Link href="/" className="hover:text-orange-600">Home</Link>
           <span>/</span>
-          <Link href="/plans" className="hover:text-slate-300">Plans</Link>
+          <Link href="/plans" className="hover:text-orange-600">Plans</Link>
           <span>/</span>
-          <span className="text-slate-300">Checkout</span>
+          <span className="text-slate-600">Checkout</span>
         </nav>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">Checkout</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-6 sm:mb-8">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
           <div className="lg:col-span-3 space-y-5">
             {/* Plan Summary */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-3">Your eSIM Plan</h2>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Your eSIM Plan</h2>
               <div className="flex items-center gap-3 sm:gap-4">
                 <span className="text-3xl sm:text-4xl">{plan.country?.emoji || plan.region?.emoji || "🌍"}</span>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-semibold text-sm sm:text-base truncate">{plan.destination} eSIM</h3>
-                  <p className="text-slate-400 text-xs sm:text-sm">
+                  <h3 className="text-slate-800 font-semibold text-sm sm:text-base truncate">{plan.destination} eSIM</h3>
+                  <p className="text-slate-500 text-xs sm:text-sm">
                     {isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`} · {plan.durationDays} days · {plan.speed || "4G LTE"}
                   </p>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-white flex-shrink-0">{formatPrice(plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-800 flex-shrink-0">{formatPrice(plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd)}</p>
               </div>
             </div>
 
             {/* Contact Info */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-3">Contact Information</h2>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Contact Information</h2>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-400 mb-1.5">Name (optional)</label>
+                  <label className="block text-xs sm:text-sm text-slate-600 mb-1.5">Name (optional)</label>
                   <input
                     type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="Your name"
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-sky-500 transition-colors"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:border-orange-400 transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-400 mb-1.5">Email *</label>
+                  <label className="block text-xs sm:text-sm text-slate-600 mb-1.5">Email *</label>
                   <input
                     type="email"
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-sky-500 transition-colors"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:border-orange-400 transition-colors"
                   />
-                  <p className="text-slate-500 text-xs mt-1">eSIM QR code will be sent to this email</p>
+                  <p className="text-slate-400 text-xs mt-1">eSIM QR code will be sent to this email</p>
                 </div>
               </div>
             </div>
 
             {/* Quantity */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-3">Quantity</h2>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Quantity</h2>
               <div className="flex items-center gap-4">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-xl text-white font-bold text-lg transition-colors">-</button>
-                <span className="text-2xl font-bold text-white w-12 text-center">{quantity}</span>
+                  className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-800 font-bold text-lg transition-colors">-</button>
+                <span className="text-2xl font-bold text-slate-800 w-12 text-center">{quantity}</span>
                 <button onClick={() => setQuantity(Math.min(10, quantity + 1))}
-                  className="w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-xl text-white font-bold text-lg transition-colors">+</button>
+                  className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-800 font-bold text-lg transition-colors">+</button>
                 <span className="text-slate-500 text-sm">eSIM{quantity > 1 ? "s" : ""}</span>
               </div>
             </div>
 
             {/* Payment Method */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-4">Payment Method</h2>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4">Payment Method</h2>
               <div className="space-y-3">
                 {/* PayPal */}
                 <button
                   onClick={() => setPaymentMethod("paypal")}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     paymentMethod === "paypal"
-                      ? "bg-sky-500/10 border-sky-500/50 ring-1 ring-sky-500/30"
-                      : "bg-slate-900/30 border-slate-700 hover:border-slate-600"
+                      ? "bg-orange-50 border-orange-400 ring-1 ring-orange-200"
+                      : "bg-white border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="w-12 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xs font-bold">PayPal</span>
                   </div>
                   <div className="text-left flex-1">
-                    <p className="text-white font-medium text-sm">PayPal</p>
+                    <p className="text-slate-800 font-medium text-sm">PayPal</p>
                     <p className="text-slate-500 text-xs">Credit Card, Apple Pay, Google Pay</p>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "paypal" ? "border-sky-500" : "border-slate-600"
+                    paymentMethod === "paypal" ? "border-orange-500" : "border-slate-300"
                   }`}>
-                    {paymentMethod === "paypal" && <div className="w-2.5 h-2.5 bg-sky-500 rounded-full" />}
+                    {paymentMethod === "paypal" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                   </div>
                 </button>
 
@@ -463,21 +463,21 @@ export default function CheckoutPage() {
                   onClick={() => setPaymentMethod("lemonsqueezy")}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     paymentMethod === "lemonsqueezy"
-                      ? "bg-sky-500/10 border-sky-500/50 ring-1 ring-sky-500/30"
-                      : "bg-slate-900/30 border-slate-700 hover:border-slate-600"
+                      ? "bg-orange-50 border-orange-400 ring-1 ring-orange-200"
+                      : "bg-white border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="w-12 h-8 bg-yellow-400 rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-slate-900 text-xs font-bold">LS</span>
                   </div>
                   <div className="text-left flex-1">
-                    <p className="text-white font-medium text-sm">LemonSqueezy</p>
+                    <p className="text-slate-800 font-medium text-sm">LemonSqueezy</p>
                     <p className="text-slate-500 text-xs">Credit Card, Apple Pay, Google Pay, Crypto</p>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "lemonsqueezy" ? "border-sky-500" : "border-slate-600"
+                    paymentMethod === "lemonsqueezy" ? "border-orange-500" : "border-slate-300"
                   }`}>
-                    {paymentMethod === "lemonsqueezy" && <div className="w-2.5 h-2.5 bg-sky-500 rounded-full" />}
+                    {paymentMethod === "lemonsqueezy" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                   </div>
                 </button>
 
@@ -486,21 +486,21 @@ export default function CheckoutPage() {
                   onClick={() => setPaymentMethod("gumroad")}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     paymentMethod === "gumroad"
-                      ? "bg-sky-500/10 border-sky-500/50 ring-1 ring-sky-500/30"
-                      : "bg-slate-900/30 border-slate-700 hover:border-slate-600"
+                      ? "bg-orange-50 border-orange-400 ring-1 ring-orange-200"
+                      : "bg-white border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="w-12 h-8 bg-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xs font-bold">G</span>
                   </div>
                   <div className="text-left flex-1">
-                    <p className="text-white font-medium text-sm">Gumroad</p>
+                    <p className="text-slate-800 font-medium text-sm">Gumroad</p>
                     <p className="text-slate-500 text-xs">Credit Card, PayPal</p>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "gumroad" ? "border-sky-500" : "border-slate-600"
+                    paymentMethod === "gumroad" ? "border-orange-500" : "border-slate-300"
                   }`}>
-                    {paymentMethod === "gumroad" && <div className="w-2.5 h-2.5 bg-sky-500 rounded-full" />}
+                    {paymentMethod === "gumroad" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                   </div>
                 </button>
 
@@ -509,21 +509,21 @@ export default function CheckoutPage() {
                   onClick={() => setPaymentMethod("payoneer")}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     paymentMethod === "payoneer"
-                      ? "bg-sky-500/10 border-sky-500/50 ring-1 ring-sky-500/30"
-                      : "bg-slate-900/30 border-slate-700 hover:border-slate-600"
+                      ? "bg-orange-50 border-orange-400 ring-1 ring-orange-200"
+                      : "bg-white border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="w-12 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xs font-bold">P</span>
                   </div>
                   <div className="text-left flex-1">
-                    <p className="text-white font-medium text-sm">Payoneer</p>
+                    <p className="text-slate-800 font-medium text-sm">Payoneer</p>
                     <p className="text-slate-500 text-xs">Bank Transfer, Credit Card</p>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "payoneer" ? "border-sky-500" : "border-slate-600"
+                    paymentMethod === "payoneer" ? "border-orange-500" : "border-slate-300"
                   }`}>
-                    {paymentMethod === "payoneer" && <div className="w-2.5 h-2.5 bg-sky-500 rounded-full" />}
+                    {paymentMethod === "payoneer" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                   </div>
                 </button>
               </div>
@@ -533,40 +533,40 @@ export default function CheckoutPage() {
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-2">
             <motion.div
-              className="sticky top-20 sm:top-24 bg-slate-800/70 border border-slate-700/60 rounded-2xl sm:rounded-3xl p-5 sm:p-7"
+              className="sticky top-20 sm:top-24 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h2 className="text-base sm:text-lg font-semibold text-white mb-4 sm:mb-5">Order Summary</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4 sm:mb-5">Order Summary</h2>
 
               <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                <div className="flex justify-between text-slate-300 text-sm">
+                <div className="flex justify-between text-slate-600 text-sm">
                   <span>{plan.destination} eSIM × {quantity}</span>
                   <span>{formatPrice((plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd) * quantity)}</span>
                 </div>
-                <div className="flex justify-between text-slate-300 text-sm">
+                <div className="flex justify-between text-slate-600 text-sm">
                   <span>Activation</span>
-                  <span className="text-green-400">Free</span>
+                  <span className="text-green-600">Free</span>
                 </div>
               </div>
 
-              <div className="border-t border-slate-700 pt-3 sm:pt-4 mb-4 sm:mb-6">
+              <div className="border-t border-slate-200 pt-3 sm:pt-4 mb-4 sm:mb-6">
                 <div className="flex justify-between">
-                  <span className="text-base sm:text-lg font-semibold text-white">Total</span>
-                  <span className="text-xl sm:text-2xl font-bold text-white">${totalPrice.toFixed(2)}</span>
+                  <span className="text-base sm:text-lg font-semibold text-slate-800">Total</span>
+                  <span className="text-xl sm:text-2xl font-bold text-slate-800">${totalPrice.toFixed(2)}</span>
                 </div>
               </div>
 
               {error && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-4">
-                  <p className="text-red-400 text-sm">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+                  <p className="text-red-600 text-sm">{error}</p>
                 </div>
               )}
 
               <motion.button
                 onClick={handleCheckout}
                 disabled={processing}
-                className="w-full bg-sky-500 hover:bg-sky-400 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-4 rounded-xl text-base sm:text-lg transition-colors shadow-lg shadow-sky-900/30"
+                className="w-full bg-gradient-to-r from-orange-500 to-cyan-500 hover:from-orange-600 hover:to-cyan-600 disabled:from-slate-400 disabled:to-slate-400 disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-4 rounded-xl text-base sm:text-lg transition-all shadow-lg"
                 whileHover={!processing ? { scale: 1.02 } : {}}
                 whileTap={!processing ? { scale: 0.98 } : {}}
               >
@@ -595,12 +595,12 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-center gap-3">
-                <div className="flex items-center gap-1 text-slate-500 text-[10px]">
+              <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-center gap-3">
+                <div className="flex items-center gap-1 text-slate-400 text-[10px]">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
                   SSL Encrypted
                 </div>
-                <div className="flex items-center gap-1 text-slate-500 text-[10px]">
+                <div className="flex items-center gap-1 text-slate-400 text-[10px]">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                   Verified
                 </div>
