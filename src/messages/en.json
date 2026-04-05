@@ -2,26 +2,49 @@
   "common": {
     "home": "Home",
     "plans": "Plans",
+    "blog": "Blog",
     "cart": "Cart",
+    "checkout": "Checkout",
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
-    "checkout": "Checkout",
     "orders": "My Orders",
     "admin": "Admin",
-    "blog": "Blog",
+    "search": "Search",
+    "searchPlaceholder": "Search destination...",
+    "viewAll": "View All",
+    "browseAll": "Browse All",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "submit": "Submit",
+    "apply": "Apply",
+    "clear": "Clear",
+    "clearAll": "Clear All",
     "total": "Total",
     "price": "Price",
     "quantity": "Quantity",
     "remove": "Remove",
-    "search": "Search",
-    "searchPlaceholder": "Search by destination...",
-    "readMore": "Read More",
-    "back": "Back",
-    "noHiddenFees": "No hidden fees",
-    "instantDelivery": "Instant delivery",
-    "refundPolicy": "7-day refund policy"
+    "noResults": "No results found",
+    "viewSite": "View Site",
+    "welcome": "Welcome"
   },
+
+  "header": {
+    "login": "Login",
+    "logout": "Logout",
+    "myOrders": "My Orders",
+    "cart": "Cart",
+    "allPlans": "All Plans",
+    "popularRegions": "Popular Regions",
+    "hotCountries": "Hot Countries"
+  },
+
   "hero": {
     "title": "Stay Connected Anywhere",
     "subtitle": "Affordable eSIM data plans for international travel",
@@ -33,6 +56,7 @@
     "howItWorks": "How It Works",
     "nowServing": "Now serving 190+ countries"
   },
+
   "howItWorks": {
     "title": "How It Works",
     "subtitle": "Get connected in just 4 simple steps",
@@ -45,42 +69,112 @@
     "step4": "Activate",
     "step4Desc": "Scan the QR code to install your eSIM and start using data"
   },
+
   "plans": {
     "title": "Available Plans",
     "subtitle": "Browse our extensive collection of eSIM data plans",
+    "searchPlaceholder": "Search destination... (e.g. Japan, Thailand, Europe)",
+    "allPlans": "All Plans",
+    "localPlans": "Local (1 Country)",
+    "regionPlans": "Region (2+ Countries)",
     "filterByRegion": "Filter by Region",
-    "allRegions": "All Regions",
+    "allRegions": "All",
+    "duration": "Duration",
+    "durationDays": "days",
+    "data": "Data",
+    "dataAmount": "Data Amount",
+    "network": "Network",
+    "speed": "Speed",
+    "price": "Price",
     "viewDetails": "View Details",
     "addToCart": "Add to Cart",
     "buyNow": "Buy Now",
     "days": "days",
     "gb": "GB",
     "unlimited": "Unlimited",
-    "data": "Data",
     "validity": "Validity",
-    "speed": "Speed",
-    "type": "Plan Type",
+    "planType": "Plan Type",
     "validAfterPurchase": "Valid After Purchase",
-    "browsePlans": "Browse all plans →",
     "topUp": "Top-Up",
-    "packageCode": "Package Code",
+    "topUpSupported": "Supported",
+    "topUpNotSupported": "Not supported",
     "tethering": "Tethering",
+    "tetheringHotspot": "Tethering/Hotspot",
     "activation": "Activation",
+    "automatic": "Automatic",
+    "manual": "Manual",
     "getThisPlan": "Get This Plan",
     "viewAllPlans": "View All Available Plans",
     "bestSeller": "BEST SELLER",
     "hot": "HOT",
     "popular": "POPULAR",
+    "unlimitedBadge": "∞ Unlimited",
     "fairUsePolicy": "Fair Use Policy",
-    "fairUsePolicyDesc": "After full speed is depleted, speed will be reduced to",
+    "fairUsePolicyDesc": "After full speed data is depleted, speed will be reduced to",
     "networkOperators": "Network Operators",
-    "location": "Location",
     "coverage": "Coverage",
+    "country": "country",
     "countries": "countries",
-
-    "backToAllPlans": "Back to all plans"
+    "backToAllPlans": "Back to all plans",
+    "noPlansFound": "No plans found",
+    "tryAdjustingFilters": "Try adjusting your filters or browse all regions",
+    "plansAvailable": "plans available",
+    "sortBy": "Sort By",
+    "bestMatch": "Best Match",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "mostData": "Most Data",
+    "longestDuration": "Longest Duration"
   },
-  "checkout":{
+
+  "planDetail": {
+    "localEsims": "Local eSIMs",
+    "excellent": "Excellent",
+    "outOf5": "4.8 out of 5",
+    "trustpilot": "★ Trustpilot",
+    "technicalSpecifications": "Technical Specifications",
+    "networkSelection": "NETWORK SELECTION",
+    "dailyPlans": "FOR DAILY PLANS",
+    "totalUnlimited": "TOTAL / UNLIMITED",
+    "nativeIp": "Native IP",
+    "dualCoverage": "Dual Coverage",
+    "lowLatency": "Ultra-Low Latency",
+    "bestFor": "Best for",
+    "localAppsGaming": "Local Apps & Gaming",
+    "sakuraRural": "Sakura & Rural Areas",
+    "widestSignal": "Widest Signal",
+    "autoSwitch": "Auto-switch",
+    "planTypeDetail": "Plan Type",
+    "dataOnly": "Data Only",
+    "dataSms": "Data + SMS",
+    "useWhatsApp": "Use WhatsApp/VoIP for calls. No phone number provided.",
+    "autoStart": "Auto-start on arrival; turn on data roaming for ByteSIM.",
+    "oneTime": "one-time",
+    "perDay": "/day",
+    "instantDelivery": "Instant QR code delivery",
+    "secureCheckout": "Secure checkout",
+    "refundPolicy": "7-day refund policy",
+    "worksOnAll": "Works on all eSIM devices",
+    "coverageCountries": "Coverage",
+    "whatsIncluded": "What's Included",
+    "validityDays": "Days Validity",
+    "networkSpeed": "Network Speed",
+    "instantQrEmail": "Instant QR Code Delivery via Email",
+    "supportsTopUp": "Supports Data Top-Up",
+    "tetheringDetail": "Tethering/Hotspot",
+    "whyChooseUs": "Why Choose Us?",
+    "instantActivation": "Instant Activation",
+    "qrDeliveredMinutes": "QR code delivered in minutes",
+    "bestPriceGuarantee": "Best Price Guarantee",
+    "cheaperThanRoaming": "Up to 80% cheaper than roaming",
+    "securePayment": "Secure Payment",
+    "sslEncrypted": "SSL encrypted checkout",
+    "needHelp": "Need Help?",
+    "contactSupport": "Contact Support",
+    "contactEmail": "support@openworldesim.com"
+  },
+
+  "checkout": {
     "title": "Checkout",
     "subtitle": "Review your order and complete your purchase",
     "orderComplete": "Order Complete!",
@@ -110,7 +204,10 @@
     "sslEncrypted": "SSL Encrypted",
     "verified": "Verified",
     "orderSummary": "Order Summary",
-    "confirmOrder": "Confirm Order"
+    "confirmOrder": "Confirm Order",
+    "subtotal": "Subtotal",
+    "processingFee": "Processing Fee",
+    "grandTotal": "Grand Total"
   },
 
   "cart": {
@@ -118,8 +215,10 @@
     "empty": "Your cart is empty",
     "continueShopping": "Continue Shopping",
     "proceedCheckout": "Proceed to Checkout",
-    "clearCart": "Clear Cart"
+    "clearCart": "Clear Cart",
+    "removeItem": "Remove"
   },
+
   "auth": {
     "signIn": "Sign in to your account",
     "signUp": "Create your account",
@@ -130,15 +229,62 @@
     "submitLogin": "Sign in",
     "submitRegister": "Create account",
     "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?"
+    "hasAccount": "Already have an account?",
+    "loginSuccess": "Login successful",
+    "registerSuccess": "Account created successfully",
+    "loginError": "Invalid email or password",
+    "registerError": "Registration failed"
   },
+
+  "orders": {
+    "title": "My Orders",
+    "orderId": "Order ID",
+    "date": "Date",
+    "status": "Status",
+    "amount": "Amount",
+    "noOrders": "No orders yet",
+    "noOrdersDesc": "Your order history will appear here",
+    "completed": "completed",
+    "pending": "pending",
+    "processing": "processing",
+    "failed": "failed",
+    "refunded": "refunded",
+    "viewDetails": "View Details"
+  },
+
   "admin": {
     "dashboard": "Admin Dashboard",
     "managePlans": "Manage Plans",
     "manageOrders": "Manage Orders",
     "manageUsers": "Manage Users",
-    "manageBlog": "Manage Blog"
+    "manageBlog": "Manage Blog",
+    "syncPlans": "Sync Plans",
+    "syncing": "Syncing...",
+    "syncSuccess": "Synced {count} plans",
+    "syncError": "Sync failed",
+    "stats": {
+      "users": "Users",
+      "orders": "Orders",
+      "activePlans": "Active Plans",
+      "revenue": "Revenue",
+      "balance": "Balance",
+      "totalPlans": "Total Plans"
+    },
+    "recentOrders": "Recent Orders",
+    "customer": "Customer",
+    "labels": "Labels",
+    "active": "Active",
+    "inactive": "Inactive",
+    "editPrice": "Edit Price",
+    "savePrice": "Save",
+    "currencySettings": "Currency Settings",
+    "currency": "Currency",
+    "exchangeRate": "Exchange Rate",
+    "plansManagement": "Plans Management",
+    "plansFromEsim": "plans from eSIM Access",
+    "showingOf": "Showing {shown} of {total} plans"
   },
+
   "blog": {
     "title": "Blog",
     "subtitle": "Travel tips, eSIM guides, and latest news",
@@ -156,13 +302,32 @@
       "tech": "Technology",
       "deals": "Deals & Offers",
       "news": "News"
-    }
+    },
+    "readMore": "Read More",
+    "backToBlog": "Back to Blog"
   },
+
   "footer": {
     "description": "Stay connected anywhere in the world with affordable eSIM data plans for 190+ countries.",
     "copyright": "All rights reserved.",
-    "madeFor": "Made for travelers. Powered by global networks."
+    "madeFor": "Made for travelers. Powered by global networks.",
+    "plans": "Plans",
+    "browseAllPlans": "Browse All Plans",
+    "globalPlans": "Global Plans",
+    "regionalPlans": "Regional Plans",
+    "countryPlans": "Country Plans",
+    "support": "Support",
+    "faq": "FAQ",
+    "deviceCompatibility": "Device Compatibility",
+    "contactUs": "Contact Us",
+    "company": "Company",
+    "about": "About",
+    "blog": "Blog",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "refund": "Refund Policy"
   },
+
   "coverage": {
     "title": "Global Coverage",
     "subtitle": "Stay connected in over 190 countries and territories worldwide",
@@ -173,10 +338,12 @@
       "americas": "Americas",
       "middleEast": "Middle East",
       "africa": "Africa",
-      "oceania": "Oceania"
+      "oceania": "Oceania",
+      "global": "Global"
     },
     "countries": "countries"
   },
+
   "device": {
     "title": "Device Compatibility",
     "subtitle": "eSIM works with most modern smartphones. Check if your device supports eSIM technology.",
@@ -185,6 +352,7 @@
     "notSure": "Not sure if your device supports eSIM?",
     "checkList": "Check full compatibility list"
   },
+
   "comparison": {
     "title": "Why Choose OW SIM?",
     "subtitle": "Compare OW SIM with traditional roaming and see how much you can save",
@@ -212,6 +380,7 @@
       "number": "Phone number issues"
     }
   },
+
   "trust": {
     "countries": "Countries",
     "users": "Happy Users",
@@ -220,6 +389,7 @@
     "rating": "User Rating",
     "savings": "Savings"
   },
+
   "whyChoose": {
     "title": "Why Choose OW SIM?",
     "subtitle": "We're revolutionizing how travelers stay connected abroad",
@@ -250,6 +420,7 @@
       }
     }
   },
+
   "faq": {
     "title": "Frequently Asked Questions",
     "subtitle": "Everything you need to know about OW SIM eSIM",
@@ -272,15 +443,18 @@
       "hotspotAns": "Yes! Most of our plans support hotspot sharing. Check the plan details to confirm hotspot is included before purchasing."
     }
   },
+
   "cta": {
     "title": "Ready to Stay Connected?",
     "subtitle": "Join 500,000+ travelers who stay connected without the roaming bill shock.",
     "button": "Find Your Plan"
   },
+
   "testimonials": {
     "title": "What Travelers Say",
     "subtitle": "Join hundreds of thousands of happy travelers who stay connected with OW SIM"
   },
+
   "partners": {
     "title": "Trusted Networks Worldwide",
     "subtitle": "We partner with top carriers to bring you the best coverage"
