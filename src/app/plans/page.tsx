@@ -141,9 +141,7 @@ export default function PlansPage() {
       }
 
       // Limit to 20 plans
-      if (selectedCountry) {
-        params.set("limit", "20");
-      }
+      params.set("limit", "20");
 
       const res = await fetch(`/api/plans?${params.toString()}`);
       const data = await res.json();
