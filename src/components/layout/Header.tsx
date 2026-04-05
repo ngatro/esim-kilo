@@ -214,7 +214,7 @@ export default function Header() {
                     setMobileMenuOpen(false);
                     openLogin();
                   }}
-                  className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold px-4 py-3 rounded-lg transition-colors"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-3 rounded-lg transition-colors"
                 >
                   Login
                 </button>
@@ -226,7 +226,7 @@ export default function Header() {
                     logout();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-3 rounded-lg transition-colors"
+                  className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-3 rounded-lg transition-colors"
                 >
                   Logout
                 </button>
