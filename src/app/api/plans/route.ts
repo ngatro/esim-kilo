@@ -214,6 +214,7 @@ export async function GET(request: Request) {
     const dataAmount = url.searchParams.get("dataAmount");
     const durationDays = url.searchParams.get("durationDays");
     const sortBy = url.searchParams.get("sortBy") || "best";
+    const limit = url.searchParams.get("limit"); // Display limit (e.g., 20)
     const id = url.searchParams.get("id");
     const slugParam = url.searchParams.get("slug");
 
@@ -276,7 +277,8 @@ export async function GET(request: Request) {
       default: orderBy = [{ isBestSeller: "desc" }, { isPopular: "desc" }, { priceUsd: "asc" }];
     }
 
-    const plans = await prisma.plan.findMany({ where, orderBy, take: 500 });
+    const take = limit ? parseInt(limit) : 500;
+    const plans = await prisma.plan.findMany({ where, orderBy, take });
 
     // Serialize BigInt to number for JSON
     const serialized = plans.map((p) => ({
@@ -284,7 +286,41 @@ export async function GET(request: Request) {
       dataVolume: Number(p.dataVolume),
     }));
 
-    return NextResponse.json({ plans: serialized, total: serialized.length });
+    // Generate aggregations for dynamic filters (dataAmounts and durations)
+    let aggregations: { dataAmounts: number[]; durations: number[] } | undefined;
+    if (regionId || countryId || search) {
+      // Get all matching plans without limit to extract unique dataAmounts and durations
+      const allMatchingPlans = await prisma.plan.findMany({ 
+        where, 
+        select: { dataAmount: true, durationDays: true },
+        orderBy: [{ dataAmount: "asc" }, { durationDays: "asc" }]
+      });
+      
+      const dataAmountsSet = new Set<number>();
+      const durationsSet = new Set<number>();
+      
+      allMatchingPlans.forEach((plan) => {
+        if (plan.dataAmount) {
+          // Round to nearest integer for display
+          const rounded = Math.round(plan.dataAmount);
+          dataAmountsSet.add(rounded);
+        }
+        if (plan.durationDays) {
+          durationsSet.add(plan.durationDays);
+        }
+      });
+      
+      aggregations = {
+        dataAmounts: Array.from(dataAmountsSet).sort((a, b) => a - b),
+        durations: Array.from(durationsSet).sort((a, b) => a - b),
+      };
+    }
+
+    return NextResponse.json({ 
+      plans: serialized, 
+      total: serialized.length,
+      aggregations 
+    });
   } catch (error) {
     console.error("Plans API error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

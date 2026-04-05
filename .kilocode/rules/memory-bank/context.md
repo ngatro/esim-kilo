@@ -30,6 +30,7 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 - [x] **Checkout** - Order creation flow
 - [x] **User orders** - View order history
 - [x] **Admin dashboard** - Plan management page
+- [x] **Plans page** - Country search with autocomplete (max 20), dynamic data/duration filters based on selected country
 
 ## Current Structure
 
@@ -43,8 +44,11 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 | `src/app/[locale]/orders/page.tsx` | User orders page | ✅ Ready |
 | `src/app/[locale]/admin/page.tsx` | Admin dashboard | ✅ Ready |
 | `src/app/[locale]/admin/plans/page.tsx` | Admin plan management | ✅ Ready |
+| `src/app/plans/page.tsx` | Plans browse page with country search & dynamic filters | ✅ Ready |
 | `src/app/api/auth/` | Auth API routes | ✅ Ready |
 | `src/app/api/orders/route.ts` | Orders API | ✅ Ready |
+| `src/app/api/countries/search/route.ts` | Country autocomplete search (max 20) | ✅ Ready |
+| `src/app/api/countries/[id]/filters/route.ts` | Country dynamic filters API | ✅ Ready |
 | `src/db/schema.ts` | Database schema | ✅ Ready |
 | `src/lib/auth.ts` | Auth utilities | ✅ Ready |
 | `src/components/providers/AuthProvider.tsx` | Auth context | ✅ Ready |
@@ -89,3 +93,5 @@ Create `src/app/api/[route]/route.ts`
 | Initial | Template created with base setup |
 | 2026-03-22 | Built SimPal eSIM travel marketplace |
 | 2026-03-22 | Added i18n (English/Vietnamese), auth, cart, admin dashboard |
+| 2026-04-05 | Enhanced plans page with search dropdown, dynamic filters, display limit |
+| 2026-04-05 | Added country search with autocomplete + dynamic data/duration filters |
