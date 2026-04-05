@@ -238,50 +238,19 @@ export default function PlanDetailContent() {
               </div>
             </div>
 
-            {/* Network Info */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500 mb-1">Network</p>
-                  <p className="text-lg font-bold text-slate-800">5G / 4G LTE</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-slate-500 mb-1">Speed</p>
-                  <p className="text-lg font-bold text-cyan-600">Up to 300Mbps</p>
-                </div>
+            {/* Price */}
+            <div className="mb-5">
+              <div className="flex items-baseline gap-3">
+                {hasDiscount && (
+                  <span className="text-xl text-slate-400 line-through">{formatPrice(plan.retailPriceUsd || plan.priceUsd)}</span>
+                )}
+                <span className="text-4xl font-bold text-slate-800">{formatPrice(displayPrice)}</span>
+                <span className="text-slate-500">one-time</span>
               </div>
             </div>
 
-            {/* Plan Details - Clean List */}
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                <span className="text-slate-500">Data</span>
-                <span className="font-semibold text-slate-800">{isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`}</span>
-              </div>
-              <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                <span className="text-slate-500">Validity</span>
-                <span className="font-semibold text-slate-800">{plan.durationDays} Days</span>
-              </div>
-              <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                <span className="text-slate-500">Activation</span>
-                <span className="font-semibold text-green-600">Automatic</span>
-              </div>
-              <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                <span className="text-slate-500">Plan Type</span>
-                <span className="font-semibold text-slate-800">Data Only</span>
-              </div>
-              <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                <span className="text-slate-500">Top-Up</span>
-                <span className="font-semibold text-slate-800">{plan.supportTopUp ? "Supported" : "Not supported"}</span>
-              </div>
-              <div className="flex items-center justify-between py-3">
-                <span className="text-slate-500">Tethering</span>
-                <span className="font-semibold text-slate-800">{plan.ipExport || "Not supported"}</span>
-              </div>
-            </div>
-
-            {/* Quantity & Buy */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+            {/* Buy Button - Prominent */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 w-fit">
                 <span className="text-sm text-slate-500">Qty:</span>
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-orange-400 flex items-center justify-center text-slate-600">-</button>
@@ -299,8 +268,8 @@ export default function PlanDetailContent() {
               </Link>
             </div>
 
-            {/* Features */}
-            <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
+            {/* Quick Features */}
+            <div className="mb-6 space-y-2">
               {[
                 { icon: "✓", text: "Instant QR code delivery", color: "text-green-600" },
                 { icon: "✓", text: "Secure checkout", color: "text-green-600" },
@@ -312,6 +281,14 @@ export default function PlanDetailContent() {
                   <span>{item.text}</span>
                 </div>
               ))}
+
+              {/* Coverage Preview */}
+              {locations.length > 0 && (
+                <div className="flex items-center gap-2 text-sm text-slate-600 mt-2 pt-2 border-t border-slate-100">
+                  <span>🌍</span>
+                  <span>Coverage: {locations.slice(0, 3).join(", ")}{locations.length > 3 ? ` +${locations.length - 3} more` : ""}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -374,10 +351,10 @@ export default function PlanDetailContent() {
               {/* Coverage */}
               {locations.length > 0 && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
-                  <h2 className="text-xl font-bold text-slate-800 mb-4">Coverage ({locations.length} countries)</h2>
+                  <h2 className="text-xl font-bold text-slate-800 mb-4">Coverage ({locations.length} {locations.length === 1 ? "country" : "countries"})</h2>
                   <div className="flex flex-wrap gap-2">
                     {locations.map((loc) => (
-                      <span key={loc} className="bg-slate-100 text-slate-600 text-sm px-3 py-1.5 rounded-full">{loc}</span>
+                      <span key={loc} className="bg-slate-100 text-slate-700 text-sm px-3 py-1.5 rounded-full font-medium">{loc}</span>
                     ))}
                   </div>
                 </div>
@@ -387,22 +364,16 @@ export default function PlanDetailContent() {
               {networkList.length > 0 && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
                   <h2 className="text-xl font-bold text-slate-800 mb-4">Network Operators</h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {networkList.map((net) => (
-                      <div key={net.locationCode} className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-sm font-bold text-slate-600 border border-slate-200">
-                          {net.locationCode}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-slate-800 mb-2">{net.locationName}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {net.operatorList?.map((op, i) => (
-                              <span key={i} className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                                {op.operatorName} ({op.networkType})
-                              </span>
-                            ))}
-                          </div>
+                      <div key={net.locationCode} className="p-3 bg-slate-50 rounded-xl">
+                        <p className="font-semibold text-slate-800 mb-2">{net.locationName}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {net.operatorList?.map((op, i) => (
+                            <span key={i} className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-md font-medium">
+                              {op.operatorName} ({op.networkType})
+                            </span>
+                          ))}
                         </div>
                       </div>
                     ))}
