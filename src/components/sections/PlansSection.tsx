@@ -51,49 +51,49 @@ function MiniPlanCard({ plan, index }: { plan: Plan; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
-      className={`relative flex flex-col bg-slate-800/60 border rounded-2xl p-5 hover:border-sky-500/60 hover:bg-slate-800 transition-all duration-200 group ${
-        plan.isPopular || plan.isBestSeller ? "border-sky-500/50 shadow-lg shadow-sky-900/20" : "border-slate-700/60"
+      className={`relative flex flex-col bg-white border rounded-2xl p-5 hover:border-orange-400 hover:shadow-lg transition-all duration-200 group ${
+        plan.isPopular || plan.isBestSeller ? "border-orange-300 shadow-md" : "border-slate-200"
       }`}
     >
       {(plan.isBestSeller || plan.isHot || plan.badge) && (
-        <span className="absolute -top-3 left-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
+        <span className="absolute -top-3 left-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
           {plan.isBestSeller ? "BEST SELLER" : plan.isHot ? "HOT" : plan.badge}
         </span>
       )}
 
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="text-base font-semibold text-white">{plan.destination}</h3>
+          <h3 className="text-base font-semibold text-slate-800">{plan.destination}</h3>
           <p className="text-xs text-slate-500 mt-0.5">
             {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.countryName || plan.regionName}
           </p>
         </div>
         <div className="text-right">
           {hasDiscount && (
-            <p className="text-xs text-slate-500 line-through">{formatPrice(plan.priceUsd)}</p>
+            <p className="text-xs text-slate-400 line-through">{formatPrice(plan.priceUsd)}</p>
           )}
-          <p className="text-xl font-bold text-white">{formatPrice(displayPrice)}</p>
+          <p className="text-xl font-bold text-slate-800">{formatPrice(displayPrice)}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-slate-900/60 rounded-xl p-2 text-center">
-          <p className={`font-bold ${isUnlimited ? "text-sm" : "text-lg"} text-sky-400`}>{formatData(plan.dataAmount)}</p>
+        <div className="bg-orange-50 rounded-xl p-2 text-center">
+          <p className={`font-bold ${isUnlimited ? "text-sm" : "text-lg"} text-orange-600`}>{formatData(plan.dataAmount)}</p>
           <p className="text-[10px] text-slate-500">Data</p>
         </div>
-        <div className="bg-slate-900/60 rounded-xl p-2 text-center">
-          <p className="text-lg font-bold text-white">{plan.durationDays}</p>
+        <div className="bg-cyan-50 rounded-xl p-2 text-center">
+          <p className="text-lg font-bold text-slate-800">{plan.durationDays}</p>
           <p className="text-[10px] text-slate-500">Days</p>
         </div>
-        <div className="bg-slate-900/60 rounded-xl p-2 text-center">
-          <p className="text-sm font-bold text-emerald-400">{pricePerDay}</p>
+        <div className="bg-green-50 rounded-xl p-2 text-center">
+          <p className="text-sm font-bold text-green-600">{pricePerDay}</p>
           <p className="text-[10px] text-slate-500">/Day</p>
         </div>
       </div>
 
       <Link
         href={`/plans/${plan.slug || plan.id}`}
-        className="block w-full text-center py-2 rounded-xl text-sm font-semibold bg-slate-700 hover:bg-sky-500 text-white transition-all"
+        className="block w-full text-center py-2 rounded-xl text-sm font-semibold bg-orange-500 hover:bg-orange-400 text-white transition-all"
       >
         Buy Now
       </Link>
@@ -131,17 +131,17 @@ export default function PlansSection() {
   }).slice(0, 12);
 
   return (
-    <section id="plans" className="py-16 sm:py-24">
+    <section id="plans" className="py-16 sm:py-24 bg-orange-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">{t("plans.title")}</h2>
-          <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">{t("plans.subtitle")}</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">{t("plans.title")}</h2>
+          <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">{t("plans.subtitle")}</p>
           <p className="text-slate-500 text-xs sm:text-sm mt-2">{plans.length} plans available</p>
         </div>
 
         <div className="max-w-md mx-auto mb-6 sm:mb-8">
           <div className="relative">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -149,7 +149,7 @@ export default function PlansSection() {
               placeholder="Search destination..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-sky-500 transition-colors"
+              className="w-full bg-white border border-slate-200 text-slate-800 placeholder-slate-400 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-orange-400 transition-colors"
             />
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function PlansSection() {
           <button
             onClick={() => setActiveRegion("all")}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-              activeRegion === "all" ? "bg-sky-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white border border-slate-700"
+              activeRegion === "all" ? "bg-orange-500 text-white" : "bg-white text-slate-600 hover:text-slate-800 border border-slate-200"
             }`}
           >
             All
@@ -168,7 +168,7 @@ export default function PlansSection() {
               key={region.id}
               onClick={() => setActiveRegion(region.id)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                activeRegion === region.id ? "bg-sky-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white border border-slate-700"
+                activeRegion === region.id ? "bg-orange-500 text-white" : "bg-white text-slate-600 hover:text-slate-800 border border-slate-200"
               }`}
             >
               <span>{region.emoji}</span>{region.name}
@@ -179,14 +179,14 @@ export default function PlansSection() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-slate-800/60 rounded-2xl p-5 animate-pulse">
-                <div className="h-5 bg-slate-700 rounded w-2/3 mb-3" />
+              <div key={i} className="bg-white rounded-2xl p-5 animate-pulse border border-slate-200">
+                <div className="h-5 bg-slate-200 rounded w-2/3 mb-3" />
                 <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="h-12 bg-slate-700 rounded-xl" />
-                  <div className="h-12 bg-slate-700 rounded-xl" />
-                  <div className="h-12 bg-slate-700 rounded-xl" />
+                  <div className="h-12 bg-slate-200 rounded-xl" />
+                  <div className="h-12 bg-slate-200 rounded-xl" />
+                  <div className="h-12 bg-slate-200 rounded-xl" />
                 </div>
-                <div className="h-9 bg-slate-700 rounded-xl" />
+                <div className="h-9 bg-slate-200 rounded-xl" />
               </div>
             ))}
           </div>
@@ -200,7 +200,7 @@ export default function PlansSection() {
             <div className="text-center mt-8 sm:mt-12">
               <Link href="/plans">
                 <motion.button
-                  className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-8 py-3 rounded-xl text-sm transition-colors"
+                  className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-8 py-3 rounded-xl text-sm transition-colors"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
