@@ -8,12 +8,19 @@ import { useUI } from "@/components/providers/UIProvider";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 import { useState, useEffect } from "react";
 
+interface NavItem {
+  href: string;
+  label: string;
+  children?: { href: string; label: string }[];
+}
+
 export default function Header() {
   const { user, logout, loading: authLoading } = useAuth();
   const { items } = useCart();
   const { openLogin, openCart } = useUI();
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -21,13 +28,26 @@ export default function Header() {
 
   const cartCount = mounted ? items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
-  const navLinks = [
+  const navLinks: NavItem[] = [
     { href: "/", label: "Home" },
-    { href: "/#plans", label: "Plans" },
+    { 
+      href: "/plans", 
+      label: "Plans",
+      children: [
+        { href: "/plans?region=asia", label: "Asia" },
+        { href: "/plans?region=europe", label: "Europe" },
+        { href: "/plans?region=americas", label: "Americas" },
+        { href: "/plans?region=oceania", label: "Oceania" },
+      ]
+    },
     { href: "/#how-it-works", label: "How It Works" },
     { href: "/blog", label: "Blog" },
-    ...(mounted && user ? [{ href: "/orders", label: "My Orders" }] : []),
-    ...(mounted && user?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
+    ...(mounted && user ? [{ href: "/orders", label: "My Orders", children: [] }] : []),
+    ...(mounted && user?.role === "admin" ? [{ href: "/admin", label: "Admin", children: [
+      { href: "/admin/plans", label: "Manage Plans" },
+      { href: "/admin/orders", label: "Manage Orders" },
+      { href: "/admin/blog", label: "Manage Blog" },
+    ] }] : []),
   ];
 
   return (
@@ -40,11 +60,50 @@ export default function Header() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-white transition-colors">
-              {link.label}
-            </Link>
+            <div key={link.href} className="relative group">
+              {link.children && link.children.length > 0 ? (
+                <>
+                  <button
+                    onMouseEnter={() => setOpenDropdown(link.href)}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                    className="flex items-center gap-1 hover:text-white transition-colors py-4"
+                  >
+                    {link.label}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <AnimatePresence>
+                    {openDropdown === link.href && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        onMouseEnter={() => setOpenDropdown(link.href)}
+                        onMouseLeave={() => setOpenDropdown(null)}
+                        className="absolute top-full left-0 mt-1 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 z-50"
+                      >
+                        {link.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className="block px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors"
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              ) : (
+                <Link href={link.href} className="hover:text-white transition-colors py-4">
+                  {link.label}
+                </Link>
+              )}
+            </div>
           ))}
         </nav>
 
@@ -112,14 +171,39 @@ export default function Header() {
           >
             <div className="px-4 py-4 space-y-3">
               {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 text-slate-300 hover:text-white font-medium"
-                >
-                  {link.label}
-                </Link>
+                <div key={link.href}>
+                  {link.children && link.children.length > 0 ? (
+                    <details className="group">
+                      <summary className="flex items-center justify-between py-2 text-slate-300 hover:text-white font-medium cursor-pointer list-none">
+                        <span>{link.label}</span>
+                        <svg className="w-4 h-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="pl-4 space-y-2 mt-2">
+                        {link.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block py-2 text-slate-400 hover:text-white font-medium"
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </details>
+                  ) : (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block py-2 text-slate-300 hover:text-white font-medium"
+                    >
+                      {link.label}
+                    </Link>
+                  )}
+                </div>
               ))}
               
               {mounted && !authLoading && !user && (

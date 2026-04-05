@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useI18n } from "@/components/providers/I18nProvider";
+import Image from "next/image";
 
 interface Plan {
   id: string;
@@ -11,6 +12,7 @@ interface Plan {
   slug: string | null;
   packageCode: string;
   destination: string;
+  dataVolume: number;
   dataAmount: number;
   durationDays: number;
   priceUsd: number;
@@ -43,16 +45,26 @@ interface Region {
   _count?: { plans: number };
 }
 
-function formatData(gb: number): string {
-  if (gb >= 999) return "Unlimited";
-  if (gb < 1) return `${Math.round(gb * 1024)}MB`;
-  return `${gb}GB`;
+function formatVolume(bytes: number): string {
+  if (bytes === 0) return "0";
+  
+  const k = 1024;
+  const dm = 1; // Số chữ số thập phân
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  
+  // Tính toán đơn vị phù hợp (0: Bytes, 1: KB, 2: MB, 3: GB...)
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  // Trả về con số kèm đơn vị (ví dụ: 500MB hoặc 1.2GB)
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + sizes[i];
 }
 
 function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const { formatPrice } = useI18n();
-  const isUnlimited = plan.dataAmount >= 999;
-  const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
+  const isUnlimited = plan.badge === "Unlimited";
+  const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) 
+  ? plan.retailPriceUsd 
+  : (plan.priceUsd * 2);
   const pricePerDay = formatPrice(displayPrice / plan.durationDays);
   const locations = Array.isArray(plan.locations) ? plan.locations : [];
 
@@ -81,9 +93,9 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
           </span>
         )}
         {plan.badge && !plan.isBestSeller && !plan.isHot && (
-          <span className="bg-slate-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {plan.badge}
-          </span>
+          <span className="bg-orange-500 text-white text-[10px] font-extrabold px-3 py-1 rounded-md shadow-lg border border-red-700 animate-pulse uppercase tracking-wider">
+          🔥 {plan.badge}
+        </span>
         )}
       </div>
 
@@ -91,7 +103,21 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
         {/* Header */}
         <div className="mb-3">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xl sm:text-2xl">{plan.countryId ? "🏳️" : plan.coverageCount > 1 ? "🌍" : "📱"}</span>
+            <div className="relative w-10 h-10 min-w-[40px] overflow-hidden rounded-lg ">
+              {/* @ts-ignore - Dcm, tắt báo lỗi TypeScript dòng này cho nhanh */}
+              {plan.locationNetworkList && (typeof plan.locationNetworkList === 'string' ? JSON.parse(plan.locationNetworkList) : plan.locationNetworkList)?.[0]?.locationLogo ? (
+                <Image
+                  /* @ts-ignore */
+                  src={`https://p.qrsim.net${(typeof plan.locationNetworkList === 'string' ? JSON.parse(plan.locationNetworkList) : plan.locationNetworkList)[0].locationLogo}`} 
+                  alt="flag"
+                  fill
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).src = "https://p.qrsim.net/img/flags/default.png" }}
+                />
+              ) : (
+                <span className="text-2xl">{plan.coverageCount > 1 ? "🌍" : "📱"}</span>
+              )}
+            </div>
             <h3 className="text-base sm:text-lg font-semibold text-white truncate">{plan.destination}</h3>
           </div>
           <p className="text-slate-500 text-xs">
@@ -103,15 +129,15 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="bg-slate-900/60 rounded-xl p-2.5 text-center">
-            <p className="text-lg sm:text-xl font-bold text-sky-400">{isUnlimited ? "∞" : plan.dataAmount}</p>
-            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{isUnlimited ? "Unlimited" : "GB"}</p>
+            <p className="text-lg sm:text-xl font-bold text-cyan-400">{isUnlimited ? `${formatVolume(plan.dataVolume)}` : formatVolume(plan.dataVolume)}</p>
+            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{isUnlimited ? "High Speed" : "High Speed"}</p>
           </div>
           <div className="bg-slate-900/60 rounded-xl p-2.5 text-center">
-            <p className="text-lg sm:text-xl font-bold text-white">{plan.durationDays}</p>
+            <p className="text-lg sm:text-xl font-bold text-cyan-400">{plan.durationDays}</p>
             <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">Days</p>
           </div>
           <div className="bg-slate-900/60 rounded-xl p-2.5 text-center">
-            <p className="text-lg sm:text-xl font-bold text-emerald-400">${pricePerDay}</p>
+            <p className="text-lg sm:text-xl font-bold text-cyan-400">{pricePerDay}</p>
             <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">/Day</p>
           </div>
         </div>
@@ -119,24 +145,24 @@ function PlanCard({ plan, index }: { plan: Plan; index: number }) {
         {/* Features */}
         <div className="space-y-1.5 mb-4 flex-1">
           {plan.supportTopUp && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
               Supports Top-Up
             </div>
           )}
           {plan.ipExport && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
               IP: {plan.ipExport}
             </div>
           )}
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
             Instant Activation
           </div>
           {plan.unusedValidTime > 0 && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
               Valid {plan.unusedValidTime} days after purchase
             </div>
           )}
@@ -194,9 +220,19 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchResults, setSearchResults] = useState<Region[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search query - 500ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+  
 
   const [selectedRegion, setSelectedRegion] = useState("all");
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -207,6 +243,8 @@ export default function PlansPage() {
   const [dataFilter, setDataFilter] = useState("");
   const [durationFilter, setDurationFilter] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  
 
   useEffect(() => {
     fetch("/api/regions")
@@ -221,7 +259,8 @@ export default function PlansPage() {
       const params = new URLSearchParams();
       if (selectedRegion && selectedRegion !== "all") params.set("regionId", selectedRegion);
       if (selectedCountry) params.set("countryId", selectedCountry);
-      if (searchQuery) params.set("search", searchQuery);
+      if (debouncedSearch) params.set("search", debouncedSearch);
+  
       if (networkFilter) params.set("networkType", networkFilter);
       if (dataType) params.set("dataType", dataType);
       if (dataFilter) params.set("dataAmount", dataFilter);
@@ -242,12 +281,13 @@ export default function PlansPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedRegion, selectedCountry, searchQuery, networkFilter, priceRange, sortBy, dataType, dataFilter, durationFilter]);
+  }, [selectedRegion, selectedCountry, debouncedSearch, networkFilter, priceRange, sortBy, dataType, dataFilter, durationFilter]);
 
   useEffect(() => {
     fetchPlans();
   }, [fetchPlans]);
 
+  // Update search results immediately for dropdown, but debounce the API fetch
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -271,6 +311,7 @@ export default function PlansPage() {
       .filter(Boolean) as Region[];
     setSearchResults(matched);
   }, [searchQuery, regions]);
+
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -312,7 +353,7 @@ export default function PlansPage() {
 
   const currentRegion = regions.find((r) => r.id === selectedRegion);
   const countries = currentRegion?.countries || [];
-  const hasActiveFilters = selectedRegion !== "all" || selectedCountry || searchQuery || networkFilter || priceRange || dataType || dataFilter || durationFilter;
+  const hasActiveFilters = selectedRegion !== "all" || selectedCountry || debouncedSearch || networkFilter || priceRange || dataType || dataFilter || durationFilter;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -402,7 +443,7 @@ export default function PlansPage() {
           {/* Desktop Filters */}
           <div className="hidden sm:block bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 mb-6">
             <div className="flex flex-wrap gap-3 items-end">
-              <div className="min-w-[160px]">
+              <div className="min-w-40">
                 <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Region</label>
                 <select value={selectedRegion} onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCountry(""); }}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
@@ -412,7 +453,7 @@ export default function PlansPage() {
               </div>
 
               {countries.length > 0 && (
-                <div className="min-w-[160px]">
+                <div className="min-w-40">
                   <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Country</label>
                   <select value={selectedCountry} onChange={(e) => setSelectedCountry(e.target.value)}
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
@@ -422,7 +463,7 @@ export default function PlansPage() {
                 </div>
               )}
 
-              <div className="min-w-[130px]">
+              <div className="min-w-32.5">
                 <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Network</label>
                 <select value={networkFilter} onChange={(e) => setNetworkFilter(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
@@ -430,7 +471,7 @@ export default function PlansPage() {
                 </select>
               </div>
 
-              <div className="min-w-[130px]">
+              <div className="min-w-32.5">
                 <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Price</label>
                 <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
@@ -439,7 +480,7 @@ export default function PlansPage() {
                 </select>
               </div>
 
-              <div className="min-w-[130px]">
+              <div className="min-w-32.5">
                 <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Type</label>
                 <select value={dataType} onChange={(e) => setDataType(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
@@ -447,7 +488,7 @@ export default function PlansPage() {
                 </select>
               </div>
 
-              <div className="min-w-[130px]">
+              <div className="min-w-32.5">
                 <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Data</label>
                 <select value={dataFilter} onChange={(e) => setDataFilter(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
@@ -461,7 +502,7 @@ export default function PlansPage() {
                 </select>
               </div>
 
-              <div className="min-w-[130px]">
+              <div className="min-w-32.5">
                 <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Duration</label>
                 <select value={durationFilter} onChange={(e) => setDurationFilter(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">
@@ -475,7 +516,7 @@ export default function PlansPage() {
                 </select>
               </div>
 
-              <div className="min-w-[130px]">
+              <div className="min-w-32.5">
                 <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wider">Sort</label>
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500 transition-colors">

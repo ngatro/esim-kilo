@@ -6,15 +6,26 @@ function bytesToGB(bytes: number): number {
   return Math.round((bytes / (1024 * 1024 * 1024)) * 10) / 10;
 }
 
-function generateSlug(name: string): string {
-  // "AUKUS(3 countries) 3GB 30days" -> "AUKUS-3-countries-3GB-30-days"
-  return name
+function generateSlug(name: string, fupPolicy?: string | null): string {
+  // 1. Dọn dẹp cái name gốc (Turkey 500MB/Day -> turkey-500mb-day)
+  let cleanName = name
     .replace(/[()]/g, "")
     .replace(/[^a-zA-Z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .toLowerCase();
+
+  // 2. Logic "Chủ tịch": Chỉ tin vào fupPolicy để định danh Unlimited
+  // Nếu fupPolicy có chữ (không rỗng, không null) -> Đây là gói Unlimited
+  const isUnlimited = fupPolicy && fupPolicy.trim().length > 0;
+
+  // 3. Trả về Slug "Vua SEO"
+  if (isUnlimited) {
+    return `esim-${cleanName}-unlimited`;
+  }
+
+  return `esim-${cleanName}`;
 }
 
 const COUNTRY_TO_REGION: Record<string, { regionId: string; regionName: string; countryName: string }> = {
@@ -117,17 +128,35 @@ export async function GET(request: Request) {
       const plans = packages.map((pkg) => {
         const dataAmount = bytesToGB(pkg.volume);
         const priceUsd = pkg.price / 10000;
-        const retailPriceUsd = (pkg.retailPrice || pkg.price) / 10000;
+
+        // tính giá hiển thị
+        let rawRetailPrice;
+        // 1. Phân khúc tỉ lệ lãi (Markup)
+        if (priceUsd < 20) {
+            rawRetailPrice = priceUsd * 2.5; // Gói nhỏ: x2.5
+        } else if (priceUsd < 50) {
+            rawRetailPrice = priceUsd * 1.8; // Gói vừa: x1.8
+        } else {
+            rawRetailPrice = priceUsd * 1.1; // Gói lớn: x1.1
+        }
+
+        // 2. Làm tròn 2 chữ số thập phân và đảm bảo tối thiểu 1.99$
+        const retailPriceUsd = Math.round(Math.max(rawRetailPrice, 1.99) * 100) / 100;
+
+                // const retailPriceUsd = (pkg.retailPrice || pkg.price) / 10000;
         const loc = resolveLocation(pkg as unknown as Record<string, unknown>);
         const allNet = new Set<string>();
         pkg.locationNetworkList?.forEach((l) => l.operatorList?.forEach((o) => allNet.add(o.networkType)));
         const networkType = [...allNet].join("/") || "4G";
         const locations = (pkg.location || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+        const badge = (pkg.fupPolicy && pkg.fupPolicy.trim().length > 0) 
+          ? "Unlimited" 
+          : null;
 
         return {
           id: `esimaccess-${pkg.packageCode}`,
           name: pkg.name,
-          slug: generateSlug(pkg.name),
+          slug: generateSlug(pkg.name, pkg.fupPolicy),
           packageCode: pkg.packageCode,
           description: pkg.description || null,
           destination: loc.destination,
@@ -158,6 +187,7 @@ export async function GET(request: Request) {
           fupPolicy: pkg.fupPolicy || null,
           locationNetworkList: JSON.stringify(pkg.locationNetworkList || []),
           isActive: true,
+          badge: badge,
         };
       });
 

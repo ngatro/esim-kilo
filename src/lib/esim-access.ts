@@ -178,7 +178,23 @@ export async function getPackageList(params: {
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
 
   const obj = res.obj as PackageListObj;
-  return { packageList: obj.packageList || [], total: obj.total || 0 };
+  const rawList = obj.packageList || [];
+
+  // --- BỘ LỌC TẠI NGUỒN CỦA CHỦ TỊCH ---
+  // 500MB = 500 * 1024 * 1024 = 524,288,000 Bytes
+  const MIN_VOLUME_BYTES = 500 * 1024 * 1024;
+
+  const filteredList = rawList.filter((pkg: any) => {
+    const volume = pkg.volume || 0;
+    // Lấy gói >= 500MB HOẶC gói Không giới hạn (volume thường trả về 0 hoặc rất lớn tùy NCC)
+    // Nếu esimAccess trả về 0 cho Unlimited thì thêm: || volume === 0
+    return volume >= MIN_VOLUME_BYTES;
+  });
+
+  return { 
+    packageList: filteredList, 
+    total: filteredList.length // Trả về số lượng sau khi đã lọc sạch rác
+  };
 }
 
 export async function createOrder(params: {
