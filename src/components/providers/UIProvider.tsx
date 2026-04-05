@@ -6,6 +6,8 @@ interface UIContextType {
   isLoginOpen: boolean;
   isRegisterOpen: boolean;
   isCartOpen: boolean;
+  isResetPasswordOpen: boolean;
+  resetPasswordToken: string | null;
   openLogin: () => void;
   closeLogin: () => void;
   openRegister: () => void;
@@ -13,6 +15,8 @@ interface UIContextType {
   openCart: () => void;
   closeCart: () => void;
   openLoginModal: () => void;
+  openResetPassword: (token?: string) => void;
+  closeResetPassword: () => void;
   closeAll: () => void;
 }
 
@@ -22,11 +26,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
+  const [resetPasswordToken, setResetPasswordToken] = useState<string | null>(null);
 
   const openLogin = useCallback(() => {
     setIsLoginOpen(true);
     setIsRegisterOpen(false);
     setIsCartOpen(false);
+    setIsResetPasswordOpen(false);
   }, []);
 
   const closeLogin = useCallback(() => setIsLoginOpen(false), []);
@@ -35,6 +42,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
     setIsRegisterOpen(true);
     setIsLoginOpen(false);
     setIsCartOpen(false);
+    setIsResetPasswordOpen(false);
   }, []);
 
   const closeRegister = useCallback(() => setIsRegisterOpen(false), []);
@@ -43,6 +51,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
     setIsCartOpen(true);
     setIsLoginOpen(false);
     setIsRegisterOpen(false);
+    setIsResetPasswordOpen(false);
   }, []);
 
   const closeCart = useCallback(() => setIsCartOpen(false), []);
@@ -51,10 +60,25 @@ export function UIProvider({ children }: { children: ReactNode }) {
     setIsLoginOpen(true);
   }, []);
 
+  const openResetPassword = useCallback((token?: string) => {
+    setResetPasswordToken(token || null);
+    setIsResetPasswordOpen(true);
+    setIsLoginOpen(false);
+    setIsRegisterOpen(false);
+    setIsCartOpen(false);
+  }, []);
+
+  const closeResetPassword = useCallback(() => {
+    setIsResetPasswordOpen(false);
+    setResetPasswordToken(null);
+  }, []);
+
   const closeAll = useCallback(() => {
     setIsLoginOpen(false);
     setIsRegisterOpen(false);
     setIsCartOpen(false);
+    setIsResetPasswordOpen(false);
+    setResetPasswordToken(null);
   }, []);
 
   return (
@@ -62,6 +86,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
       isLoginOpen,
       isRegisterOpen,
       isCartOpen,
+      isResetPasswordOpen,
+      resetPasswordToken,
       openLogin,
       closeLogin,
       openRegister,
@@ -69,6 +95,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
       openCart,
       closeCart,
       openLoginModal,
+      openResetPassword,
+      closeResetPassword,
       closeAll,
     }}>
       {children}

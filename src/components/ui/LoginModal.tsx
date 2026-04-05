@@ -7,7 +7,7 @@ import { useUI } from "@/components/providers/UIProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function LoginModal() {
-  const { isLoginOpen, closeLogin, openRegister } = useUI();
+  const { isLoginOpen, closeLogin, openRegister, openResetPassword } = useUI();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -236,6 +236,21 @@ export default function LoginModal() {
                 className="text-orange-500 hover:text-orange-600 font-medium transition-colors relative group"
               >
                 Sign up
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
+              </button>
+            </motion.p>
+
+            <motion.p
+              className="mt-3 text-center text-slate-500"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.45 }}
+            >
+              <button
+                onClick={() => openResetPassword()}
+                className="text-orange-500 hover:text-orange-600 font-medium transition-colors relative group"
+              >
+                Forgot password?
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></span>
               </button>
             </motion.p>

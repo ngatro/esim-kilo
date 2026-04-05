@@ -11,6 +11,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import LoginModal from "@/components/ui/LoginModal";
 import RegisterModal from "@/components/ui/RegisterModal";
+import ResetPasswordModal from "@/components/ui/ResetPasswordModal";
 import CartModal from "@/components/ui/CartModal";
 import SupportWidget from "@/components/ui/SupportWidget";
 
@@ -64,6 +65,7 @@ export default async function RootLayout({
                 <Footer />
                 <LoginModal />
                 <RegisterModal />
+                <ResetPasswordModal />
                 <CartModal />
                 <SupportWidget />
               </UIProvider>

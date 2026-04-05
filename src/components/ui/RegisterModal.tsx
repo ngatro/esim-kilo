@@ -6,7 +6,7 @@ import { useUI } from "@/components/providers/UIProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function RegisterModal() {
-  const { isRegisterOpen, closeRegister, openLogin } = useUI();
+  const { isRegisterOpen, closeRegister, openLogin, openResetPassword } = useUI();
   const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

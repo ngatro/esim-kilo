@@ -444,19 +444,37 @@
     }
   },
 
-  "cta": {
+"cta": {
     "title": "Ready to Stay Connected?",
     "subtitle": "Join 500,000+ travelers who stay connected without the roaming bill shock.",
-    "button": "Find Your Plan"
+    "button": "Get Your eSIM Now"
   },
 
-  "testimonials": {
-    "title": "What Travelers Say",
-    "subtitle": "Join hundreds of thousands of happy travelers who stay connected with OW SIM"
-  },
-
-  "partners": {
-    "title": "Trusted Networks Worldwide",
-    "subtitle": "We partner with top carriers to bring you the best coverage"
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your account settings",
+    "info": "Profile Information",
+    "name": "Full Name",
+    "email": "Email Address",
+    "role": "Account Type",
+    "user": "User",
+    "admin": "Admin",
+    "memberSince": "Member Since",
+    "updateProfile": "Update Profile",
+    "changingPassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "changePassword": "Change Password",
+    "passwordUpdated": "Password updated successfully",
+    "profileUpdated": "Profile updated successfully",
+    "incorrectPassword": "Current password is incorrect",
+    "passwordMismatch": "New passwords do not match",
+    "orderHistory": "Order History",
+    "noOrders": "No orders yet",
+    "viewOrder": "View Order",
+    "orderDate": "Order Date",
+    "orderStatus": "Status",
+    "orderTotal": "Total"
   }
 }

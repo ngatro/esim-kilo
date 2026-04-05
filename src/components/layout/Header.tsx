@@ -196,7 +196,8 @@ export default function Header() {
                 <div className="w-8 h-8 bg-slate-100 rounded-lg animate-pulse" />
               </div>
             ) : mounted && !authLoading && user ? (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-4">
+                <Link href="/profile" className="text-sm text-slate-600 hover:text-orange-500 transition-colors">Profile</Link>
                 <Link href="/orders" className="text-sm text-slate-600 hover:text-orange-500 transition-colors">{t("header.myOrders")}</Link>
                 <button
                   onClick={() => logout()}
