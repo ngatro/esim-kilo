@@ -74,42 +74,56 @@ function getDataTypeLabel(type: number): string {
 }
 
 const HERO_IMAGES: Record<string, string> = {
-  JP: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&q=80",
-  KR: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1200&q=80",
-  TH: "https://images.unsplash.com/photo-1528181304800-259b08848526?w=1200&q=80",
-  VN: "https://images.unsplash.com/photo-1559302504-64aae6f6e6d6?w=1200&q=80",
-  SG: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=1200&q=80",
-  MY: "https://images.unsplash.com/photo-1512553232225-a498-2a0b6008d120?w=1200&q=80",
-  ID: "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1200&q=80",
-  PH: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=1200&q=80",
-  IN: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200&q=80",
-  CN: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1200&q=80",
-  TW: "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=1200&q=80",
-  HK: "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=1200&q=80",
-  US: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200&q=80",
-  CA: "https://images.unsplash.com/photo-1517935706615-2717063c2225?w=1200&q=80",
-  MX: "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=1200&q=80",
-  BR: "https://images.unsplash.com/photo-1483729558449-99ef09a8e325?w=1200&q=80",
-  GB: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&q=80",
-  FR: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&q=80",
-  DE: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200&q=80",
-  IT: "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=1200&q=80",
-  ES: "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1200&q=80",
-  NL: "https://images.unsplash.com/photo-1512470876317-1f3c7c5ad1e9?w=1200&q=80",
-  CH: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=1200&q=80",
-  AT: "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=1200&q=80",
-  SE: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80",
-  NO: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1200&q=80",
-  AU: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1200&q=80",
-  NZ: "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1200&q=80",
-  AE: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&q=80",
-  TR: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200&q=80",
-  default: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&q=80",
+  JP: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=80",
+  KR: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1600&q=80",
+  TH: "https://images.unsplash.com/photo-1528181304800-259b08848526?w=1600&q=80",
+  VN: "https://images.unsplash.com/photo-1559302504-64aae6f6e6d6?w=1600&q=80",
+  SG: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=1600&q=80",
+  MY: "https://images.unsplash.com/photo-1512553232225-a498-2a0b6008d120?w=1600&q=80",
+  ID: "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1600&q=80",
+  PH: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=1600&q=80",
+  IN: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&q=80",
+  CN: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1600&q=80",
+  TW: "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=1600&q=80",
+  HK: "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=1600&q=80",
+  US: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1600&q=80",
+  CA: "https://images.unsplash.com/photo-1517935706615-2717063c2225?w=1600&q=80",
+  MX: "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=1600&q=80",
+  BR: "https://images.unsplash.com/photo-1483729558449-99ef09a8e325?w=1600&q=80",
+  GB: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&q=80",
+  FR: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600&q=80",
+  DE: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1600&q=80",
+  IT: "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=1600&q=80",
+  ES: "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1600&q=80",
+  NL: "https://images.unsplash.com/photo-1512470876317-1f3c7c5ad1e9?w=1600&q=80",
+  CH: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=1600&q=80",
+  AT: "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=1600&q=80",
+  SE: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
+  NO: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=80",
+  AU: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1600&q=80",
+  NZ: "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1600&q=80",
+  AE: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1600&q=80",
+  TR: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1600&q=80",
+  default: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&q=80",
 };
 
-function getHeroImage(countryId: string | null): string {
+const COUNTRY_NAME_MAP: Record<string, string> = {
+  JP: "Japan", KR: "South Korea", TH: "Thailand", VN: "Vietnam",
+  SG: "Singapore", MY: "Malaysia", ID: "Indonesia", PH: "Philippines",
+  IN: "India", CN: "China", TW: "Taiwan", HK: "Hong Kong",
+  US: "United States", CA: "Canada", MX: "Mexico", BR: "Brazil",
+  GB: "United Kingdom", FR: "France", DE: "Germany", IT: "Italy",
+  ES: "Spain", NL: "Netherlands", CH: "Switzerland", AT: "Austria",
+  SE: "Sweden", NO: "Norway", AU: "Australia", NZ: "New Zealand",
+  AE: "United Arab Emirates", TR: "Turkey",
+};
+
+function getHeroImage(countryId: string | null, countryName: string | null): string {
   if (!countryId) return HERO_IMAGES.default;
-  return HERO_IMAGES[countryId.toUpperCase()] || HERO_IMAGES.default;
+  const key = countryId.toUpperCase();
+  if (HERO_IMAGES[key]) return HERO_IMAGES[key];
+  const fallbackCountry = countryName || COUNTRY_NAME_MAP[key] || countryId;
+  return `https://images.unsplash.com/search?w=1600&q=${encodeURIComponent(fallbackCountry + " landmark travel")}&orientation=landscape`;
 }
 
 export default function PlanDetailContent() {
@@ -196,9 +210,9 @@ export default function PlanDetailContent() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           
           {/* Left - Image */}
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
+          <div className="relative aspect-[3/4] lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
             <Image
-              src={getHeroImage(plan.countryId)}
+              src={getHeroImage(plan.countryId, plan.countryName)}
               alt={plan.destination}
               fill
               className="object-cover"
