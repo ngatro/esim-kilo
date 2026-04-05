@@ -102,7 +102,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-black/40" />
         
         {/* Badges */}
         <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
@@ -133,15 +133,15 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
       <div className="p-4 sm:p-5 flex flex-col flex-1">
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="bg-gradient-to-br from-orange-50 to-cyan-50 rounded-xl p-2.5 text-center">
+          <div className="bg-orange-50 rounded-xl p-2.5 text-center">
             <p className="text-lg sm:text-xl font-bold text-orange-600">{isUnlimited ? "∞" : formatVolume(plan.dataVolume)}</p>
             <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{isUnlimited ? "Unlimited" : "Data"}</p>
           </div>
-          <div className="bg-gradient-to-br from-orange-50 to-cyan-50 rounded-xl p-2.5 text-center">
+          <div className="bg-slate-50 rounded-xl p-2.5 text-center">
             <p className="text-lg sm:text-xl font-bold text-slate-700">{plan.durationDays}</p>
             <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">Days</p>
           </div>
-          <div className="bg-gradient-to-br from-orange-50 to-cyan-50 rounded-xl p-2.5 text-center">
+          <div className="bg-cyan-50 rounded-xl p-2.5 text-center">
             <p className="text-lg sm:text-xl font-bold text-cyan-600">{pricePerDay}</p>
             <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">/Day</p>
           </div>
@@ -204,7 +204,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
             </Link>
             <Link href={`/checkout?planId=${plan.id}`}>
               <motion.button
-                className="bg-gradient-to-r from-orange-500 to-cyan-500 hover:from-orange-600 hover:to-cyan-600 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 rounded-xl transition-colors shadow-lg"
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 rounded-xl transition-colors shadow-lg"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >

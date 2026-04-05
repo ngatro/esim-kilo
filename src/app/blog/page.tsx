@@ -35,7 +35,7 @@ function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boole
             alt={post.title}
             className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+          <div className="absolute inset-0 bg-slate-900/40" />
           <span className="absolute top-4 left-4 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
             {category?.emoji} {t(`blog.categories.${post.category}`)}
           </span>
@@ -85,7 +85,7 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen bg-white text-slate-800">
       <main>
-        <section className="relative pt-24 pb-16 bg-gradient-to-b from-orange-100 to-white">
+        <section className="relative pt-24 pb-16 bg-orange-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeIn>
               <div className="text-center">

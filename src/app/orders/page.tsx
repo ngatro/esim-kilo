@@ -317,9 +317,9 @@ export default function OrdersPage() {
                                             <span>Data: {((item.orderUsage || 0) / 1024 / 1024 / 1024).toFixed(2)} GB / {((item.totalVolume || 0) / 1024 / 1024 / 1024).toFixed(2)} GB</span>
                                             <span>{Math.round((item.orderUsage || 0) / (item.totalVolume || 1) * 100)}%</span>
                                           </div>
-                                          <div className="w-full bg-slate-200 rounded-full h-2">
-                                            <div className="bg-gradient-to-r from-orange-500 to-cyan-400 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage || 0) / (item.totalVolume || 1) * 100) + "%" }} />
-                                          </div>
+                                            <div className="w-full bg-slate-200 rounded-full h-2">
+                                              <div className="bg-orange-500 h-2 rounded-full" style={{ width: Math.min(100, (item.orderUsage || 0) / (item.totalVolume || 1) * 100) + "%" }} />
+                                            </div>
                                         </div>
                                       )}
                                     </div>

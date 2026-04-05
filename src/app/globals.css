@@ -52,7 +52,7 @@ body {
 .animate-float { animation: float 3s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 
-/* Gradient utilities */
+/* Gradient utilities - disabled 
 .gradient-text {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
   -webkit-background-clip: text;
@@ -67,6 +67,7 @@ body {
 .gradient-hero {
   background: linear-gradient(180deg, #FFF 0%, #F0F9FF 100%);
 }
+*/
 
 /* Card */
 .card {

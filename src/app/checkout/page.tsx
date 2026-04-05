@@ -566,7 +566,7 @@ export default function CheckoutPage() {
               <motion.button
                 onClick={handleCheckout}
                 disabled={processing}
-                className="w-full bg-gradient-to-r from-orange-500 to-cyan-500 hover:from-orange-600 hover:to-cyan-600 disabled:from-slate-400 disabled:to-slate-400 disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-4 rounded-xl text-base sm:text-lg transition-all shadow-lg"
+                className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-4 rounded-xl text-base sm:text-lg transition-all shadow-lg"
                 whileHover={!processing ? { scale: 1.02 } : {}}
                 whileTap={!processing ? { scale: 0.98 } : {}}
               >

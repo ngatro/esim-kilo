@@ -166,7 +166,7 @@ export default function TopUpPage() {
                     <span className="text-slate-800">{formatData(currentPlan.orderUsage)} / {formatData(currentPlan.totalVolume)}</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div className="bg-gradient-to-r from-orange-500 to-cyan-400 h-2 rounded-full" style={{ width: `${Math.min(100, (currentPlan.orderUsage / currentPlan.totalVolume) * 100)}%` }} />
+                    <div className="bg-orange-500 h-2 rounded-full" style={{ width: `${Math.min(100, (currentPlan.orderUsage / currentPlan.totalVolume) * 100)}%` }} />
                   </div>
                 </div>
               )}
