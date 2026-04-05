@@ -205,17 +205,7 @@ export async function GET(request: Request) {
         };
       });
 
-      // Delete existing plans
-      await prisma.plan.deleteMany({});
-
-      // Save plans in batches
-      let totalCreated = 0;
-      for (let i = 0; i < plans.length; i += 200) {
-        await prisma.plan.createMany({ data: plans.slice(i, i + 200), skipDuplicates: true });
-        totalCreated += Math.min(200, plans.length - i);
-      }
-
-      // Sync regions
+      // Sync regions first (needed for FK)
       for (const region of Object.values(regionMap)) {
         await prisma.region.upsert({
           where: { id: region.id },
@@ -224,13 +214,23 @@ export async function GET(request: Request) {
         });
       }
 
-      // Sync countries
+      // Sync countries (needed for FK)
       for (const country of Object.values(countryMap)) {
         await prisma.country.upsert({
           where: { code: country.code },
           update: { name: country.name, emoji: country.emoji },
           create: { id: country.id, name: country.name, code: country.code, emoji: country.emoji },
         });
+      }
+
+      // Delete existing plans
+      await prisma.plan.deleteMany({});
+
+      // Save plans in batches
+      let totalCreated = 0;
+      for (let i = 0; i < plans.length; i += 200) {
+        await prisma.plan.createMany({ data: plans.slice(i, i + 200), skipDuplicates: true });
+        totalCreated += Math.min(200, plans.length - i);
       }
 
       return NextResponse.json({ success: true, synced: totalCreated, total: packages.length, elapsed: `${((Date.now() - startTime) / 1000).toFixed(1)}s` });
