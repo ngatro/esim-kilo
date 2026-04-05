@@ -5,217 +5,105 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useI18n } from "../providers/I18nProvider";
 
-interface Plan {
-  id: string;
-  name: string;
-  slug: string | null;
-  destination: string;
-  dataAmount: number;
-  durationDays: number;
-  priceUsd: number;
-  retailPriceUsd: number;
-  speed: string | null;
-  networkType: string | null;
-  regionId: string | null;
-  regionName: string | null;
-  countryName: string | null;
-  coverageCount: number;
-  isPopular: boolean;
-  isBestSeller: boolean;
-  isHot: boolean;
-  badge: string | null;
-}
-
 interface Region {
   id: string;
   name: string;
   emoji: string;
+  countries?: { id: string; name: string; emoji: string }[];
+  _count?: { plans: number };
 }
 
-function formatData(gb: number): string {
-  if (gb >= 999) return "Unlimited";
-  if (gb < 1) return `${Math.round(gb * 1024)}MB`;
-  return `${gb}GB`;
-}
+const HOT_COUNTRIES = [
+  { code: "JP", name: "Japan", emoji: "🇯🇵" },
+  { code: "KR", name: "South Korea", emoji: "🇰🇷" },
+  { code: "TH", name: "Thailand", emoji: "🇹🇭" },
+  { code: "SG", name: "Singapore", emoji: "🇸🇬" },
+  { code: "VN", name: "Vietnam", emoji: "🇻🇳" },
+  { code: "US", name: "USA", emoji: "🇺🇸" },
+  { code: "GB", name: "UK", emoji: "🇬🇧" },
+  { code: "FR", name: "France", emoji: "🇫🇷" },
+  { code: "DE", name: "Germany", emoji: "🇩🇪" },
+  { code: "AU", name: "Australia", emoji: "🇦🇺" },
+];
 
-function MiniPlanCard({ plan, index }: { plan: Plan; index: number }) {
-  const { formatPrice } = useI18n();
-  const isUnlimited = plan.dataAmount >= 999;
-  const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
-  const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
-  const pricePerDay = formatPrice(displayPrice / plan.durationDays);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.05 }}
-      className={`relative flex flex-col bg-white border rounded-2xl p-5 hover:border-orange-400 hover:shadow-lg transition-all duration-200 group ${
-        plan.isPopular || plan.isBestSeller ? "border-orange-300 shadow-md" : "border-slate-200"
-      }`}
-    >
-      {(plan.isBestSeller || plan.isHot || plan.badge) && (
-        <span className="absolute -top-3 left-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
-          {plan.isBestSeller ? "BEST SELLER" : plan.isHot ? "HOT" : plan.badge}
-        </span>
-      )}
-
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="text-base font-semibold text-slate-800">{plan.destination}</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {plan.coverageCount > 1 ? `${plan.coverageCount} countries` : plan.countryName || plan.regionName}
-          </p>
-        </div>
-        <div className="text-right">
-          {hasDiscount && (
-            <p className="text-xs text-slate-400 line-through">{formatPrice(plan.priceUsd)}</p>
-          )}
-          <p className="text-xl font-bold text-slate-800">{formatPrice(displayPrice)}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-orange-50 rounded-xl p-2 text-center">
-          <p className={`font-bold ${isUnlimited ? "text-sm" : "text-lg"} text-orange-600`}>{formatData(plan.dataAmount)}</p>
-          <p className="text-[10px] text-slate-500">Data</p>
-        </div>
-        <div className="bg-cyan-50 rounded-xl p-2 text-center">
-          <p className="text-lg font-bold text-slate-800">{plan.durationDays}</p>
-          <p className="text-[10px] text-slate-500">Days</p>
-        </div>
-        <div className="bg-green-50 rounded-xl p-2 text-center">
-          <p className="text-sm font-bold text-green-600">{pricePerDay}</p>
-          <p className="text-[10px] text-slate-500">/Day</p>
-        </div>
-      </div>
-
-      <Link
-        href={`/plans/${plan.slug || plan.id}`}
-        className="block w-full text-center py-2 rounded-xl text-sm font-semibold bg-orange-500 hover:bg-orange-400 text-white transition-all"
-      >
-        Buy Now
-      </Link>
-    </motion.div>
-  );
-}
+const REGIONS = [
+  { id: "asia", name: "Asia", emoji: "🌏" },
+  { id: "europe", name: "Europe", emoji: "🏰" },
+  { id: "americas", name: "Americas", emoji: "🌎" },
+  { id: "oceania", name: "Oceania", emoji: "🌴" },
+  { id: "middle-east", name: "Middle East", emoji: "🕌" },
+  { id: "global", name: "Global", emoji: "🌐" },
+];
 
 export default function PlansSection() {
   const { t } = useI18n();
-  const [plans, setPlans] = useState<Plan[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeRegion, setActiveRegion] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    // Fetch regions
     fetch("/api/regions")
       .then((r) => r.json())
       .then((data) => setRegions(data.regions || []))
       .catch(console.error);
-
-    // Fetch popular/best plans
-    fetch("/api/plans")
-      .then((r) => r.json())
-      .then((data) => setPlans(data.plans || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
   }, []);
 
-  const filtered = plans.filter((plan) => {
-    const matchRegion = activeRegion === "all" || plan.regionId === activeRegion;
-    const matchSearch = !searchQuery || plan.destination.toLowerCase().includes(searchQuery.toLowerCase()) || plan.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchRegion && matchSearch;
-  }).slice(0, 12);
-
   return (
-    <section id="plans" className="py-16 sm:py-24 bg-orange-50">
+    <section className="py-16 sm:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">{t("plans.title")}</h2>
-          <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">{t("plans.subtitle")}</p>
-          <p className="text-slate-500 text-xs sm:text-sm mt-2">{plans.length} plans available</p>
+        <div className="text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-3">{t("plans.title")}</h2>
+          <p className="text-slate-600 text-base">{t("plans.subtitle")}</p>
         </div>
 
-        <div className="max-w-md mx-auto mb-6 sm:mb-8">
-          <div className="relative">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search destination..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-slate-200 text-slate-800 placeholder-slate-400 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-orange-400 transition-colors"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2 justify-center mb-8 sm:mb-12 overflow-x-auto pb-2">
-          <button
-            onClick={() => setActiveRegion("all")}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-              activeRegion === "all" ? "bg-orange-500 text-white" : "bg-white text-slate-600 hover:text-slate-800 border border-slate-200"
-            }`}
-          >
-            All
-          </button>
-          {regions.map((region) => (
-            <button
-              key={region.id}
-              onClick={() => setActiveRegion(region.id)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                activeRegion === region.id ? "bg-orange-500 text-white" : "bg-white text-slate-600 hover:text-slate-800 border border-slate-200"
-              }`}
-            >
-              <span>{region.emoji}</span>{region.name}
-            </button>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl p-5 animate-pulse border border-slate-200">
-                <div className="h-5 bg-slate-200 rounded w-2/3 mb-3" />
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="h-12 bg-slate-200 rounded-xl" />
-                  <div className="h-12 bg-slate-200 rounded-xl" />
-                  <div className="h-12 bg-slate-200 rounded-xl" />
-                </div>
-                <div className="h-9 bg-slate-200 rounded-xl" />
-              </div>
+        {/* Popular Regions */}
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">🗺️ Popular Regions</h3>
+          <div className="flex flex-wrap justify-center gap-3">
+            {REGIONS.map((region) => (
+              <Link key={region.id} href={`/plans?regionId=${region.id}`}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-5 py-3 bg-slate-100 hover:bg-orange-100 border border-slate-200 hover:border-orange-300 rounded-xl transition-colors"
+                >
+                  <span className="text-xl">{region.emoji}</span>
+                  <span className="font-medium text-slate-700">{region.name}</span>
+                </motion.div>
+              </Link>
             ))}
           </div>
-        ) : filtered.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {filtered.map((plan, i) => (
-                <MiniPlanCard key={plan.id} plan={plan} index={i} />
-              ))}
-            </div>
-            <div className="text-center mt-8 sm:mt-12">
-              <Link href="/plans">
-                <motion.button
-                  className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-8 py-3 rounded-xl text-sm transition-colors"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+        </div>
+
+        {/* Hot Countries */}
+        <div className="mb-10">
+          <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">🔥 Top Destinations</h3>
+          <div className="flex flex-wrap justify-center gap-3">
+            {HOT_COUNTRIES.map((country) => (
+              <Link key={country.code} href={`/plans?countryId=${country.code}`}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-orange-400 hover:shadow-md rounded-xl transition-all"
                 >
-                  View All Plans
-                </motion.button>
+                  <span className="text-xl">{country.emoji}</span>
+                  <span className="font-medium text-slate-700 text-sm">{country.name}</span>
+                </motion.div>
               </Link>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-16">
-            <p className="text-5xl mb-4">📦</p>
-            <p className="text-slate-400 text-lg mb-2">No plans found</p>
-            <p className="text-slate-500 text-sm">Admin needs to sync plans from eSIM Access first</p>
+            ))}
           </div>
-        )}
+        </div>
+
+        {/* View All Button */}
+        <div className="text-center">
+          <Link href="/plans">
+            <motion.button
+              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3.5 rounded-xl text-base transition-colors shadow-lg"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              Browse All Plans →
+            </motion.button>
+          </Link>
+        </div>
       </div>
     </section>
   );

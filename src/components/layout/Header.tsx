@@ -30,19 +30,9 @@ export default function Header() {
 
   const navLinks: NavItem[] = [
     { href: "/", label: "Home" },
-    { 
-      href: "/plans", 
-      label: "Plans",
-      children: [
-        { href: "/plans?region=asia", label: "Asia" },
-        { href: "/plans?region=europe", label: "Europe" },
-        { href: "/plans?region=americas", label: "Americas" },
-        { href: "/plans?region=oceania", label: "Oceania" },
-      ]
-    },
-    { href: "/#how-it-works", label: "How It Works" },
+    { href: "/plans", label: "Plans" },
     { href: "/blog", label: "Blog" },
-    ...(mounted && user ? [{ href: "/orders", label: "My Orders", children: [] }] : []),
+    ...(mounted && user ? [{ href: "/orders", label: "My Orders" }] : []),
     ...(mounted && user?.role === "admin" ? [{ href: "/admin", label: "Admin", children: [
       { href: "/admin/plans", label: "Manage Plans" },
       { href: "/admin/orders", label: "Manage Orders" },
@@ -54,7 +44,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-cyan-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center">
             <span className="text-xl">🌍</span>
           </div>
           <span className="text-xl font-bold text-slate-800 tracking-tight">

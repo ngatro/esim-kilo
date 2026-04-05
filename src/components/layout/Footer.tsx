@@ -33,28 +33,28 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Plans</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><Link href="/#plans" className="hover:text-slate-300 transition-colors">Browse All Plans</Link></li>
-              <li><Link href="/#plans" className="hover:text-slate-300 transition-colors">Global Plans</Link></li>
-              <li><Link href="/#plans" className="hover:text-slate-300 transition-colors">Regional Plans</Link></li>
-              <li><Link href="/#plans" className="hover:text-slate-300 transition-colors">Country Plans</Link></li>
+              <li><Link href="/plans" className="hover:text-slate-300 transition-colors">Browse All Plans</Link></li>
+              <li><Link href="/plans?regionId=global" className="hover:text-slate-300 transition-colors">Global Plans</Link></li>
+              <li><Link href="/plans?planType=region" className="hover:text-slate-300 transition-colors">Regional Plans</Link></li>
+              <li><Link href="/plans?planType=local" className="hover:text-slate-300 transition-colors">Country Plans</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Support</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><Link href="/#how-it-works" className="hover:text-slate-300 transition-colors">How It Works</Link></li>
-              <li><Link href="/#faq" className="hover:text-slate-300 transition-colors">FAQ</Link></li>
+              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">Blog</Link></li>
+              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">FAQ</Link></li>
               <li><Link href="#" className="hover:text-slate-300 transition-colors">Device Compatibility</Link></li>
-              <li><Link href="#" className="hover:text-slate-300 transition-colors">Contact Us</Link></li>
+              <li><Link href="mailto:support@openworldesim.com" className="hover:text-slate-300 transition-colors">Contact Us</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Company</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><Link href="#" className="hover:text-slate-300 transition-colors">About</Link></li>
-              <li><Link href="#" className="hover:text-slate-300 transition-colors">Blog</Link></li>
+              <li><Link href="/" className="hover:text-slate-300 transition-colors">About</Link></li>
+              <li><Link href="/blog" className="hover:text-slate-300 transition-colors">Blog</Link></li>
               <li><Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link></li>
               <li><Link href="/refund" className="hover:text-slate-300 transition-colors">Refund Policy</Link></li>
