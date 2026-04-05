@@ -194,12 +194,13 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Region[]>([]);
+  const [countrySearchResults, setCountrySearchResults] = useState<{ id: string; code: string; name: string; emoji: string; regionName: string }[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const [selectedRegion, setSelectedRegion] = useState("all");
   const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCountryName, setSelectedCountryName] = useState("");
   const [sortBy, setSortBy] = useState("best");
   const [networkFilter, setNetworkFilter] = useState("");
   const [priceRange, setPriceRange] = useState("");
@@ -217,13 +218,28 @@ export default function PlansPage() {
       .catch(console.error);
   }, []);
 
+  // Fetch filters when country is selected
+  useEffect(() => {
+    if (selectedCountry) {
+      fetch(`/api/countries/${selectedCountry}`)
+        .then(r => r.json())
+        .then(data => {
+          setDynamicDataOptions(data.dataAmounts || []);
+          setDynamicDurationOptions(data.durations || []);
+        })
+        .catch(console.error);
+    } else {
+      setDynamicDataOptions([]);
+      setDynamicDurationOptions([]);
+    }
+  }, [selectedCountry]);
+
   const fetchPlans = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (selectedRegion && selectedRegion !== "all") params.set("regionId", selectedRegion);
       if (selectedCountry) params.set("countryId", selectedCountry);
-      if (searchQuery) params.set("search", searchQuery);
       if (networkFilter) params.set("networkType", networkFilter);
       if (dataType) params.set("dataType", dataType);
       if (dataFilter) params.set("dataAmount", dataFilter);
@@ -236,69 +252,43 @@ export default function PlansPage() {
         if (max) params.set("maxPrice", max);
       }
 
+      // Limit to 15 plans when a country is selected
+      if (selectedCountry) {
+        params.set("limit", "15");
+      }
+
       const res = await fetch(`/api/plans?${params.toString()}`);
       const data = await res.json();
-      const fetchedPlans = data.plans || [];
-      setPlans(fetchedPlans);
-      
-      // Extract unique data amounts and durations for dynamic filters
-      const dataAmounts = [...new Set<number>(fetchedPlans.map((p: { dataAmount: number }) => {
-        const da = p.dataAmount;
-        if (da >= 999) return 999;
-        if (da <= 1) return 1;
-        if (da <= 3) return 3;
-        if (da <= 5) return 5;
-        if (da <= 10) return 10;
-        if (da <= 20) return 20;
-        return da;
-      }))].sort((a: number, b: number) => a - b);
-      
-      const durations = [...new Set<number>(fetchedPlans.map((p: { durationDays: number }) => {
-        const dd = p.durationDays;
-        if (dd <= 7) return 7;
-        if (dd <= 15) return 15;
-        if (dd <= 30) return 30;
-        if (dd <= 90) return 90;
-        if (dd <= 180) return 180;
-        return dd;
-      }))].sort((a: number, b: number) => a - b);
-      
-      setDynamicDataOptions(dataAmounts);
-      setDynamicDurationOptions(durations);
+      setPlans(data.plans || []);
     } catch (err) {
       console.error("Fetch plans failed:", err);
     } finally {
       setLoading(false);
     }
-  }, [selectedRegion, selectedCountry, searchQuery, networkFilter, priceRange, sortBy, dataType, dataFilter, durationFilter]);
+  }, [selectedRegion, selectedCountry, networkFilter, priceRange, sortBy, dataType, dataFilter, durationFilter]);
 
   useEffect(() => {
     fetchPlans();
   }, [fetchPlans]);
 
+  // Search countries as user types
   useEffect(() => {
     if (!searchQuery.trim()) {
-      setSearchResults([]);
+      setCountrySearchResults([]);
       return;
     }
-    const q = searchQuery.toLowerCase();
-    const matched = regions
-      .map((r) => {
-        const regionMatch = r.name.toLowerCase().includes(q);
-        const matchedCountries = r.countries.filter(
-          (c) => c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)
-        );
-        if (regionMatch || matchedCountries.length > 0) {
-          return {
-            ...r,
-            countries: regionMatch ? r.countries : matchedCountries,
-          };
-        }
-        return null;
-      })
-      .filter(Boolean) as Region[];
-    setSearchResults(matched);
-  }, [searchQuery, regions]);
+    
+    const timer = setTimeout(() => {
+      fetch(`/api/countries?q=${encodeURIComponent(searchQuery)}&limit=10`)
+        .then(r => r.json())
+        .then(data => {
+          setCountrySearchResults(data.countries || []);
+        })
+        .catch(console.error);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -310,25 +300,30 @@ export default function PlansPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function handleSearchSelect(regionId?: string, countryId?: string) {
-    if (countryId) {
-      setSelectedRegion(regionId || "all");
-      setSelectedCountry(countryId);
-    } else if (regionId) {
-      setSelectedRegion(regionId);
-      setSelectedCountry("");
+  function handleCountrySelect(country: { id: string; code: string; name: string }) {
+    setSelectedCountry(country.code);
+    setSelectedCountryName(country.name);
+    // Find region from country code
+    const countryData = countrySearchResults.find(c => c.code === country.code);
+    if (countryData) {
+      fetch(`/api/regions`)
+        .then(r => r.json())
+        .then(data => {
+          const region = data.regions?.find((r: Region) => r.countries?.some((c: { id: string }) => c.id === country.code));
+          if (region) {
+            setSelectedRegion(region.id);
+          }
+        })
+        .catch(console.error);
     }
     setShowSearchDropdown(false);
-  }
-
-  function handleSearchSubmit() {
-    setShowSearchDropdown(false);
-    fetchPlans();
+    setSearchQuery("");
   }
 
   function clearFilters() {
     setSelectedRegion("all");
     setSelectedCountry("");
+    setSelectedCountryName("");
     setSearchQuery("");
     setNetworkFilter("");
     setPriceRange("");
@@ -336,11 +331,13 @@ export default function PlansPage() {
     setDataType("");
     setDataFilter("");
     setDurationFilter("");
+    setDynamicDataOptions([]);
+    setDynamicDurationOptions([]);
   }
 
   const currentRegion = regions.find((r) => r.id === selectedRegion);
   const countries = currentRegion?.countries || [];
-  const hasActiveFilters = selectedRegion !== "all" || selectedCountry || searchQuery || networkFilter || priceRange || dataType || dataFilter || durationFilter;
+  const hasActiveFilters = selectedRegion !== "all" || selectedCountry || selectedCountryName || searchQuery || networkFilter || priceRange || dataType || dataFilter || durationFilter;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -367,7 +364,7 @@ export default function PlansPage() {
                     value={searchQuery}
                     onChange={(e) => { setSearchQuery(e.target.value); setShowSearchDropdown(true); }}
                     onFocus={() => setShowSearchDropdown(true)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
+                    onKeyDown={(e) => { if (e.key === "Enter") setShowSearchDropdown(false); }}
                     placeholder="Search country or region... (e.g. Japan, Europe, US)"
                     className="w-full bg-slate-800/60 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
                   />
@@ -386,40 +383,25 @@ export default function PlansPage() {
               </div>
 
               <AnimatePresence>
-                {showSearchDropdown && searchQuery.trim() && searchResults.length > 0 && (
+                {showSearchDropdown && searchQuery.trim() && countrySearchResults.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
                     className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto"
                   >
-                    {searchResults.map((region) => (
-                      <div key={region.id}>
-                        <button
-                          onClick={() => handleSearchSelect(region.id)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors text-left"
-                        >
-                          <span className="text-lg">{region.emoji}</span>
-                          <div>
-                            <p className="text-white text-sm font-medium">{region.name}</p>
-                            <p className="text-slate-500 text-xs">{region.countries.length} countries</p>
-                          </div>
-                        </button>
-                        {region.countries.length > 0 && region.countries.length <= 15 && (
-                          <div className="pl-8 border-l-2 border-slate-700 ml-4">
-                            {region.countries.map((c) => (
-                              <button
-                                key={c.id}
-                                onClick={() => handleSearchSelect(region.id, c.id)}
-                                className="w-full flex items-center gap-2 px-4 py-1.5 hover:bg-slate-700/50 transition-colors text-left"
-                              >
-                                <span className="text-sm">{c.emoji}</span>
-                                <span className="text-slate-300 text-sm">{c.name}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                    {countrySearchResults.map((country) => (
+                      <button
+                        key={country.id}
+                        onClick={() => handleCountrySelect(country)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors text-left"
+                      >
+                        <span className="text-lg">{country.emoji}</span>
+                        <div>
+                          <p className="text-white text-sm font-medium">{country.name}</p>
+                          <p className="text-slate-500 text-xs">{country.regionName}</p>
+                        </div>
+                      </button>
                     ))}
                   </motion.div>
                 )}

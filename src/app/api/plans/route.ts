@@ -6,6 +6,30 @@ function bytesToGB(bytes: number): number {
   return Math.round((bytes / (1024 * 1024 * 1024)) * 10) / 10;
 }
 
+function getRegionEmoji(regionId: string): string {
+  const map: Record<string, string> = {
+    "europe": "🏰",
+    "asia": "🌏",
+    "americas": "🌎",
+    "oceania": "🌴",
+    "africa": "🌍",
+    "middle-east": "🕌",
+    "global": "🌐",
+  };
+  return map[regionId.toLowerCase()] || "🌍";
+}
+
+function getCountryEmoji(countryCode: string): string {
+  const code = countryCode.toUpperCase();
+  if (code.length !== 2) return "🏳️";
+  const offset = 127397;
+  try {
+    return String.fromCodePoint(offset + code.charCodeAt(0)) + String.fromCodePoint(offset + code.charCodeAt(1));
+  } catch {
+    return "🏳️";
+  }
+}
+
 function generateSlug(name: string): string {
   // "AUKUS(3 countries) 3GB 30days" -> "AUKUS-3-countries-3GB-30-days"
   return name
@@ -114,6 +138,9 @@ export async function GET(request: Request) {
       const packages = res.packageList || [];
       if (packages.length === 0) return NextResponse.json({ success: false, error: "No packages" });
 
+      const regionMap: Record<string, { id: string; name: string; emoji: string }> = {};
+      const countryMap: Record<string, { id: string; name: string; code: string; emoji: string; regionId: string }> = {};
+
       const plans = packages.map((pkg) => {
         const dataAmount = bytesToGB(pkg.volume);
         const priceUsd = pkg.price / 10000;
@@ -123,6 +150,23 @@ export async function GET(request: Request) {
         pkg.locationNetworkList?.forEach((l) => l.operatorList?.forEach((o) => allNet.add(o.networkType)));
         const networkType = [...allNet].join("/") || "4G";
         const locations = (pkg.location || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+        const locationCount = locations.length || 1;
+
+        // Build regional data
+        const regionKey = loc.regionId?.toUpperCase() || "GLOBAL";
+        if (loc.regionId && loc.regionName) {
+          if (!regionMap[regionKey]) {
+            regionMap[regionKey] = { id: loc.regionId, name: loc.regionName, emoji: getRegionEmoji(loc.regionId) };
+          }
+        }
+
+        // For single country plans, add to country map
+        if (loc.countryId && loc.countryName && locationCount === 1) {
+          const countryKey = loc.countryId.toUpperCase();
+          if (!countryMap[countryKey]) {
+            countryMap[countryKey] = { id: loc.countryId.toUpperCase(), name: loc.countryName, code: loc.countryId, emoji: getCountryEmoji(loc.countryId), regionId: loc.regionId || "global" };
+          }
+        }
 
         return {
           id: `esimaccess-${pkg.packageCode}`,
@@ -149,7 +193,7 @@ export async function GET(request: Request) {
           networkType,
           locationCode: pkg.locationCode || null,
           locations: JSON.stringify(locations),
-          coverageCount: locations.length || 1,
+          coverageCount: locationCount,
           smsStatus: pkg.smsStatus || 0,
           activeType: pkg.activeType || 1,
           supportTopUp: pkg.supportTopUpType === 2,
@@ -161,11 +205,32 @@ export async function GET(request: Request) {
         };
       });
 
+      // Delete existing plans
       await prisma.plan.deleteMany({});
+
+      // Save plans in batches
       let totalCreated = 0;
       for (let i = 0; i < plans.length; i += 200) {
         await prisma.plan.createMany({ data: plans.slice(i, i + 200), skipDuplicates: true });
         totalCreated += Math.min(200, plans.length - i);
+      }
+
+      // Sync regions
+      for (const region of Object.values(regionMap)) {
+        await prisma.region.upsert({
+          where: { id: region.id },
+          update: { name: region.name, emoji: region.emoji },
+          create: { id: region.id, name: region.name, emoji: region.emoji },
+        });
+      }
+
+      // Sync countries
+      for (const country of Object.values(countryMap)) {
+        await prisma.country.upsert({
+          where: { code: country.code },
+          update: { name: country.name, emoji: country.emoji, regionId: country.regionId },
+          create: { id: country.id, name: country.name, code: country.code, emoji: country.emoji, regionId: country.regionId },
+        });
       }
 
       return NextResponse.json({ success: true, synced: totalCreated, total: packages.length, elapsed: `${((Date.now() - startTime) / 1000).toFixed(1)}s` });
@@ -184,6 +249,7 @@ export async function GET(request: Request) {
     const dataAmount = url.searchParams.get("dataAmount");
     const durationDays = url.searchParams.get("durationDays");
     const sortBy = url.searchParams.get("sortBy") || "best";
+    const limit = url.searchParams.get("limit");
     const id = url.searchParams.get("id");
     const slugParam = url.searchParams.get("slug");
 
@@ -246,7 +312,8 @@ export async function GET(request: Request) {
       default: orderBy = [{ isBestSeller: "desc" }, { isPopular: "desc" }, { priceUsd: "asc" }];
     }
 
-    const plans = await prisma.plan.findMany({ where, orderBy, take: 500 });
+    const take = limit ? Math.min(parseInt(limit), 500) : 500;
+    const plans = await prisma.plan.findMany({ where, orderBy, take });
 
     // Serialize BigInt to number for JSON
     const serialized = plans.map((p) => ({
