@@ -27,12 +27,13 @@ export async function GET(request: Request) {
 
     // Format response with country info + plan count
     const result = await Promise.all(
-      countries.map(async (country) => {
+      countries.map(async (country: { id: string; name: string; emoji: string; regionId: string | null; region: { id: string; name: string; emoji: string } | null }) => {
         const planCount = await prisma.plan.count({
           where: { countryId: country.id, isActive: true },
         });
         return {
           id: country.id,
+          code: country.id, // Add code field for compatibility
           name: country.name,
           emoji: country.emoji,
           regionId: country.regionId,

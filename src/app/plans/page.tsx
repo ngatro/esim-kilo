@@ -234,15 +234,15 @@ export default function PlansPage() {
   const hasActiveFilters = selectedRegion !== "all" || selectedCountry || selectedCountryName || searchQuery || networkFilter || priceRange || dataType || dataFilter || durationFilter;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-cyan-50 text-slate-800">
       <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
           {/* Header */}
           <div className="text-center mb-6 sm:mb-10">
             <h1 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-2 sm:mb-3">{t("plans.title")}</h1>
-            <p className="text-slate-500 text-sm sm:text-lg">{t("plans.subtitle")}</p>
-            <p className="text-slate-400 text-xs sm:text-sm mt-1">{plans.length} plans available</p>
+            <p className="text-slate-600 text-sm sm:text-lg">{t("plans.subtitle")}</p>
+            <p className="text-slate-500 text-xs sm:text-sm mt-1">{plans.length} plans available</p>
           </div>
 
           {/* Simple Search Bar */}
@@ -368,10 +368,10 @@ export default function PlansPage() {
           {/* Active Filter Display */}
           {selectedCountryName && (
             <div className="text-center mb-6">
-              <span className="inline-flex items-center gap-2 bg-sky-500/20 text-sky-300 px-4 py-2 rounded-full text-sm">
+              <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm">
                 <span className="text-lg">📍</span>
                 {selectedCountryName}
-                <button onClick={() => { setSelectedCountry(""); setSelectedCountryName(""); }} className="hover:text-white">
+                <button onClick={() => { setSelectedCountry(""); setSelectedCountryName(""); }} className="hover:text-orange-900">
                   ✕
                 </button>
               </span>
@@ -382,12 +382,12 @@ export default function PlansPage() {
           <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap">
             <button onClick={() => { setSelectedRegion("all"); setSelectedCountry(""); }}
               className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                selectedRegion === "all" && !selectedCountry ? "bg-sky-500/20 border-sky-500/40 text-sky-400" : "border-slate-700 text-slate-400 hover:border-slate-500"
+                selectedRegion === "all" && !selectedCountry ? "bg-orange-100 border-orange-300 text-orange-700" : "border-slate-200 text-slate-500 hover:border-orange-300"
               }`}>All</button>
             {regions.map((r) => (
               <button key={r.id} onClick={() => { setSelectedRegion(r.id); setSelectedCountry(""); }}
                 className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap ${
-                  selectedRegion === r.id ? "bg-sky-500/20 border-sky-500/40 text-sky-400" : "border-slate-700 text-slate-400 hover:border-slate-500"
+                  selectedRegion === r.id ? "bg-orange-100 border-orange-300 text-orange-700" : "border-slate-200 text-slate-500 hover:border-orange-300"
                 }`}>{r.emoji} {r.name}</button>
             ))}
           </div>
@@ -396,23 +396,23 @@ export default function PlansPage() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-slate-800/50 rounded-2xl p-5 animate-pulse">
-                  <div className="h-5 bg-slate-700 rounded w-1/2 mb-4" />
+                <div key={i} className="bg-white rounded-2xl p-5 animate-pulse border border-slate-200">
+                  <div className="h-5 bg-slate-200 rounded w-1/2 mb-4" />
                   <div className="grid grid-cols-3 gap-2 mb-4">
-                    <div className="h-14 bg-slate-700 rounded-xl" />
-                    <div className="h-14 bg-slate-700 rounded-xl" />
-                    <div className="h-14 bg-slate-700 rounded-xl" />
+                    <div className="h-14 bg-slate-200 rounded-xl" />
+                    <div className="h-14 bg-slate-200 rounded-xl" />
+                    <div className="h-14 bg-slate-200 rounded-xl" />
                   </div>
-                  <div className="h-10 bg-slate-700 rounded-xl" />
+                  <div className="h-10 bg-slate-200 rounded-xl" />
                 </div>
               ))}
             </div>
           ) : plans.length === 0 ? (
             <div className="text-center py-16 sm:py-20">
               <p className="text-4xl sm:text-5xl mb-4">📦</p>
-              <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">No plans found</h3>
-              <p className="text-slate-400 text-sm mb-6">Try adjusting your filters or browse all regions</p>
-              <button onClick={clearFilters} className="bg-sky-500 hover:bg-sky-400 text-white px-6 py-2.5 rounded-xl text-sm transition-colors">Clear Filters</button>
+              <h3 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">No plans found</h3>
+              <p className="text-slate-500 text-sm mb-6">Try adjusting your filters or browse all regions</p>
+              <button onClick={clearFilters} className="bg-orange-500 hover:bg-orange-400 text-white px-6 py-2.5 rounded-xl text-sm transition-colors">Clear Filters</button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">

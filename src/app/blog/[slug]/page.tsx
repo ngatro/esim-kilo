@@ -18,12 +18,12 @@ export default function BlogPostPage({ params }: PageProps) {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-slate-800 flex items-center justify-center">
         <div className="text-center">
           <p className="text-6xl mb-4">404</p>
-          <h1 className="text-2xl font-bold text-white mb-2">Article Not Found</h1>
-          <p className="text-slate-400 mb-6">The article you&apos;re looking for doesn&apos;t exist.</p>
-          <Link href="/blog" className="text-sky-400 hover:text-sky-300">
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">Article Not Found</h1>
+          <p className="text-slate-500 mb-6">The article you&apos;re looking for doesn&apos;t exist.</p>
+          <Link href="/blog" className="text-orange-500 hover:text-orange-600">
             ← {t("common.back")}
           </Link>
         </div>
@@ -36,7 +36,7 @@ export default function BlogPostPage({ params }: PageProps) {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-white text-slate-800">
       <main>
         <section className="relative h-96 overflow-hidden">
           <img 
@@ -50,7 +50,7 @@ export default function BlogPostPage({ params }: PageProps) {
             <div className="max-w-4xl mx-auto">
               <Link 
                 href="/blog" 
-                className="inline-flex items-center gap-2 text-sky-400 hover:text-sky-300 mb-4"
+                className="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 mb-4"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -63,7 +63,7 @@ export default function BlogPostPage({ params }: PageProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <span className="inline-block bg-sky-500 text-white text-sm font-semibold px-3 py-1 rounded-full mb-4">
+                <span className="inline-block bg-orange-500 text-white text-sm font-semibold px-3 py-1 rounded-full mb-4">
                   {category?.emoji} {t(`blog.categories.${post.category}`)}
                 </span>
                 
@@ -71,7 +71,7 @@ export default function BlogPostPage({ params }: PageProps) {
                   {post.title}
                 </h1>
                 
-                <div className="flex flex-wrap items-center gap-4 text-slate-400">
+                <div className="flex flex-wrap items-center gap-4 text-slate-300">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{post.authorAvatar}</span>
                     <span>{post.author}</span>
@@ -89,25 +89,25 @@ export default function BlogPostPage({ params }: PageProps) {
         <section className="py-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.article 
-              className="prose prose-invert prose-lg max-w-none"
+              className="prose prose-lg max-w-none"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <p className="text-xl text-slate-300 mb-8 lead">
+              <p className="text-xl text-slate-600 mb-8 lead">
                 {post.excerpt}
               </p>
               
-              <div className="space-y-6 text-slate-300">
+              <div className="space-y-6 text-slate-600">
                 {post.content.split('\n').map((line, index) => {
                   if (line.startsWith('# ')) {
-                    return <h1 key={index} className="text-3xl font-bold text-white mt-8 mb-4">{line.slice(2)}</h1>;
+                    return <h1 key={index} className="text-3xl font-bold text-slate-800 mt-8 mb-4">{line.slice(2)}</h1>;
                   }
                   if (line.startsWith('## ')) {
-                    return <h2 key={index} className="text-2xl font-bold text-white mt-6 mb-3">{line.slice(3)}</h2>;
+                    return <h2 key={index} className="text-2xl font-bold text-slate-800 mt-6 mb-3">{line.slice(3)}</h2>;
                   }
                   if (line.startsWith('### ')) {
-                    return <h3 key={index} className="text-xl font-bold text-white mt-4 mb-2">{line.slice(4)}</h3>;
+                    return <h3 key={index} className="text-xl font-bold text-slate-800 mt-4 mb-2">{line.slice(4)}</h3>;
                   }
                   if (line.startsWith('- ')) {
                     return <li key={index} className="ml-4">{line.slice(2)}</li>;
@@ -123,10 +123,10 @@ export default function BlogPostPage({ params }: PageProps) {
               </div>
             </motion.article>
 
-            <div className="mt-12 pt-8 border-t border-slate-800">
+            <div className="mt-12 pt-8 border-t border-slate-200">
               <div className="flex flex-wrap gap-2">
                 {post.tags.map(tag => (
-                  <span key={tag} className="bg-slate-800 text-slate-400 px-3 py-1 rounded-full text-sm">
+                  <span key={tag} className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
                     #{tag}
                   </span>
                 ))}
@@ -136,9 +136,9 @@ export default function BlogPostPage({ params }: PageProps) {
         </section>
 
         {relatedPosts.length > 0 && (
-          <section className="py-12 bg-slate-800/30">
+          <section className="py-12 bg-orange-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl font-bold text-white mb-6">{t("blog.latest")}</h2>
+              <h2 className="text-2xl font-bold text-slate-800 mb-6">{t("blog.latest")}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {relatedPosts.map((relatedPost, index) => (
                   <motion.div
@@ -149,14 +149,14 @@ export default function BlogPostPage({ params }: PageProps) {
                     viewport={{ once: true }}
                   >
                     <Link href={`/blog/${relatedPost.slug}`} className="block group">
-                      <div className="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden hover:border-sky-500/50 transition-all">
+                      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-orange-400 hover:shadow-lg transition-all">
                         <img 
                           src={relatedPost.coverImage} 
                           alt={relatedPost.title}
                           className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="p-4">
-                          <h3 className="font-semibold text-white line-clamp-2 group-hover:text-sky-400 transition-colors">
+                          <h3 className="font-semibold text-slate-800 line-clamp-2 group-hover:text-orange-600 transition-colors">
                             {relatedPost.title}
                           </h3>
                           <p className="text-sm text-slate-500 mt-2">
