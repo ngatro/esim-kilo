@@ -107,23 +107,11 @@ const HERO_IMAGES: Record<string, string> = {
   default: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&q=80",
 };
 
-const COUNTRY_NAME_MAP: Record<string, string> = {
-  JP: "Japan", KR: "South Korea", TH: "Thailand", VN: "Vietnam",
-  SG: "Singapore", MY: "Malaysia", ID: "Indonesia", PH: "Philippines",
-  IN: "India", CN: "China", TW: "Taiwan", HK: "Hong Kong",
-  US: "United States", CA: "Canada", MX: "Mexico", BR: "Brazil",
-  GB: "United Kingdom", FR: "France", DE: "Germany", IT: "Italy",
-  ES: "Spain", NL: "Netherlands", CH: "Switzerland", AT: "Austria",
-  SE: "Sweden", NO: "Norway", AU: "Australia", NZ: "New Zealand",
-  AE: "United Arab Emirates", TR: "Turkey",
-};
-
 function getHeroImage(countryId: string | null, countryName: string | null): string {
   if (!countryId) return HERO_IMAGES.default;
   const key = countryId.toUpperCase();
-  if (HERO_IMAGES[key]) return HERO_IMAGES[key];
-  const fallbackCountry = countryName || COUNTRY_NAME_MAP[key] || countryId;
-  return `https://images.unsplash.com/search?w=1600&q=${encodeURIComponent(fallbackCountry + " landmark travel")}&orientation=landscape`;
+  const img = HERO_IMAGES[key];
+  return img || HERO_IMAGES.default;
 }
 
 export default function PlanDetailContent() {
@@ -424,7 +412,7 @@ export default function PlanDetailContent() {
 
               {/* What's Included */}
               <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">What's Included</h2>
+                <h2 className="text-xl font-bold text-slate-800 mb-4">What&apos;s Included</h2>
                 <ul className="space-y-3">
                   {[
                     isUnlimited ? "Unlimited Data" : `${plan.dataAmount}GB Data`,
