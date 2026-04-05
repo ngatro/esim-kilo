@@ -348,21 +348,21 @@ export default function PlansPage() {
   const hasActiveFilters = selectedRegion !== "all" || selectedCountry || selectedCountryName || searchQuery || networkFilter || priceRange || dataType || dataFilter || durationFilter;
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
       <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
           {/* Header */}
           <div className="text-center mb-6 sm:mb-10">
-            <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 sm:mb-3">{t("plans.title")}</h1>
-            <p className="text-slate-400 text-sm sm:text-lg">{t("plans.subtitle")}</p>
-            <p className="text-slate-500 text-xs sm:text-sm mt-1">{plans.length} plans available</p>
+            <h1 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-2 sm:mb-3">{t("plans.title")}</h1>
+            <p className="text-slate-500 text-sm sm:text-lg">{t("plans.subtitle")}</p>
+            <p className="text-slate-400 text-xs sm:text-sm mt-1">{plans.length} plans available</p>
           </div>
 
           {/* Simple Search Bar */}
           <div className="mb-6" ref={searchRef}>
             <div className="relative max-w-xl mx-auto">
-              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -372,7 +372,7 @@ export default function PlansPage() {
                 onFocus={() => setShowSearchDropdown(true)}
                 onKeyDown={(e) => { if (e.key === "Enter") setShowSearchDropdown(false); }}
                 placeholder="Search destination... (e.g. Japan, Thailand, Europe)"
-                className="w-full bg-slate-800/80 border border-slate-700/50 rounded-2xl pl-12 pr-4 py-4 text-white text-base placeholder:text-slate-500 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/30 transition-all shadow-lg"
+                className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-4 text-slate-800 text-base placeholder:text-slate-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all shadow-lg"
               />
               
               <AnimatePresence>
@@ -381,18 +381,18 @@ export default function PlansPage() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto"
+                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-72 overflow-y-auto"
                   >
                     {countrySearchResults.map((country) => (
                       <button
                         key={country.id}
                         onClick={() => handleCountrySelect(country)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700/50 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition-colors text-left"
                       >
                         <span className="text-xl">{country.emoji}</span>
                         <div>
-                          <p className="text-white font-medium">{country.name}</p>
-                          <p className="text-slate-500 text-xs">{country.regionName}</p>
+                          <p className="text-slate-800 font-medium">{country.name}</p>
+                          <p className="text-slate-400 text-xs">{country.regionName}</p>
                         </div>
                       </button>
                     ))}
@@ -408,7 +408,7 @@ export default function PlansPage() {
             <select 
               value={selectedRegion} 
               onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCountry(""); }}
-              className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
             >
               <option value="all">🌍 All Regions</option>
               {regions.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>)}
@@ -423,7 +423,7 @@ export default function PlansPage() {
                   const country = countries.find(c => c.id === e.target.value);
                   setSelectedCountryName(country?.name || "");
                 }}
-                className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
               >
                 <option value="">🏳️ All Countries</option>
                 {countries.map((c) => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
@@ -434,7 +434,7 @@ export default function PlansPage() {
             <select 
               value={durationFilter} 
               onChange={(e) => setDurationFilter(e.target.value)}
-              className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
             >
               <option value="">⏱️ Duration</option>
               {dynamicDurationOptions.map((dd) => (
@@ -446,7 +446,7 @@ export default function PlansPage() {
             <select 
               value={dataFilter} 
               onChange={(e) => setDataFilter(e.target.value)}
-              className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
             >
               <option value="">📊 Data</option>
               {dynamicDataOptions.map((da) => (
@@ -460,7 +460,7 @@ export default function PlansPage() {
             <select 
               value={sortBy} 
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+              className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
             >
               <option value="best">⚡ Best Match</option>
               <option value="price-low">💰 Price: Low to High</option>
@@ -472,7 +472,7 @@ export default function PlansPage() {
             {hasActiveFilters && (
               <button 
                 onClick={clearFilters} 
-                className="text-sm text-slate-400 hover:text-white transition-colors"
+                className="text-sm text-slate-400 hover:text-orange-500 transition-colors"
               >
                 ✕ Clear
               </button>

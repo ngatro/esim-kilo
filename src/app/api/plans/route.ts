@@ -30,15 +30,23 @@ function getCountryEmoji(countryCode: string): string {
   }
 }
 
-function generateSlug(name: string): string {
-  // "AUKUS(3 countries) 3GB 30days" -> "AUKUS-3-countries-3GB-30-days"
-  return name
+function generateSlug(name: string, fupPolicy?: string | null): string {
+  let cleanName = name
     .replace(/[()]/g, "")
     .replace(/[^a-zA-Z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .toLowerCase();
+  
+  // Add esim- prefix for SEO
+  const isUnlimited = fupPolicy && fupPolicy.trim().length > 0;
+  
+  if (isUnlimited) {
+    return `esim-${cleanName}-unlimited`;
+  }
+  
+  return `esim-${cleanName}`;
 }
 
 const COUNTRY_TO_REGION: Record<string, { regionId: string; regionName: string; countryName: string }> = {
@@ -171,7 +179,7 @@ export async function GET(request: Request) {
         return {
           id: `esimaccess-${pkg.packageCode}`,
           name: pkg.name,
-          slug: generateSlug(pkg.name),
+          slug: generateSlug(pkg.name, pkg.fupPolicy),
           packageCode: pkg.packageCode,
           description: pkg.description || null,
           destination: loc.destination,
