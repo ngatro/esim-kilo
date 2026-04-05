@@ -107,7 +107,7 @@ export default function PlanDetailContent() {
         <div className="text-center">
           <p className="text-6xl mb-4">📦</p>
           <h2 className="text-2xl font-bold mb-2">Plan not found</h2>
-          <Link href="/plans" className="text-sky-400 hover:text-sky-300">{t("plans.browsePlans")}</Link>
+          <Link href="/plans" className="text-sky-400 hover:text-sky-300">Browse all plans →</Link>
         </div>
       </div>
     );
@@ -135,9 +135,9 @@ export default function PlanDetailContent() {
       <main className="pt-20 sm:pt-28 pb-16 sm:pb-24">
         <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mb-6 sm:mb-10">
-            <Link href="/" className="hover:text-slate-300">{t("common.home")}</Link>
+            <Link href="/" className="hover:text-slate-300">Home</Link>
             <span>/</span>
-            <Link href="/plans" className="hover:text-slate-300">{t("common.plans")}</Link>
+            <Link href="/plans" className="hover:text-slate-300">Plans</Link>
             <span>/</span>
             <span className="text-slate-300">{plan.destination}</span>
           </nav>
@@ -146,9 +146,9 @@ export default function PlanDetailContent() {
             <div className="lg:col-span-3 space-y-5 sm:space-y-6">
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                  {plan.isBestSeller && <span className="bg-linear-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">{t("plans.bestSeller")}</span>}
-                  {plan.isHot && <span className="bg-linear-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">{t("plans.hot")}</span>}
-                  {plan.isPopular && <span className="bg-linear-to-r from-sky-500 to-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">{t("plans.popular")}</span>}
+                  {plan.isBestSeller && <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">BEST SELLER</span>}
+                  {plan.isHot && <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">HOT</span>}
+                  {plan.isPopular && <span className="bg-gradient-to-r from-sky-500 to-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">POPULAR</span>}
                 </div>
                 <h1 className="text-2xl sm:text-4xl font-bold text-white">{plan.destination} eSIM</h1>
                 <p className="text-slate-400 text-sm mt-1">{plan.name}</p>
@@ -159,7 +159,7 @@ export default function PlanDetailContent() {
                 {[
                   { label: "Data", value: formatData(plan.dataAmount), color: "text-sky-400" },
                   { label: "Duration", value: `${plan.durationDays} ${plan.durationUnit === "DAY" ? "Days" : plan.durationUnit}`, color: "text-white" },
-                  { label: "Per Day", value: `${pricePerDay}`, color: "text-emerald-400" },
+                  { label: "Per Day", value: `$${pricePerDay}`, color: "text-emerald-400" },
                 ].map((s) => (
                   <div key={s.label} className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5 text-center">
                     <p className={`text-xl sm:text-2xl font-bold ${s.color}`}>{s.value}</p>
@@ -171,34 +171,34 @@ export default function PlanDetailContent() {
               <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 sm:p-6">
                 <h2 className="text-base sm:text-lg font-semibold text-white mb-3">Plan Details</h2>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><p className="text-slate-500 text-xs">{t("plans.data")}</p><p className="text-white">{formatData(plan.dataAmount)}</p></div>
-                  <div><p className="text-slate-500 text-xs">{t("plans.validity")}</p><p className="text-white">{plan.durationDays} Days</p></div>
-                  <div><p className="text-slate-500 text-xs">{t("plans.speed")}</p><p className="text-white">{plan.speed || "4G LTE"}</p></div>
-                  <div><p className="text-slate-500 text-xs">{t("plans.type")}</p><p className="text-white">{plan.smsStatus === 0 ? "Data Only" : "Data + SMS"}</p></div>
-                  <div><p className="text-slate-500 text-xs">{t("plans.tethering")}</p><p className="text-white">{plan.ipExport ? "Supported" : "Not supported"}</p></div>
-                  <div><p className="text-slate-500 text-xs">{t("plans.activation")}</p><p className="text-white">{plan.activeType === 1 ? "First installation" : "First network connection"}</p></div>
-                  {plan.unusedValidTime > 0 && <div><p className="text-slate-500 text-xs">{t("plans.validAfterPurchase")}</p><p className="text-white">{plan.unusedValidTime} days</p></div>}
-                  <div><p className="text-slate-500 text-xs">{t("plans.topUp")}</p><p className="text-white">{plan.supportTopUp ? "Supported" : "Not supported"}</p></div>
-                  <div><p className="text-slate-500 text-xs">{t("plans.packageCode")}</p><p className="text-slate-400 text-xs font-mono">{plan.packageCode}</p></div>
+                  <div><p className="text-slate-500 text-xs">Data</p><p className="text-white">{formatData(plan.dataAmount)}</p></div>
+                  <div><p className="text-slate-500 text-xs">Validity</p><p className="text-white">{plan.durationDays} Days</p></div>
+                  <div><p className="text-slate-500 text-xs">Speed</p><p className="text-white">{plan.speed || "4G LTE"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Plan Type</p><p className="text-white">{plan.smsStatus === 0 ? "Data Only" : "Data + SMS"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Tethering</p><p className="text-white">{plan.ipExport ? "Supported" : "Not supported"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Activation</p><p className="text-white">{plan.activeType === 1 ? "First installation" : "First network connection"}</p></div>
+                  {plan.unusedValidTime > 0 && <div><p className="text-slate-500 text-xs">Valid After Purchase</p><p className="text-white">{plan.unusedValidTime} days</p></div>}
+                  <div><p className="text-slate-500 text-xs">Top-Up</p><p className="text-white">{plan.supportTopUp ? "Supported" : "Not supported"}</p></div>
+                  <div><p className="text-slate-500 text-xs">Package Code</p><p className="text-slate-400 text-xs font-mono">{plan.packageCode}</p></div>
                 </div>
               </div>
 
               {plan.fupPolicy && (
                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 sm:p-6">
-                  <h2 className="text-base sm:text-lg font-semibold text-amber-400 mb-2">{t("plans.fairUsePolicy")}</h2>
-                  <p className="text-amber-200 text-sm">{t("plans.fairUsePolicyDesc")} <strong>{plan.fupPolicy}</strong></p>
+                  <h2 className="text-base sm:text-lg font-semibold text-amber-400 mb-2">Fair Use Policy</h2>
+                  <p className="text-amber-200 text-sm">After full speed is depleted, speed will be reduced to <strong>{plan.fupPolicy}</strong></p>
                 </div>
               )}
 
               {networkList.length > 0 && (
                 <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 sm:p-6">
-                  <h2 className="text-base sm:text-lg font-semibold text-white mb-4">{t("plans.networkOperators")}</h2>
+                  <h2 className="text-base sm:text-lg font-semibold text-white mb-4">Network Operators</h2>
                   <div className="space-y-4">
                     {networkList.map((net) => (
                       <div key={net.locationCode} className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center shrink-0 text-xs">{net.locationCode}</div>
+                        <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0 text-xs">{net.locationCode}</div>
                         <div className="flex-1">
-                          <p className="text-white text-sm font-medium">{t("plans.location")}: {net.locationName}</p>
+                          <p className="text-white text-sm font-medium">Location: {net.locationName}</p>
                           <div className="flex flex-wrap gap-2 mt-2">
                             {net.operatorList?.map((op, i) => (
                               <span key={i} className="bg-green-500/10 text-green-400 text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
@@ -216,7 +216,7 @@ export default function PlanDetailContent() {
 
               {locations.length > 0 && (
                 <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 sm:p-6">
-                  <h2 className="text-base sm:text-lg font-semibold text-white mb-3">{t("plans.coverage")} ({locations.length} {t("plans.countries")})</h2>
+                  <h2 className="text-base sm:text-lg font-semibold text-white mb-3">Coverage ({locations.length} countries)</h2>
                   <div className="flex flex-wrap gap-2">
                     {locations.map((loc) => (
                       <span key={loc} className="bg-slate-700/50 text-slate-300 text-xs px-2.5 py-1 rounded-full">{loc}</span>
@@ -280,7 +280,7 @@ export default function PlanDetailContent() {
           <div className="mt-10 sm:mt-14">
             <Link href="/plans" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              {t("plans.backToAllPlans")}
+              Back to all plans
             </Link>
           </div>
         </div>
