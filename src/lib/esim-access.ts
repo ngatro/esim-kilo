@@ -34,6 +34,7 @@ interface EsimPackage {
   currencyCode: string;
   durationUnit: string;
   locationCode: string;
+  locationLogo?: string;
   unusedValidTime: number;
   supportTopUpType: number;
   locationNetworkList: LocationNetwork[];

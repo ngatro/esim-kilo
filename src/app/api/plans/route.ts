@@ -145,6 +145,7 @@ export async function GET(request: Request) {
           speed: pkg.speed || null,
           networkType,
           locationCode: pkg.locationCode || null,
+          locationLogo: pkg.locationLogo || null,
           locations: JSON.stringify(locations),
           coverageCount: locationCount,
           smsStatus: pkg.smsStatus || 0,

@@ -18,6 +18,7 @@ interface Plan {
   coverageCount: number;
   speed: string | null;
   networkType: string | null;
+  locationLogo: string | null;
   region: { id: string; name: string; emoji: string } | null;
   country: { id: string; name: string; emoji: string } | null;
 }
@@ -379,7 +380,11 @@ export default function CheckoutPage() {
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
               <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Your eSIM Plan</h2>
               <div className="flex items-center gap-3 sm:gap-4">
-                <span className="text-3xl sm:text-4xl">{plan.country?.emoji || plan.region?.emoji || "🌍"}</span>
+                {plan.locationLogo ? (
+                  <img src={plan.locationLogo} alt={plan.destination} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+                ) : (
+                  <span className="text-3xl sm:text-4xl">{plan.country?.emoji || plan.region?.emoji || "🌍"}</span>
+                )}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-slate-800 font-semibold text-sm sm:text-base truncate">{plan.destination} eSIM</h3>
                   <p className="text-slate-500 text-xs sm:text-sm">
