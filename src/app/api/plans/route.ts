@@ -260,6 +260,7 @@ export async function GET(request: Request) {
     const limit = url.searchParams.get("limit");
     const id = url.searchParams.get("id");
     const slugParam = url.searchParams.get("slug");
+    const planType = url.searchParams.get("planType") || undefined;
 
     // Single plan by ID or slug
     if (id) {
@@ -280,6 +281,13 @@ export async function GET(request: Request) {
     const where: Record<string, unknown> = { isActive: true };
     if (regionId) where.regionId = regionId;
     if (countryId) where.countryId = countryId;
+    if (planType === "local") {
+      where.countryId = { not: null };
+      where.coverageCount = 1;
+    }
+    if (planType === "region") {
+      where.coverageCount = { gte: 2 };
+    }
     if (search) {
       where.OR = [
         { destination: { contains: search, mode: "insensitive" } },

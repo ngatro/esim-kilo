@@ -96,6 +96,7 @@ export default function PlansPage() {
   const [dynamicDataOptions, setDynamicDataOptions] = useState<number[]>([]);
   const [dynamicDurationOptions, setDynamicDurationOptions] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [planType, setPlanType] = useState<"all" | "local" | "region">("all");
 
   useEffect(() => {
     fetch("/api/regions")
@@ -131,6 +132,7 @@ export default function PlansPage() {
       if (dataFilter) params.set("dataAmount", dataFilter);
       if (durationFilter) params.set("durationDays", durationFilter);
       if (sortBy) params.set("sortBy", sortBy);
+      if (planType !== "all") params.set("planType", planType);
 
       if (priceRange) {
         const [min, max] = priceRange.split("-");
@@ -151,7 +153,7 @@ export default function PlansPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedRegion, selectedCountry, networkFilter, priceRange, sortBy, dataType, dataFilter, durationFilter]);
+  }, [selectedRegion, selectedCountry, networkFilter, priceRange, sortBy, dataType, dataFilter, durationFilter, planType]);
 
   useEffect(() => {
     fetchPlans();
@@ -361,17 +363,36 @@ export default function PlansPage() {
           )}
 
           {/* Region chips */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap">
-            <button onClick={() => { setSelectedRegion("all"); setSelectedCountry(""); }}
-              className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                selectedRegion === "all" && !selectedCountry ? "bg-orange-100 border-orange-300 text-orange-700" : "border-slate-200 text-slate-500 hover:border-orange-300"
-              }`}>All</button>
-            {regions.map((r) => (
-              <button key={r.id} onClick={() => { setSelectedRegion(r.id); setSelectedCountry(""); }}
-                className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap ${
-                  selectedRegion === r.id ? "bg-orange-100 border-orange-300 text-orange-700" : "border-slate-200 text-slate-500 hover:border-orange-300"
-                }`}>{r.emoji} {r.name}</button>
-            ))}
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            {/* Plan Type Toggle */}
+            <div className="flex gap-2 sm:order-2">
+              <button onClick={() => setPlanType("all")} 
+                className={`text-xs px-4 py-2 rounded-full border transition-colors ${
+                  planType === "all" ? "bg-orange-500 text-white border-orange-500" : "border-slate-200 text-slate-600 hover:border-orange-300"
+                }`}>All Plans</button>
+              <button onClick={() => setPlanType("local")} 
+                className={`text-xs px-4 py-2 rounded-full border transition-colors ${
+                  planType === "local" ? "bg-orange-500 text-white border-orange-500" : "border-slate-200 text-slate-600 hover:border-orange-300"
+                }`}>🌍 Local (1 Country)</button>
+              <button onClick={() => setPlanType("region")} 
+                className={`text-xs px-4 py-2 rounded-full border transition-colors ${
+                  planType === "region" ? "bg-orange-500 text-white border-orange-500" : "border-slate-200 text-slate-600 hover:border-orange-300"
+                }`}>🌐 Region (2+ Countries)</button>
+            </div>
+            
+            {/* Region Filter */}
+            <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap -mx-3 px-3 sm:mx-0 sm:px-0 sm:order-1">
+              <button onClick={() => { setSelectedRegion("all"); setSelectedCountry(""); }}
+                className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                  selectedRegion === "all" && !selectedCountry ? "bg-orange-100 border-orange-300 text-orange-700" : "border-slate-200 text-slate-500 hover:border-orange-300"
+                }`}>All</button>
+              {regions.map((r) => (
+                <button key={r.id} onClick={() => { setSelectedRegion(r.id); setSelectedCountry(""); }}
+                  className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap ${
+                    selectedRegion === r.id ? "bg-orange-100 border-orange-300 text-orange-700" : "border-slate-200 text-slate-500 hover:border-orange-300"
+                  }`}>{r.emoji} {r.name}</button>
+              ))}
+            </div>
           </div>
 
           {/* Plans Grid */}
