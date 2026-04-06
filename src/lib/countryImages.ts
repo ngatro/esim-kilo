@@ -65,6 +65,16 @@ export function getCountryName(isoCode: string | null): string | null {
   return COUNTRY_NAMES[isoCode.toUpperCase()] || null;
 }
 
+export function getCountryImageUrl(countryCode: string | null): string | null {
+  if (!countryCode) return null;
+  
+  const code = countryCode.toUpperCase();
+  const countryName = getCountryName(code);
+  if (!countryName) return null;
+  
+  return `https://img.etrip.com/countries/${code.toLowerCase()}.jpg`;
+}
+
 export function getDynamicImageUrl(countryCode: string | null, seed: string): string | null {
   if (!countryCode) return null;
   
@@ -72,8 +82,7 @@ export function getDynamicImageUrl(countryCode: string | null, seed: string): st
   const countryName = getCountryName(code);
   if (!countryName) return null;
   
-  const keywords = encodeURIComponent(`${countryName},landmark,tourism,scenic`);
-  return `https://image.pollinations.ai/prompt/${keywords}?width=800&height=600&nologo=true&seed=${encodeURIComponent(seed)}`;
+  return `https://img.etrip.com/countries/${code.toLowerCase()}.jpg`;
 }
 
 export function getConsistentIndex(str: string, length: number): number {

@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import Link from "next/link";
 import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getDynamicImageUrl, getConsistentIndex } from "@/lib/countryImages";
+import { getCountryImageUrl, getConsistentIndex, getDefaultImage } from "@/lib/countryImages";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface Plan {
   id: string;
@@ -85,16 +85,16 @@ function getPlanImage(plan: Plan): string {
     return globalImages[getConsistentIndex(plan.packageCode, globalImages.length)];
   }
 
-  // Priority 2: Dynamic API image for single countries
+  // Priority 2: Country image from etrip CDN
   if (plan.countryId) {
-    const dynamicUrl = getDynamicImageUrl(plan.countryId, plan.packageCode);
-    if (dynamicUrl) {
-      return dynamicUrl;
+    const countryUrl = getCountryImageUrl(plan.countryId);
+    if (countryUrl) {
+      return countryUrl;
     }
   }
 
   // Priority 3: Default fallback - consistent based on packageCode
-  return DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)];
+  return getDefaultImage(plan.packageCode);
 }
 
 function formatVolume(bytes: number): string {
@@ -109,11 +109,12 @@ function formatVolume(bytes: number): string {
 export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const { formatPrice } = useI18n();
   const router = useRouter();
+  const [imgError, setImgError] = useState(false);
   const isUnlimited = plan.badge === "unlimited";
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = formatPrice(displayPrice / plan.durationDays);
   const locations = Array.isArray(plan.locations) ? plan.locations : [];
-  const heroImage = getPlanImage(plan);
+  const heroImage = imgError ? getDefaultImage(plan.packageCode) : getPlanImage(plan);
   const planUrl = `/plans/${plan.slug || plan.id}`;
 
   const handleClick = () => {
@@ -138,6 +139,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           unoptimized
           priority={index < 4}
+          onError={() => setImgError(true)}
         />
         <div className="absolute inset-0 bg-black/40" />
 

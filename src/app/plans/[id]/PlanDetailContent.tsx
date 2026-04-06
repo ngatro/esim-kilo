@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getDynamicImageUrl, getConsistentIndex } from "@/lib/countryImages";
+import { getCountryImageUrl, getConsistentIndex, getDefaultImage } from "@/lib/countryImages";
 
 interface OperatorInfo {
   operatorName: string;
@@ -242,16 +242,16 @@ function getHeroImage(plan: Plan): string {
     return globalImages[getConsistentIndex(plan.packageCode, globalImages.length)];
   }
 
-  // Priority 2: Dynamic API image for single countries
+  // Priority 2: Country image for single countries
   if (plan.countryId) {
-    const dynamicUrl = getDynamicImageUrl(plan.countryId, plan.packageCode);
-    if (dynamicUrl) {
-      return dynamicUrl;
+    const countryUrl = getCountryImageUrl(plan.countryId);
+    if (countryUrl) {
+      return countryUrl;
     }
   }
 
   // Priority 3: Default fallback
-  return DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)];
+  return getDefaultImage(plan.packageCode);
 }
 
 export default function PlanDetailContent() {
@@ -260,6 +260,9 @@ export default function PlanDetailContent() {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [imgError, setImgError] = useState(false);
+
+  const heroImage = plan ? (imgError ? getDefaultImage(plan.packageCode) : getHeroImage(plan)) : "";
 
   useEffect(() => {
     async function fetchPlan() {
@@ -340,13 +343,14 @@ export default function PlanDetailContent() {
           {/* Left - Image */}
           <div className="relative aspect-[1/1] lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
             <Image
-              src={getHeroImage(plan)}
+              src={heroImage}
               alt={plan.destination}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
               priority
               unoptimized
+              onError={() => setImgError(true)}
             />
             <div className="absolute top-4 left-4 flex flex-wrap gap-2">
               {plan.badge === "unlimited" && (
