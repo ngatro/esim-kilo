@@ -92,9 +92,9 @@ const HERO_IMAGES: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=1600&q=80",
   ],
   VN: [
-    "https://images.unsplash.com/photo-1559302504-64aae6f6e6d6?w=1600&q=80",
     "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&q=80",
-    "https://images.unsplash.com/photo-1605446537526-44126f5c4e66?w=1600&q=80",
+    "https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?w=1600&q=80",
+    "https://images.unsplash.com/photo-1559302504-64aae6f6e6d6?w=1600&q=80",
   ],
   SG: [
     "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=1600&q=80",
@@ -154,15 +154,15 @@ const HERO_IMAGES: Record<string, string[]> = {
   ],
   DE: [
     "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1600&q=80",
-    "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1600&q=80",
+    "https://images.unsplash.com/photo-1479311173133-231c2bdba3c7?w=1600&q=80",
   ],
   IT: [
     "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=1600&q=80",
-    "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=1600&q=80",
+    "https://images.unsplash.com/photo-1529364965338-338131fc77de?w=1600&q=80",
   ],
   ES: [
     "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1600&q=80",
-    "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1600&q=80",
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80",
   ],
   NL: [
     "https://images.unsplash.com/photo-1512470876317-1f3c7c5ad1e9?w=1600&q=80",
@@ -343,6 +343,7 @@ export default function PlanDetailContent() {
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
               priority
+              unoptimized
             />
             <div className="absolute top-4 left-4 flex flex-wrap gap-2">
               {plan.badge === "unlimited" && (

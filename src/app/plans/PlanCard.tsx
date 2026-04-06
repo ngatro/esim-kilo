@@ -46,8 +46,8 @@ const PLAN_IMAGES: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80",
   ],
   VN: [
-    "https://images.unsplash.com/photo-1559302504-64aae6f6e6d6?w=800&q=80",
     "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&q=80",
+    "https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?w=800&q=80",
   ],
   SG: [
     "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80",
@@ -67,7 +67,7 @@ const PLAN_IMAGES: Record<string, string[]> = {
   ],
   IN: [
     "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80",
-    "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80",
+    "https://images.unsplash.com/photo-1503899036084-c55cdd92a3a8?w=800&q=80",
   ],
   CN: [
     "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80",
@@ -79,7 +79,7 @@ const PLAN_IMAGES: Record<string, string[]> = {
   ],
   HK: [
     "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=800&q=80",
-    "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=800&q=80",
+    "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=800&q=80",
   ],
   US: [
     "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80",
@@ -87,15 +87,15 @@ const PLAN_IMAGES: Record<string, string[]> = {
   ],
   CA: [
     "https://images.unsplash.com/photo-1517935706615-2717063c2225?w=800&q=80",
-    "https://images.unsplash.com/photo-1517935706615-2717063c2225?w=800&q=80",
+    "https://images.unsplash.com/photo-1505852679233-d9fd70aff56d?w=800&q=80",
   ],
   MX: [
     "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=800&q=80",
-    "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=800&q=80",
+    "https://images.unsplash.com/photo-1512749772482-6626f3d13e0d?w=800&q=80",
   ],
   BR: [
     "https://images.unsplash.com/photo-1483729558449-99ef09a8e325?w=800&q=80",
-    "https://images.unsplash.com/photo-1483729558449-99ef09a8e325?w=800&q=80",
+    "https://images.unsplash.com/photo-1486279257715-4adc13b2f4b9?w=800&q=80",
   ],
   GB: [
     "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80",
@@ -103,19 +103,19 @@ const PLAN_IMAGES: Record<string, string[]> = {
   ],
   FR: [
     "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80",
-    "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80",
+    "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80",
   ],
   DE: [
     "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800&q=80",
-    "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800&q=80",
+    "https://images.unsplash.com/photo-1479311173133-231c2bdba3c7?w=800&q=80",
   ],
   IT: [
     "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=800&q=80",
-    "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=800&q=80",
+    "https://images.unsplash.com/photo-1529364965338-338131fc77de?w=800&q=80",
   ],
   ES: [
     "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=800&q=80",
-    "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=800&q=80",
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
   ],
   NL: [
     "https://images.unsplash.com/photo-1512470876317-1f3c7c5ad1e9?w=800&q=80",
@@ -134,7 +134,7 @@ const PLAN_IMAGES: Record<string, string[]> = {
   ],
   AU: [
     "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=800&q=80",
-    "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=800&q=80",
+    "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=800&q=80",
   ],
   NZ: [
     "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=800&q=80",
@@ -248,6 +248,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
+          unoptimized
           priority={index < 4}
         />
         <div className="absolute inset-0 bg-black/40" />
