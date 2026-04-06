@@ -2,9 +2,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
-import countries from "i18n-iso-countries";
-
-countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
+import { getDynamicImageUrl, getConsistentIndex } from "@/lib/countryImages";
 
 interface Plan {
   id: string;
@@ -74,44 +72,16 @@ const REGION_IMAGES: Record<string, string[]> = {
   ],
 };
 
-function getConsistentIndex(str: string, length: number): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash = hash & hash;
-  }
-  return Math.abs(hash) % length;
-}
-
-function getDynamicImageUrl(countryCode: string | null, packageCode: string): string | null {
-  if (!countryCode) return null;
-  
-  try {
-    const countryName = countries.alpha3ToAlpha2(countryCode.toUpperCase());
-    if (!countryName) return null;
-    
-    const englishName = countries.getName(countryName, "en");
-    if (!englishName) return null;
-    
-    const keywords = encodeURIComponent(`${englishName},landmark,travel`);
-    return `https://source.unsplash.com/featured/800x600?${keywords}`;
-  } catch {
-    return null;
-  }
-}
-
 function getPlanImage(plan: Plan): string {
   // Priority 1: Regional plans (2+ countries) - use region images
   if (plan.coverageCount >= 2 && plan.regionId) {
     const regionKey = plan.regionId.toLowerCase();
     const regionImages = REGION_IMAGES[regionKey];
     if (regionImages && regionImages.length > 0) {
-      const index = getConsistentIndex(plan.packageCode, regionImages.length);
-      return regionImages[index];
+      return regionImages[getConsistentIndex(plan.packageCode, regionImages.length)];
     }
     const globalImages = REGION_IMAGES.global;
-    const index = getConsistentIndex(plan.packageCode, globalImages.length);
-    return globalImages[index];
+    return globalImages[getConsistentIndex(plan.packageCode, globalImages.length)];
   }
 
   // Priority 2: Dynamic API image for single countries
@@ -123,8 +93,7 @@ function getPlanImage(plan: Plan): string {
   }
 
   // Priority 3: Default fallback - consistent based on packageCode
-  const index = getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length);
-  return DEFAULT_IMAGES[index];
+  return DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)];
 }
 
 function formatVolume(bytes: number): string {
