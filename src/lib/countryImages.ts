@@ -52,14 +52,6 @@ const COUNTRY_NAMES: Record<string, string> = {
   ZM: "Zambia", ZW: "Zimbabwe",
 };
 
-const DEFAULT_IMAGES = [
-  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80",
-  "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800&q=80",
-  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80",
-  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80",
-];
-
 export function getCountryName(isoCode: string | null): string | null {
   if (!isoCode) return null;
   return COUNTRY_NAMES[isoCode.toUpperCase()] || null;
@@ -67,21 +59,9 @@ export function getCountryName(isoCode: string | null): string | null {
 
 export function getCountryImageUrl(countryCode: string | null): string | null {
   if (!countryCode) return null;
-  
   const code = countryCode.toUpperCase();
   const countryName = getCountryName(code);
   if (!countryName) return null;
-  
-  return `https://img.etrip.com/countries/${code.toLowerCase()}.jpg`;
-}
-
-export function getDynamicImageUrl(countryCode: string | null, seed: string): string | null {
-  if (!countryCode) return null;
-  
-  const code = countryCode.toUpperCase();
-  const countryName = getCountryName(code);
-  if (!countryName) return null;
-  
   return `https://img.etrip.com/countries/${code.toLowerCase()}.jpg`;
 }
 
@@ -92,8 +72,4 @@ export function getConsistentIndex(str: string, length: number): number {
     hash = hash & hash;
   }
   return Math.abs(hash) % length;
-}
-
-export function getDefaultImage(seed: string): string {
-  return DEFAULT_IMAGES[getConsistentIndex(seed, DEFAULT_IMAGES.length)];
 }

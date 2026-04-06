@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getCountryImageUrl, getConsistentIndex, getDefaultImage } from "@/lib/countryImages";
+import { getCountryImageUrl, getConsistentIndex } from "@/lib/countryImages";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -94,7 +94,7 @@ function getPlanImage(plan: Plan): string {
   }
 
   // Priority 3: Default fallback - consistent based on packageCode
-  return getDefaultImage(plan.packageCode);
+  return DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)];
 }
 
 function formatVolume(bytes: number): string {
@@ -114,7 +114,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = formatPrice(displayPrice / plan.durationDays);
   const locations = Array.isArray(plan.locations) ? plan.locations : [];
-  const heroImage = imgError ? getDefaultImage(plan.packageCode) : getPlanImage(plan);
+  const heroImage = imgError ? DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)] : getPlanImage(plan);
   const planUrl = `/plans/${plan.slug || plan.id}`;
 
   const handleClick = () => {

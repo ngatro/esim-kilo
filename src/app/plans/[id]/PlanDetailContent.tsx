@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getCountryImageUrl, getConsistentIndex, getDefaultImage } from "@/lib/countryImages";
+import { getCountryImageUrl, getConsistentIndex } from "@/lib/countryImages";
 
 interface OperatorInfo {
   operatorName: string;
@@ -251,7 +251,7 @@ function getHeroImage(plan: Plan): string {
   }
 
   // Priority 3: Default fallback
-  return getDefaultImage(plan.packageCode);
+  return DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)];
 }
 
 export default function PlanDetailContent() {
@@ -262,7 +262,7 @@ export default function PlanDetailContent() {
   const [quantity, setQuantity] = useState(1);
   const [imgError, setImgError] = useState(false);
 
-  const heroImage = plan ? (imgError ? getDefaultImage(plan.packageCode) : getHeroImage(plan)) : "";
+  const heroImage = plan ? (imgError ? DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)] : getHeroImage(plan)) : "";
 
   useEffect(() => {
     async function fetchPlan() {
