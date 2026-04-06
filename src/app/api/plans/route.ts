@@ -130,10 +130,14 @@ export async function GET(request: Request) {
         const locationCount = locations.length || 1;
 
         // Build regional data - only for plans with 2+ locations (regional plans)
-        if (locationCount >= 2 && loc.regionId && loc.regionName) {
-          const regionKey = loc.regionId.toUpperCase();
+        // Each unique locationCode for multi-country packages becomes a Region
+        if (locationCount >= 2 && (pkg as { locationCode?: string }).locationCode) {
+          const locCode = (pkg as { locationCode: string }).locationCode;
+          const regionKey = locCode.toUpperCase();
           if (!regionMap[regionKey]) {
-            regionMap[regionKey] = { id: loc.regionId, name: loc.regionName, emoji: getRegionEmoji(loc.regionId) };
+            // Use locationCode as the unique region identifier for multi-country packages
+            const regionName = loc.regionName || locCode.replace("!RG", "").replace("!GL", "Global");
+            regionMap[regionKey] = { id: locCode, name: regionName, emoji: getRegionEmoji(locCode) };
           }
         }
 
@@ -152,7 +156,7 @@ export async function GET(request: Request) {
           packageCode: pkg.packageCode,
           description: pkg.description || null,
           destination: loc.destination,
-          regionId: locationCount >= 2 ? loc.regionId : null,  // Only set regionId for regional plans (2+ countries)
+          regionId: locationCount >= 2 ? (pkg as { locationCode?: string }).locationCode || null : null,  // Use locationCode for regional plans
           countryId: locationCount === 1 ? loc.countryId?.toUpperCase() : null,  // Only set countryId for single country plans
           regionName: locationCount >= 2 ? loc.regionName : null,
           countryName: locationCount === 1 ? loc.countryName : null,
