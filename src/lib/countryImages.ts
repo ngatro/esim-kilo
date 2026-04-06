@@ -1,3 +1,5 @@
+import "flag-icons/css/flag-icons.min.css";
+
 const COUNTRY_NAMES: Record<string, string> = {
   AD: "Andorra", AE: "United Arab Emirates", AF: "Afghanistan", AG: "Antigua and Barbuda", AL: "Albania",
   AM: "Armenia", AO: "Angola", AQ: "Antarctica", AR: "Argentina", AS: "American Samoa",
@@ -57,10 +59,20 @@ export function getCountryName(isoCode: string | null): string | null {
   return COUNTRY_NAMES[isoCode.toUpperCase()] || null;
 }
 
-export function getCountryImageUrl(countryCode: string | null): string | null {
+export function getCountryFlagClass(countryCode: string | null): string | null {
   if (!countryCode) return null;
   const code = countryCode.toUpperCase();
   const countryName = getCountryName(code);
   if (!countryName) return null;
-  return `https://img.etrip.com/countries/${code.toLowerCase()}.jpg`;
+  return `fi fi-${code.toLowerCase()}`;
 }
+
+export const REGION_FLAG_CLASSES: Record<string, string> = {
+  asia: "fi fi-as",
+  europe: "fi fi-eu",
+  americas: "fi fi-un",
+  africa: "fi fi-un",
+  oceania: "fi fi-oc",
+  "middle-east": "fi fi-un",
+  global: "fi fi-un",
+};

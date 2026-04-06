@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getCountryImageUrl } from "@/lib/countryImages";
+import { getCountryFlagClass, REGION_FLAG_CLASSES } from "@/lib/countryImages";
 
 interface OperatorInfo {
   operatorName: string;
@@ -75,18 +74,17 @@ function getDataTypeLabel(type: number): string {
   }
 }
 
-function getHeroImage(plan: Plan): string {
+function getPlanFlag(plan: Plan): string {
   if (plan.coverageCount >= 2 && plan.regionId) {
     const regionKey = plan.regionId.toLowerCase();
-    const regionImage = `https://img.etrip.com/countries/${regionKey}.jpg`;
-    return regionImage;
+    return REGION_FLAG_CLASSES[regionKey] || REGION_FLAG_CLASSES.global;
   }
 
   if (plan.countryId) {
-    return getCountryImageUrl(plan.countryId) || `https://img.etrip.com/countries/world.jpg`;
+    return getCountryFlagClass(plan.countryId) || REGION_FLAG_CLASSES.global;
   }
 
-  return `https://img.etrip.com/countries/world.jpg`;
+  return REGION_FLAG_CLASSES.global;
 }
 
 export default function PlanDetailContent() {
@@ -95,9 +93,6 @@ export default function PlanDetailContent() {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [imgError, setImgError] = useState(false);
-
-  const heroImage = plan ? (imgError ? "https://img.etrip.com/countries/world.jpg" : getHeroImage(plan)) : "";
 
   useEffect(() => {
     async function fetchPlan() {
@@ -156,6 +151,8 @@ export default function PlanDetailContent() {
     locations = [];
   }
 
+  const flagClass = getPlanFlag(plan);
+
   return (
     <div className="min-h-screen bg-white text-slate-800">
       {/* Breadcrumb */}
@@ -175,18 +172,9 @@ export default function PlanDetailContent() {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           
-          {/* Left - Image */}
-          <div className="relative aspect-[1/1] lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
-            <Image
-              src={heroImage}
-              alt={plan.destination}
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
-              priority
-              unoptimized
-              onError={() => setImgError(true)}
-            />
+          {/* Left - Flag */}
+          <div className="relative aspect-[1/1] lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+            <span className={`${flagClass} text-[200px] lg:text-[280px]`} />
             <div className="absolute top-4 left-4 flex flex-wrap gap-2">
               {plan.badge === "unlimited" && (
                 <span className="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">

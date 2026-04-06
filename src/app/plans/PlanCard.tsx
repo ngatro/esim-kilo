@@ -1,9 +1,7 @@
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getCountryImageUrl } from "@/lib/countryImages";
+import { getCountryFlagClass, REGION_FLAG_CLASSES } from "@/lib/countryImages";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 interface Plan {
   id: string;
@@ -34,27 +32,17 @@ interface Plan {
   badge: string | null;
 }
 
-const REGION_IMAGES: Record<string, string> = {
-  asia: "https://img.etrip.com/countries/asia.jpg",
-  europe: "https://img.etrip.com/countries/europe.jpg",
-  americas: "https://img.etrip.com/countries/americas.jpg",
-  africa: "https://img.etrip.com/countries/africa.jpg",
-  oceania: "https://img.etrip.com/countries/oceania.jpg",
-  "middle-east": "https://img.etrip.com/countries/middle-east.jpg",
-  global: "https://img.etrip.com/countries/world.jpg",
-};
-
-function getPlanImage(plan: Plan): string {
+function getPlanFlag(plan: Plan): string {
   if (plan.coverageCount >= 2 && plan.regionId) {
     const regionKey = plan.regionId.toLowerCase();
-    return REGION_IMAGES[regionKey] || REGION_IMAGES.global;
+    return REGION_FLAG_CLASSES[regionKey] || REGION_FLAG_CLASSES.global;
   }
 
   if (plan.countryId) {
-    return getCountryImageUrl(plan.countryId) || REGION_IMAGES.global;
+    return getCountryFlagClass(plan.countryId) || REGION_FLAG_CLASSES.global;
   }
 
-  return REGION_IMAGES.global;
+  return REGION_FLAG_CLASSES.global;
 }
 
 function formatVolume(bytes: number): string {
@@ -69,12 +57,11 @@ function formatVolume(bytes: number): string {
 export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const { formatPrice } = useI18n();
   const router = useRouter();
-  const [imgError, setImgError] = useState(false);
   const isUnlimited = plan.badge === "unlimited";
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = formatPrice(displayPrice / plan.durationDays);
   const locations = Array.isArray(plan.locations) ? plan.locations : [];
-  const heroImage = imgError ? REGION_IMAGES.global : getPlanImage(plan);
+  const flagClass = getPlanFlag(plan);
   const planUrl = `/plans/${plan.slug || plan.id}`;
 
   const handleClick = () => {
@@ -89,18 +76,9 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
       onClick={handleClick}
       className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full cursor-pointer"
     >
-      <div className="relative h-40 sm:h-48 overflow-hidden">
-        <Image
-          src={heroImage}
-          alt={plan.destination}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-          unoptimized
-          priority={index < 4}
-          onError={() => setImgError(true)}
-        />
-        <div className="absolute inset-0 bg-black/40" />
+      <div className="relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+        <span className={`${flagClass} text-7xl sm:text-8xl`} />
+        <div className="absolute inset-0 bg-black/30" />
 
         <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
           {isUnlimited && (
