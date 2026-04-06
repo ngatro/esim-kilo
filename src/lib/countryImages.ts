@@ -1,5 +1,3 @@
-import "flag-icons/css/flag-icons.min.css";
-
 const COUNTRY_NAMES: Record<string, string> = {
   AD: "Andorra", AE: "United Arab Emirates", AF: "Afghanistan", AG: "Antigua and Barbuda", AL: "Albania",
   AM: "Armenia", AO: "Angola", AQ: "Antarctica", AR: "Argentina", AS: "American Samoa",
@@ -64,22 +62,22 @@ export function getCountryImagePath(countryCode: string | null): string | null {
   const code = countryCode.toUpperCase();
   const countryName = getCountryName(code);
   if (!countryName) return null;
-  return `/images/countries/${code.toLowerCase()}.jpg`;
+  return `/images/countries/${code.toLowerCase()}.webp`;
 }
 
 export function getRegionImagePath(regionId: string | null): string {
-  if (!regionId) return "/images/countries/default.jpg";
+  if (!regionId) return "/images/countries/default.webp";
   const regionKey = regionId.toLowerCase();
   const regionPaths: Record<string, string> = {
-    asia: "/images/countries/asia.jpg",
-    europe: "/images/countries/europe.jpg",
-    americas: "/images/countries/americas.jpg",
-    africa: "/images/countries/africa.jpg",
-    oceania: "/images/countries/oceania.jpg",
-    "middle-east": "/images/countries/middle-east.jpg",
-    global: "/images/countries/global.jpg",
+    asia: "/images/countries/asia.webp",
+    europe: "/images/countries/europe.webp",
+    americas: "/images/countries/americas.webp",
+    africa: "/images/countries/africa.webp",
+    oceania: "/images/countries/oceania.webp",
+    "middle-east": "/images/countries/middle-east.webp",
+    global: "/images/countries/global.webp",
   };
-  return regionPaths[regionKey] || "/images/countries/default.jpg";
+  return regionPaths[regionKey] || "/images/countries/default.webp";
 }
 
-export const DEFAULT_IMAGE_PATH = "/images/countries/default.jpg";
+export const DEFAULT_IMAGE_PATH = "/images/countries/default.webp";
