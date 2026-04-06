@@ -64,12 +64,3 @@ export function getCountryImageUrl(countryCode: string | null): string | null {
   if (!countryName) return null;
   return `https://img.etrip.com/countries/${code.toLowerCase()}.jpg`;
 }
-
-export function getConsistentIndex(str: string, length: number): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash = hash & hash;
-  }
-  return Math.abs(hash) % length;
-}

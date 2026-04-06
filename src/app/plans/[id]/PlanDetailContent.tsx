@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getCountryImageUrl, getConsistentIndex } from "@/lib/countryImages";
+import { getCountryImageUrl } from "@/lib/countryImages";
 
 interface OperatorInfo {
   operatorName: string;
@@ -75,183 +75,18 @@ function getDataTypeLabel(type: number): string {
   }
 }
 
-const HERO_IMAGES: Record<string, string[]> = {
-  JP: [
-    "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=80",
-    "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=1600&q=80",
-    "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=1600&q=80",
-    "https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=1600&q=80",
-  ],
-  KR: [
-    "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=1600&q=80",
-    "https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=1600&q=80",
-    "https://images.unsplash.com/photo-1590051807006-011c10ac2d27?w=1600&q=80",
-  ],
-  TH: [
-    "https://images.unsplash.com/photo-1528181304800-259b08848526?w=1600&q=80",
-    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1600&q=80",
-    "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=1600&q=80",
-  ],
-  VN: [
-    "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1600&q=80",
-    "https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?w=1600&q=80",
-    "https://images.unsplash.com/photo-1559302504-64aae6f6e6d6?w=1600&q=80",
-  ],
-  SG: [
-    "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=1600&q=80",
-    "https://images.unsplash.com/photo-1565967511849-76a60a516169?w=1600&q=80",
-  ],
-  MY: [
-    "https://images.unsplash.com/photo-1512553232225-a498-2a0b6008d120?w=1600&q=80",
-    "https://images.unsplash.com/photo-1532236204323-e17e960324f2?w=1600&q=80",
-  ],
-  ID: [
-    "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1600&q=80",
-    "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=1600&q=80",
-  ],
-  PH: [
-    "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=1600&q=80",
-    "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=1600&q=80",
-  ],
-  IN: [
-    "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&q=80",
-    "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&q=80",
-  ],
-  CN: [
-    "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1600&q=80",
-    "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1600&q=80",
-  ],
-  TW: [
-    "https://images.unsplash.com/photo-1470004914212-05527e49370b?w=1600&q=80",
-    "https://images.unsplash.com/photo-1625596702273-5be4d321e805?w=1600&q=80",
-  ],
-  HK: [
-    "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?w=1600&q=80",
-    "https://images.unsplash.com/photo-1532236204993-a6e98d343660?w=1600&q=80",
-  ],
-  US: [
-    "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1600&q=80",
-    "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1600&q=80",
-  ],
-  CA: [
-    "https://images.unsplash.com/photo-1517935706615-2717063c2225?w=1600&q=80",
-    "https://images.unsplash.com/photo-1517931524326-bdd55a541177?w=1600&q=80",
-  ],
-  MX: [
-    "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=1600&q=80",
-    "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=1600&q=80",
-  ],
-  BR: [
-    "https://images.unsplash.com/photo-1483729558449-99ef09a8e325?w=1600&q=80",
-    "https://images.unsplash.com/photo-1483729558449-99ef09a8e325?w=1600&q=80",
-  ],
-  GB: [
-    "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&q=80",
-    "https://images.unsplash.com/photo-1486299267070-83823f5448dd?w=1600&q=80",
-  ],
-  FR: [
-    "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600&q=80",
-    "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600&q=80",
-  ],
-  DE: [
-    "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1600&q=80",
-    "https://images.unsplash.com/photo-1479311173133-231c2bdba3c7?w=1600&q=80",
-  ],
-  IT: [
-    "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=1600&q=80",
-    "https://images.unsplash.com/photo-1529364965338-338131fc77de?w=1600&q=80",
-  ],
-  ES: [
-    "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1600&q=80",
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80",
-  ],
-  NL: [
-    "https://images.unsplash.com/photo-1512470876317-1f3c7c5ad1e9?w=1600&q=80",
-  ],
-  CH: [
-    "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=1600&q=80",
-  ],
-  AT: [
-    "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=1600&q=80",
-  ],
-  SE: [
-    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
-  ],
-  NO: [
-    "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1600&q=80",
-  ],
-  AU: [
-    "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1600&q=80",
-    "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=1600&q=80",
-  ],
-  NZ: [
-    "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1600&q=80",
-  ],
-  AE: [
-    "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1600&q=80",
-  ],
-  TR: [
-    "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1600&q=80",
-  ],
-};
-
-const DEFAULT_IMAGES = [
-  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&q=80",
-  "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=1600&q=80",
-  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1600&q=80",
-  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1600&q=80",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80",
-];
-
-const REGION_IMAGES: Record<string, string[]> = {
-  asia: [
-    "https://images.unsplash.com/photo-1548002946-724e3fc4a14a?w=1600&q=80",
-    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
-  ],
-  europe: [
-    "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=1600&q=80",
-    "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1600&q=80",
-  ],
-  americas: [
-    "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1600&q=80",
-    "https://images.unsplash.com/photo-1533533044978-2c8e55065f4f?w=1600&q=80",
-  ],
-  africa: [
-    "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=1600&q=80",
-    "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1600&q=80",
-  ],
-  oceania: [
-    "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=1600&q=80",
-    "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1600&q=80",
-  ],
-  "middle-east": [
-    "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1600&q=80",
-    "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=1600&q=80",
-  ],
-};
-
 function getHeroImage(plan: Plan): string {
-  // Priority 1: Regional plans (2+ countries) - use region images
   if (plan.coverageCount >= 2 && plan.regionId) {
     const regionKey = plan.regionId.toLowerCase();
-    const regionImages = REGION_IMAGES[regionKey];
-    if (regionImages && regionImages.length > 0) {
-      return regionImages[getConsistentIndex(plan.packageCode, regionImages.length)];
-    }
-    const globalImages = REGION_IMAGES.global;
-    return globalImages[getConsistentIndex(plan.packageCode, globalImages.length)];
+    const regionImage = `https://img.etrip.com/countries/${regionKey}.jpg`;
+    return regionImage;
   }
 
-  // Priority 2: Country image for single countries
   if (plan.countryId) {
-    const countryUrl = getCountryImageUrl(plan.countryId);
-    if (countryUrl) {
-      return countryUrl;
-    }
+    return getCountryImageUrl(plan.countryId) || `https://img.etrip.com/countries/world.jpg`;
   }
 
-  // Priority 3: Default fallback
-  return DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)];
+  return `https://img.etrip.com/countries/world.jpg`;
 }
 
 export default function PlanDetailContent() {
@@ -262,7 +97,7 @@ export default function PlanDetailContent() {
   const [quantity, setQuantity] = useState(1);
   const [imgError, setImgError] = useState(false);
 
-  const heroImage = plan ? (imgError ? DEFAULT_IMAGES[getConsistentIndex(plan.packageCode, DEFAULT_IMAGES.length)] : getHeroImage(plan)) : "";
+  const heroImage = plan ? (imgError ? "https://img.etrip.com/countries/world.jpg" : getHeroImage(plan)) : "";
 
   useEffect(() => {
     async function fetchPlan() {
