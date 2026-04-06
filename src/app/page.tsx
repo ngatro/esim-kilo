@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
 import PlansSection from "@/components/sections/PlansSection";
+
+const DEVICE_IMAGES: Record<string, string> = {
+  "iPhone": "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&q=80",
+  "Samsung": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=80",
+  "Google Pixel": "https://images.unsplash.com/photo-1598327105666-5b89351aff70?w=600&q=80",
+  "Other Android": "https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?w=600&q=80",
+  "iPad": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80",
+  "Laptops": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80",
+};
 
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
@@ -45,20 +55,30 @@ function DeviceCompatibility() {
           {devices.map((device, index) => (
             <FadeIn key={index} delay={index * 0.1}>
               <motion.div 
-                className={`bg-white border rounded-2xl p-6 ${device.supported ? 'border-slate-200 hover:border-orange-400 hover:shadow-lg' : 'border-slate-100 opacity-60'}`}
+                className={`bg-white border rounded-2xl overflow-hidden ${device.supported ? 'border-slate-200 hover:border-orange-400 hover:shadow-lg' : 'border-slate-100 opacity-60'}`}
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="flex items-start gap-4">
-                  <div className="text-3xl">{device.icon}</div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-semibold text-slate-800">{device.name}</h3>
-                      {device.supported && (
-                        <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full">Supported</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-slate-500">{device.models}</p>
+                <div className="relative h-40 bg-slate-100">
+                  <Image
+                    src={DEVICE_IMAGES[device.name] || DEVICE_IMAGES["Other Android"]}
+                    alt={device.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-3 left-4">
+                    <span className="text-3xl">{device.icon}</span>
                   </div>
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-semibold text-slate-800">{device.name}</h3>
+                    {device.supported && (
+                      <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full">Supported</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500">{device.models}</p>
                 </div>
               </motion.div>
             </FadeIn>
@@ -68,7 +88,7 @@ function DeviceCompatibility() {
         <FadeIn delay={0.3}>
           <div className="mt-12 bg-orange-50 border border-slate-200 rounded-2xl p-8 text-center">
             <p className="text-slate-600 mb-4">Not sure if your device supports eSIM?</p>
-            <a href="#" className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium">
+            <a href="/compatibility" className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium">
               Check full compatibility list
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -250,56 +270,64 @@ function Testimonials() {
       location: "United States",
       text: "OW SIM made my Japan trip so much easier! Got a 10GB plan for $14 and had data the whole time. Setup took less than 5 minutes.",
       rating: 5,
-      flag: "🇺🇸"
+      flag: "🇺🇸",
+      image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80"
     },
     {
       name: "Marco D.",
       location: "Italy",
       text: "Best eSIM service I've used. Works perfectly in 15 Asian countries. Customer support was helpful when I had questions.",
       rating: 5,
-      flag: "🇮🇹"
+      flag: "🇮🇹",
+      image: "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&q=80"
     },
     {
       name: "James T.",
       location: "United Kingdom",
       text: "Saved over $200 compared to my carrier's roaming. The connection was fast and reliable throughout my Europe trip.",
       rating: 5,
-      flag: "🇬🇧"
+      flag: "🇬🇧",
+      image: "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=400&q=80"
     },
     {
       name: "Lisa Chen",
       location: "Australia",
       text: "Perfect for digital nomads! I've used OW SIM in over 20 countries. The coverage is amazing and prices are unbeatable.",
       rating: 5,
-      flag: "🇦🇺"
+      flag: "🇦🇺",
+      image: "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=400&q=80"
     },
     {
       name: "Carlos R.",
       location: "Spain",
       text: "The unlimited Japan plan was a game changer. Streamed Netflix and navigated Google Maps without any issues. Highly recommend!",
       rating: 5,
-      flag: "🇪🇸"
+      flag: "🇪🇸",
+      image: "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400&q=80"
     },
     {
       name: "Min-Ji K.",
       location: "South Korea",
       text: "Finally a service that actually works in Korea. Used it for 3 weeks and never had connectivity issues. Will use again!",
       rating: 5,
-      flag: "🇰🇷"
+      flag: "🇰🇷",
+      image: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=400&q=80"
     },
     {
       name: "Ahmed M.",
       location: "UAE",
       text: "Great coverage in Dubai and Abu Dhabi. The 5G speeds are incredible. Much better than my home carrier's roaming.",
       rating: 5,
-      flag: "🇦🇪"
+      flag: "🇦🇪",
+      image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&q=80"
     },
     {
       name: "Emma W.",
       location: "Canada",
       text: "Crossed from US to Canada and the North America plan kept me connected the entire time. Seamless transition!",
       rating: 5,
-      flag: "🇨🇦"
+      flag: "🇨🇦",
+      image: "https://images.unsplash.com/photo-1517935706615-2717063c2225?w=400&q=80"
     },
   ];
 
@@ -318,20 +346,32 @@ function Testimonials() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {testimonials.map((testimonial, index) => (
             <FadeIn key={index} delay={index * 0.1}>
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-orange-300 hover:shadow-lg transition-all hover:-translate-y-1">
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-orange-300 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div className="relative h-32 bg-slate-200">
+                  <Image
+                    src={testimonial.image}
+                    alt={testimonial.location}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                  <div className="absolute bottom-3 left-4">
+                    <span className="text-2xl">{testimonial.flag}</span>
+                  </div>
                 </div>
-                <p className="text-slate-600 mb-4 leading-relaxed">&quot;{testimonial.text}&quot;</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{testimonial.flag}</span>
+                <div className="p-5">
+                  <div className="flex items-center gap-1 mb-3">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-slate-600 mb-3 text-sm leading-relaxed">&quot;{testimonial.text}&quot;</p>
                   <div>
                     <p className="text-slate-800 font-medium">{testimonial.name}</p>
-                    <p className="text-slate-500 text-sm">{testimonial.location}</p>
+                    <p className="text-slate-500 text-xs">{testimonial.location}</p>
                   </div>
                 </div>
               </div>
