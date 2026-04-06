@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { getDynamicImageUrl, getConsistentIndex } from "@/lib/countryImages";
+import { useRouter } from "next/navigation";
 
 interface Plan {
   id: string;
@@ -107,6 +108,7 @@ function formatVolume(bytes: number): string {
 
 export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const { formatPrice } = useI18n();
+  const router = useRouter();
   const isUnlimited = plan.badge === "unlimited";
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = formatPrice(displayPrice / plan.durationDays);
@@ -114,14 +116,18 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const heroImage = getPlanImage(plan);
   const planUrl = `/plans/${plan.slug || plan.id}`;
 
+  const handleClick = () => {
+    router.push(planUrl);
+  };
+
   return (
-    <Link href={planUrl} className="block">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.03, duration: 0.3 }}
-        className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full cursor-pointer"
-      >
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.03, duration: 0.3 }}
+      onClick={handleClick}
+      className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full cursor-pointer"
+    >
       {/* Hero Image */}
       <div className="relative h-40 sm:h-48 overflow-hidden">
         <Image
@@ -217,12 +223,11 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
             <p className="text-xs text-slate-400 line-through">{plan.retailPriceUsd > plan.priceUsd ? formatPrice(plan.retailPriceUsd) : ""}</p>
             <p className="text-2xl font-bold text-slate-800">{formatPrice(displayPrice)}</p>
           </div>
-          <Link href={planUrl} className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm">
+          <span className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm">
             Buy Now
-          </Link>
+          </span>
         </div>
       </div>
     </motion.div>
-    </Link>
   );
 }
