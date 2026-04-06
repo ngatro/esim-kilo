@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+interface CountryWithPlan {
+  id: string;
+  code: string;
+  name: string;
+  emoji: string;
+  plans: { regionName: string | null }[];
+}
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const q = url.searchParams.get("q") || "";
-    const limit = parseInt(url.searchParams.get("limit") || "10");
+    const q = (url.searchParams.get("q") || "").trim();
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "10") || 10, 50);
 
     const where = q ? {
       OR: [
@@ -16,18 +24,22 @@ export async function GET(request: Request) {
 
     const countries = await prisma.country.findMany({
       where,
-      include: { 
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        emoji: true,
         plans: {
           where: { isActive: true },
           select: { regionName: true },
           take: 1,
-        }
+        },
       },
       take: limit,
       orderBy: { name: "asc" },
     });
 
-    const results = countries.map((c: { id: string; code: string; name: string; emoji: string; plans: { regionName: string | null }[] }) => ({
+    const results: CountryWithPlan[] = countries.map((c: CountryWithPlan) => ({
       id: c.id,
       code: c.code,
       name: c.name,
@@ -38,6 +50,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ countries: results });
   } catch (error) {
     console.error("Country search error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ error: "Failed to search countries" }, { status: 500 });
   }
 }

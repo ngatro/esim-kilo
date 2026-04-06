@@ -381,7 +381,7 @@ export default function CheckoutPage() {
               <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Your eSIM Plan</h2>
               <div className="flex items-center gap-3 sm:gap-4">
                 {plan.locationLogo ? (
-                  <img src={`https://p.qrsim.net/img/flags/${plan.locationLogo}`} alt={plan.destination} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+                  <img src={plan.locationLogo} alt={plan.destination} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
                 ) : (
                   <span className="text-3xl sm:text-4xl">{plan.country?.emoji || plan.region?.emoji || "🌍"}</span>
                 )}
