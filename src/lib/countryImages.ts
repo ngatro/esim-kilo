@@ -59,20 +59,27 @@ export function getCountryName(isoCode: string | null): string | null {
   return COUNTRY_NAMES[isoCode.toUpperCase()] || null;
 }
 
-export function getCountryFlagClass(countryCode: string | null): string | null {
+export function getCountryImagePath(countryCode: string | null): string | null {
   if (!countryCode) return null;
   const code = countryCode.toUpperCase();
   const countryName = getCountryName(code);
   if (!countryName) return null;
-  return `fi fi-${code.toLowerCase()}`;
+  return `/images/countries/${code.toLowerCase()}.jpg`;
 }
 
-export const REGION_FLAG_CLASSES: Record<string, string> = {
-  asia: "fi fi-as",
-  europe: "fi fi-eu",
-  americas: "fi fi-un",
-  africa: "fi fi-un",
-  oceania: "fi fi-oc",
-  "middle-east": "fi fi-un",
-  global: "fi fi-un",
-};
+export function getRegionImagePath(regionId: string | null): string {
+  if (!regionId) return "/images/countries/default.jpg";
+  const regionKey = regionId.toLowerCase();
+  const regionPaths: Record<string, string> = {
+    asia: "/images/countries/asia.jpg",
+    europe: "/images/countries/europe.jpg",
+    americas: "/images/countries/americas.jpg",
+    africa: "/images/countries/africa.jpg",
+    oceania: "/images/countries/oceania.jpg",
+    "middle-east": "/images/countries/middle-east.jpg",
+    global: "/images/countries/global.jpg",
+  };
+  return regionPaths[regionKey] || "/images/countries/default.jpg";
+}
+
+export const DEFAULT_IMAGE_PATH = "/images/countries/default.jpg";
