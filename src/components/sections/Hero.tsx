@@ -1,15 +1,49 @@
 import { motion } from "framer-motion";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useState, useEffect } from "react";
+
+const HERO_IMAGES = [
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&q=80",
+  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80",
+  "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=1920&q=80",
+  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&q=80",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80",
+  "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=1920&q=80",
+];
 
 export default function Hero() {
   const { t } = useI18n();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <section className="relative pt-32 pb-20 overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-br from-sky-900/20 via-slate-900 to-indigo-900/20" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNHoiIGZpbGw9IiMyMDIzYjYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-30" />
+    <section className="relative pt-32 pb-20 overflow-hidden min-h-[600px] flex items-center">
+          {/* Dynamic Background */}
+          <div className="absolute inset-0">
+            {HERO_IMAGES.map((src, index) => (
+              <div
+                key={index}
+                className="absolute inset-0 transition-opacity duration-1000"
+                style={{
+                  backgroundImage: `url(${src})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  opacity: index === currentImageIndex ? 1 : 0,
+                }}
+              />
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-indigo-900/80" />
+          </div>
           
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNHoiIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-20" />
+          
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
             <motion.div 
               className="text-center max-w-4xl mx-auto"
               initial={{ opacity: 0, y: 30 }}
