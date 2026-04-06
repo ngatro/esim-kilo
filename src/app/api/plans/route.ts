@@ -59,24 +59,48 @@ function resolveLocation(pkg: Record<string, unknown>) {
   const locations = ((pkg.location as string) || "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
 
   if (locationCode === "!GL") return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || "Global" };
-  if (locationCode === "!RG" || locations.length > 5) return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || locationCode };
 
+  // Single country
   if (locations.length === 1) {
     const info = COUNTRY_TO_REGION[locations[0]];
     if (info) return { regionId: info.regionId, regionName: info.regionName, countryId: locations[0], countryName: info.countryName, destination: pkgName || info.countryName };
   }
 
+  // Multiple countries (regional plans) - derive region from countries
   if (locations.length > 1) {
-    const counts: Record<string, number> = {};
+    const counts: Record<string, { name: string; count: number }> = {};
     for (const loc of locations) {
       const info = COUNTRY_TO_REGION[loc];
-      if (info) counts[info.regionId] = (counts[info.regionId] || 0) + 1;
+      if (info) {
+        if (!counts[info.regionId]) counts[info.regionId] = { name: info.regionName, count: 0 };
+        counts[info.regionId].count++;
+      }
     }
-    let maxR = "global"; let maxC = 0;
-    for (const [r, c] of Object.entries(counts)) { if (c > maxC) { maxC = c; maxR = r; } }
-    return { regionId: maxR, regionName: maxR.charAt(0).toUpperCase() + maxR.slice(1), countryId: null, countryName: "", destination: pkgName || locationCode };
+    
+    // Find the region with most countries
+    let maxR = "global"; let maxC = 0; let maxName = "Global";
+    for (const [r, data] of Object.entries(counts)) { 
+      if (data.count > maxC) { maxC = data.count; maxR = r; maxName = data.name; } 
+    }
+    
+    // Only use derived region if we have at least 1 known country, otherwise fallback
+    if (maxC > 0) {
+      return { regionId: maxR, regionName: maxName, countryId: null, countryName: "", destination: pkgName || locationCode };
+    }
+    
+    // No known countries in the list - try to parse from locationCode (e.g., "ASIA", "EUROPE")
+    if (locationCode === "!RG" || locationCode.length > 2) {
+      const regionFromCode = locationCode.replace("!RG", "").toLowerCase();
+      if (regionFromCode && regionFromCode.length > 1) {
+        const regionName = regionFromCode.charAt(0).toUpperCase() + regionFromCode.slice(1);
+        return { regionId: regionFromCode, regionName, countryId: null, countryName: "", destination: pkgName || locationCode };
+      }
+    }
+    
+    return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || locationCode };
   }
 
+  // Unknown - fallback
   return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || locationCode };
 }
 
@@ -279,7 +303,7 @@ export async function GET(request: Request) {
     const plans = await prisma.plan.findMany({ where, orderBy, take });
 
     // Serialize BigInt to number for JSON
-    const serialized = plans.map((p) => ({
+    const serialized = plans.map((p: { dataVolume: bigint }) => ({
       ...p,
       dataVolume: Number(p.dataVolume),
     }));
