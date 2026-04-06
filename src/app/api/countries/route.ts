@@ -17,10 +17,10 @@ export async function GET(request: Request) {
 
     const where = q ? {
       OR: [
-        { name: { contains: q, mode: "insensitive" } },
-        { code: { contains: q, mode: "insensitive" } },
+        { name: { contains: q, mode: "insensitive" as const } },
+        { code: { contains: q, mode: "insensitive" as const } },
       ],
-    } : {};
+    } : undefined;
 
     const countries = await prisma.country.findMany({
       where,
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       orderBy: { name: "asc" },
     });
 
-    const results: CountryWithPlan[] = countries.map((c: CountryWithPlan) => ({
+    const results: CountryWithPlan[] = countries.map((c: typeof countries[number]) => ({
       id: c.id,
       code: c.code,
       name: c.name,
