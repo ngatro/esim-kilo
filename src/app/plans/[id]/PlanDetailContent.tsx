@@ -26,34 +26,35 @@ interface Plan {
   packageCode: string;
   description: string | null;
   destination: string;
-  dataAmount: number;
+  dataType: number;
   dataVolume: number;
+  dataAmount: number;
   durationDays: number;
   durationUnit: string;
-  priceRaw: number;
   priceUsd: number;
-  retailPriceRaw: number;
   retailPriceUsd: number;
   currencyCode: string;
   speed: string | null;
   networkType: string | null;
-  dataType: number;
-  regionName: string | null;
+  locationCode: string | null;
+  locationLogo: string | null;
+  locations: unknown;
+  coverageCount: number;
+  smsStatus: number;
+  activeType: number;
+  supportTopUp: boolean;
+  unusedValidTime: number;
+  ipExport: string | null;
+  fupPolicy: string | null;
   countryId: string | null;
   countryName: string | null;
-  coverageCount: number;
+  regionId: string | null;
+  regionName: string | null;
+  isActive: boolean;
   isPopular: boolean;
   isBestSeller: boolean;
   isHot: boolean;
   badge: string | null;
-  locationCode: string | null;
-  locations: unknown;
-  ipExport: string | null;
-  supportTopUp: boolean;
-  unusedValidTime: number;
-  smsStatus: number;
-  activeType: number;
-  fupPolicy: string | null;
   locationNetworkList: unknown;
 }
 
@@ -201,16 +202,53 @@ const DEFAULT_IMAGES = [
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80",
 ];
 
-function getHeroImage(countryId: string | null): string {
-  if (!countryId) {
-    return DEFAULT_IMAGES[Math.floor(Math.random() * DEFAULT_IMAGES.length)];
+const REGION_IMAGES: Record<string, string[]> = {
+  asia: [
+    "https://images.unsplash.com/photo-1548002946-724e3fc4a14a?w=1600&q=80",
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
+  ],
+  europe: [
+    "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=1600&q=80",
+    "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1600&q=80",
+  ],
+  americas: [
+    "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1600&q=80",
+    "https://images.unsplash.com/photo-1533533044978-2c8e55065f4f?w=1600&q=80",
+  ],
+  africa: [
+    "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=1600&q=80",
+    "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1600&q=80",
+  ],
+  oceania: [
+    "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=1600&q=80",
+    "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=1600&q=80",
+  ],
+  "middle-east": [
+    "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1600&q=80",
+    "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=1600&q=80",
+  ],
+};
+
+function getHeroImage(plan: Plan): string {
+  // For regional plans (2+ countries), use regionId
+  if (plan.coverageCount >= 2 && plan.regionId) {
+    const regionKey = plan.regionId.toLowerCase();
+    const regionImages = REGION_IMAGES[regionKey];
+    if (regionImages && regionImages.length > 0) {
+      return regionImages[plan.packageCode.charCodeAt(0) % regionImages.length];
+    }
   }
-  const key = countryId.toUpperCase();
-  const images = HERO_IMAGES[key];
-  if (images && images.length > 0) {
-    return images[Math.floor(Math.random() * images.length)];
+
+  // For single country plans, use countryId
+  if (plan.countryId) {
+    const key = plan.countryId.toUpperCase();
+    const images = HERO_IMAGES[key];
+    if (images && images.length > 0) {
+      return images[plan.packageCode.charCodeAt(0) % images.length];
+    }
   }
-  return DEFAULT_IMAGES[Math.floor(Math.random() * DEFAULT_IMAGES.length)];
+
+  return DEFAULT_IMAGES[plan.packageCode.charCodeAt(0) % DEFAULT_IMAGES.length];
 }
 
 export default function PlanDetailContent() {
@@ -299,12 +337,12 @@ export default function PlanDetailContent() {
           {/* Left - Image */}
           <div className="relative aspect-[1/1] lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
             <Image
-              src={getHeroImage(plan.countryId)}
+              src={getHeroImage(plan)}
               alt={plan.destination}
               fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
               priority
-              unoptimized
             />
             <div className="absolute top-4 left-4 flex flex-wrap gap-2">
               {plan.badge === "unlimited" && (

@@ -23,6 +23,8 @@ interface Plan {
   coverageCount: number;
   countryId: string | null;
   countryName: string | null;
+  regionId: string | null;
+  regionName: string | null;
   locations: unknown;
   ipExport: string | null;
   supportTopUp: boolean;
