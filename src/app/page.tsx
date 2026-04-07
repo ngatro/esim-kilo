@@ -65,6 +65,7 @@ function DeviceCompatibility() {
                     fill
                     className="object-cover"
                     unoptimized
+                    loading="eager"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-4">
@@ -354,6 +355,7 @@ function Testimonials() {
                     fill
                     className="object-cover"
                     unoptimized
+                    loading="eager"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                   <div className="absolute bottom-3 left-4">
