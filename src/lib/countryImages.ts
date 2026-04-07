@@ -52,32 +52,89 @@ const COUNTRY_NAMES: Record<string, string> = {
   ZM: "Zambia", ZW: "Zimbabwe",
 };
 
+const UNSPLASH_PHOTO_IDS = [
+  "1506905925346", "1548002946", "1499856871958", "1519671482749", "1470770841072",
+  "1533533044978", "1489392191049", "1516026672322", "1504214208698", "1507699622108",
+  "1512453979798", "1511818966892", "1488646953014", "1506929562872", "1476514525535",
+  "1469474968028", "1507525428034", "1528181304800", "1524492412937", "1542051841857",
+  "1536098561742", "1542051841857", "1524413840807", "1538485399081", "1552465011",
+];
+
 export function getCountryName(isoCode: string | null): string | null {
   if (!isoCode) return null;
   return COUNTRY_NAMES[isoCode.toUpperCase()] || null;
 }
 
-export function getCountryImagePath(countryCode: string | null): string | null {
+function getConsistentHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+export function getCountryImageUrl(countryCode: string | null): string | null {
   if (!countryCode) return null;
   const code = countryCode.toUpperCase();
   const countryName = getCountryName(code);
   if (!countryName) return null;
-  return `/images/countries/${code.toLowerCase()}.webp`;
+  
+  const hash = getConsistentHash(code);
+  const photoId = UNSPLASH_PHOTO_IDS[hash % UNSPLASH_PHOTO_IDS.length];
+  
+  return `https://images.unsplash.com/photo-${photoId}?w=800&q=80&auto=format&fit=crop`;
 }
 
-export function getRegionImagePath(regionId: string | null): string {
-  if (!regionId) return "/images/countries/default.webp";
+export function getRegionImageUrl(regionId: string | null): string {
+  if (!regionId) return "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80";
+  
   const regionKey = regionId.toLowerCase();
-  const regionPaths: Record<string, string> = {
-    asia: "/images/countries/asia.webp",
-    europe: "/images/countries/europe.webp",
-    americas: "/images/countries/americas.webp",
-    africa: "/images/countries/africa.webp",
-    oceania: "/images/countries/oceania.webp",
-    "middle-east": "/images/countries/middle-east.webp",
-    global: "/images/countries/global.webp",
+  const regionHash = getConsistentHash(regionKey);
+  
+  const regionImages: Record<string, string[]> = {
+    asia: [
+      "https://images.unsplash.com/photo-1548002946-724e3fc4a14a?w=800&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+    ],
+    europe: [
+      "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80",
+      "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80",
+    ],
+    americas: [
+      "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=800&q=80",
+      "https://images.unsplash.com/photo-1533533044978-2c8e55065f4f?w=800&q=80",
+    ],
+    africa: [
+      "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=800&q=80",
+      "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=800&q=80",
+    ],
+    oceania: [
+      "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=800&q=80",
+      "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=800&q=80",
+    ],
+    "middle-east": [
+      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80",
+      "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800&q=80",
+    ],
+    global: [
+      "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80",
+      "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800&q=80",
+    ],
   };
-  return regionPaths[regionKey] || "/images/countries/default.webp";
+  
+  const images = regionImages[regionKey] || regionImages.global;
+  return images[regionHash % images.length];
 }
 
-export const DEFAULT_IMAGE_PATH = "/images/countries/default.webp";
+export const DEFAULT_IMAGE_URL = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80";
+
+export function getDefaultImage(seed: string): string {
+  const hash = getConsistentHash(seed);
+  const defaults = [
+    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&q=80",
+    "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800&q=80",
+    "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80",
+  ];
+  return defaults[hash % defaults.length];
+}

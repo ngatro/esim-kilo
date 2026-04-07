@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getCountryImagePath, getRegionImagePath, DEFAULT_IMAGE_PATH } from "@/lib/countryImages";
+import { getCountryImageUrl, getRegionImageUrl, getDefaultImage } from "@/lib/countryImages";
 
 interface OperatorInfo {
   operatorName: string;
@@ -77,14 +77,14 @@ function getDataTypeLabel(type: number): string {
 
 function getHeroImage(plan: Plan): string {
   if (plan.coverageCount >= 2 && plan.regionId) {
-    return getRegionImagePath(plan.regionId);
+    return getRegionImageUrl(plan.regionId);
   }
 
   if (plan.countryId) {
-    return getCountryImagePath(plan.countryId) || DEFAULT_IMAGE_PATH;
+    return getCountryImageUrl(plan.countryId) || getDefaultImage(plan.packageCode);
   }
 
-  return DEFAULT_IMAGE_PATH;
+  return getDefaultImage(plan.packageCode);
 }
 
 export default function PlanDetailContent() {
@@ -95,7 +95,7 @@ export default function PlanDetailContent() {
   const [quantity, setQuantity] = useState(1);
   const [imgError, setImgError] = useState(false);
 
-  const heroImage = plan ? (imgError ? DEFAULT_IMAGE_PATH : getHeroImage(plan)) : "";
+  const heroImage = plan ? (imgError ? getDefaultImage(plan.packageCode) : getHeroImage(plan)) : "";
 
   useEffect(() => {
     async function fetchPlan() {

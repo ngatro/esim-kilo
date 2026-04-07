@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { getCountryImagePath, getRegionImagePath, DEFAULT_IMAGE_PATH } from "@/lib/countryImages";
+import { getCountryImageUrl, getRegionImageUrl, getDefaultImage } from "@/lib/countryImages";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -36,14 +36,14 @@ interface Plan {
 
 function getPlanImage(plan: Plan): string {
   if (plan.coverageCount >= 2 && plan.regionId) {
-    return getRegionImagePath(plan.regionId);
+    return getRegionImageUrl(plan.regionId);
   }
 
   if (plan.countryId) {
-    return getCountryImagePath(plan.countryId) || DEFAULT_IMAGE_PATH;
+    return getCountryImageUrl(plan.countryId) || getDefaultImage(plan.packageCode);
   }
 
-  return DEFAULT_IMAGE_PATH;
+  return getDefaultImage(plan.packageCode);
 }
 
 function formatVolume(bytes: number): string {
@@ -63,7 +63,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const pricePerDay = formatPrice(displayPrice / plan.durationDays);
   const locations = Array.isArray(plan.locations) ? plan.locations : [];
-  const heroImage = imgError ? DEFAULT_IMAGE_PATH : getPlanImage(plan);
+  const heroImage = imgError ? getDefaultImage(plan.packageCode) : getPlanImage(plan);
   const planUrl = `/plans/${plan.slug || plan.id}`;
 
   const handleClick = () => {
