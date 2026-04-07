@@ -34,7 +34,7 @@ export default function Header() {
   const router = useRouter();
   const { user, logout, loading: authLoading } = useAuth();
   const { items } = useCart();
-  const { openLogin } = useUI();
+  const { openLogin, openCart } = useUI();
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -240,7 +240,7 @@ export default function Header() {
             </div>
 
             {/* Cart */}
-            <Link href="/checkout" className="relative p-2 text-slate-600 hover:text-orange-500 transition-colors">
+            <button onClick={openCart} className="relative p-2 text-slate-600 hover:text-orange-500 transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
@@ -249,23 +249,51 @@ export default function Header() {
                   {cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
-            {/* Auth */}
+            {/* Auth - User Dropdown */}
             {mounted && authLoading ? (
               <div className="hidden md:flex items-center gap-2">
                 <div className="w-8 h-8 bg-slate-100 rounded-lg animate-pulse" />
               </div>
             ) : mounted && !authLoading && user ? (
-              <div className="hidden md:flex items-center gap-4">
-                <Link href="/profile" className="text-sm text-slate-600 hover:text-orange-500 transition-colors">Profile</Link>
-                <Link href="/orders" className="text-sm text-slate-600 hover:text-orange-500 transition-colors">{t("header.myOrders")}</Link>
-                <button
-                  onClick={() => logout()}
-                  className="text-sm font-medium text-slate-400 hover:text-orange-500 transition-colors"
-                >
-                  {t("header.logout")}
+              <div className="relative group">
+                <button className="flex items-center gap-2 p-1.5 text-slate-600 hover:text-orange-500 transition-colors">
+                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
                 </button>
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50 hidden group-hover:block">
+                  <div className="px-4 py-2 border-b border-slate-100">
+                    <p className="text-sm font-medium text-slate-800 truncate">{user.name}</p>
+                    <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                  </div>
+                  <Link href="/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    {t("common.profile") || "Profile"}
+                  </Link>
+                  <Link href="/orders" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    {t("header.myOrders")}
+                  </Link>
+                  <div className="border-t border-slate-100 mt-1 pt-1">
+                    <button
+                      onClick={() => logout()}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-400 hover:bg-orange-50 hover:text-orange-500"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      {t("header.logout")}
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : mounted && !authLoading && !user ? (
               <button 
