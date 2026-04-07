@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/components/providers/I18nProvider";
-import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 interface Plan {
@@ -75,7 +74,6 @@ export default function DevicesPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
       <main className="pt-28 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">

@@ -1,4 +1,3 @@
-import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Metadata } from "next";
 
@@ -10,7 +9,6 @@ export const metadata: Metadata = {
 export default function SupportPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Header />
       <main className="pt-28 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">

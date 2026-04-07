@@ -1,10 +1,8 @@
-import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <Header />
       <main className="pt-28 pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>

@@ -13,7 +13,7 @@ import LoginModal from "@/components/ui/LoginModal";
 import RegisterModal from "@/components/ui/RegisterModal";
 import ResetPasswordModal from "@/components/ui/ResetPasswordModal";
 import CartModal from "@/components/ui/CartModal";
-import SupportWidget from "@/components/ui/SupportWidget";
+import TawkToWidget from "@/components/ui/TawkToWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,7 +67,7 @@ export default async function RootLayout({
                 <RegisterModal />
                 <ResetPasswordModal />
                 <CartModal />
-                <SupportWidget />
+                <TawkToWidget />
               </UIProvider>
             </CartProvider>
           </AuthProvider>

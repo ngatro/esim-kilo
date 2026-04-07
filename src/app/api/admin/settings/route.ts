@@ -12,6 +12,8 @@ async function getSettings() {
     return {
       whatsappNumber: "84912345678",
       supportEmail: "support@openworldesim.com",
+      tawkPropertyId: "",
+      tawkWidgetId: "",
     };
   }
 }
@@ -37,11 +39,17 @@ export async function POST(request: Request) {
     const body = await request.json();
     const settings = await getSettings();
     
-    if (body.whatsappNumber) {
+    if (body.whatsappNumber !== undefined) {
       settings.whatsappNumber = body.whatsappNumber;
     }
-    if (body.supportEmail) {
+    if (body.supportEmail !== undefined) {
       settings.supportEmail = body.supportEmail;
+    }
+    if (body.tawkPropertyId !== undefined) {
+      settings.tawkPropertyId = body.tawkPropertyId;
+    }
+    if (body.tawkWidgetId !== undefined) {
+      settings.tawkWidgetId = body.tawkWidgetId;
     }
 
     const saved = await saveSettings(settings);

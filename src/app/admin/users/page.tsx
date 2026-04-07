@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 interface User {
@@ -127,7 +126,6 @@ export default function AdminUsersPage() {
   if (authLoading || !user || user.role !== "admin") {
     return (
       <>
-        <Header />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
           <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full"></div>
         </div>
@@ -138,7 +136,6 @@ export default function AdminUsersPage() {
 
   return (
     <>
-      <Header />
       <div className="min-h-screen bg-slate-50 py-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between mb-8">

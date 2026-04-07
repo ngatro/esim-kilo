@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useUI } from "@/components/providers/UIProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useI18n } from "@/components/providers/I18nProvider";
-import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 interface Order {
@@ -130,7 +129,6 @@ export default function ProfilePage() {
   if (authLoading || !user) {
     return (
       <>
-        <Header />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
           <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full"></div>
         </div>
@@ -141,7 +139,6 @@ export default function ProfilePage() {
 
   return (
     <>
-      <Header />
       <div className="min-h-screen bg-slate-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-slate-800 mb-2">{t("title")}</h1>

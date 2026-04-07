@@ -7,6 +7,8 @@ import Link from "next/link";
 interface SiteSettings {
   whatsappNumber: string;
   supportEmail: string;
+  tawkPropertyId: string;
+  tawkWidgetId: string;
 }
 
 export default function AdminSettingsPage() {
@@ -14,6 +16,8 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>({
     whatsappNumber: "84912345678",
     supportEmail: "support@openworldesim.com",
+    tawkPropertyId: "",
+    tawkWidgetId: "",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -29,6 +33,8 @@ export default function AdminSettingsPage() {
         const data = await res.json();
         if (data.whatsappNumber) setSettings((prev) => ({ ...prev, whatsappNumber: data.whatsappNumber }));
         if (data.supportEmail) setSettings((prev) => ({ ...prev, supportEmail: data.supportEmail }));
+        if (data.tawkPropertyId) setSettings((prev) => ({ ...prev, tawkPropertyId: data.tawkPropertyId }));
+        if (data.tawkWidgetId) setSettings((prev) => ({ ...prev, tawkWidgetId: data.tawkWidgetId }));
       }
     } catch (error) {
       console.error("Failed to fetch settings:", error);
@@ -115,6 +121,35 @@ export default function AdminSettingsPage() {
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
               />
               <p className="text-xs text-slate-500 mt-1">Email address for customer support</p>
+            </div>
+
+            <div className="border-t border-slate-200 pt-6">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Live Chat (Tawk.to)</h3>
+              <p className="text-sm text-slate-500 mb-4">Configure Tawk.to live chat widget</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Property ID</label>
+              <input
+                type="text"
+                value={settings.tawkPropertyId}
+                onChange={(e) => setSettings({ ...settings, tawkPropertyId: e.target.value })}
+                placeholder="e.g., 64f8a1b2e0c67270e1d2f123"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+              />
+              <p className="text-xs text-slate-500 mt-1">Your Tawk.to property ID (from Dashboard → Chat Widget → Property ID)</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Widget ID</label>
+              <input
+                type="text"
+                value={settings.tawkWidgetId}
+                onChange={(e) => setSettings({ ...settings, tawkWidgetId: e.target.value })}
+                placeholder="e.g., 1hbcdef12"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+              />
+              <p className="text-xs text-slate-500 mt-1">Your Tawk.to widget ID (from Dashboard → Chat Widget → Widget ID)</p>
             </div>
 
             <div className="pt-4 flex items-center gap-4">

@@ -19,6 +19,7 @@ interface Plan {
   isBestSeller: boolean;
   isHot: boolean;
   badge: string | null;
+  priority: number;
 }
 
 function formatData(gb: number): string {
@@ -179,11 +180,67 @@ export default function AdminPlansPage() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex gap-1">
-                          {plan.isBestSeller && <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">★ Best</span>}
-                          {plan.isHot && <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full">🔥 Hot</span>}
-                          {plan.isPopular && <span className="text-[10px] bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full">Popular</span>}
-                          {plan.badge === "unlimited" && <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">∞ Unlimited</span>}
+                        <div className="flex flex-col gap-1">
+                          <div className="flex gap-1">
+                            <button 
+                              onClick={() => toggleField(plan.id, "isBestSeller", plan.isBestSeller)} 
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full transition-colors ${plan.isBestSeller ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400 hover:bg-amber-50"}`}
+                              title="Best Seller"
+                            >
+                              ★
+                            </button>
+                            <button 
+                              onClick={() => toggleField(plan.id, "isHot", plan.isHot)} 
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full transition-colors ${plan.isHot ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-400 hover:bg-red-50"}`}
+                              title="Hot"
+                            >
+                              🔥
+                            </button>
+                            <button 
+                              onClick={() => toggleField(plan.id, "isPopular", plan.isPopular)} 
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full transition-colors ${plan.isPopular ? "bg-cyan-100 text-cyan-700" : "bg-slate-100 text-slate-400 hover:bg-cyan-50"}`}
+                              title="Popular"
+                            >
+                              ★
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-400">Prio:</span>
+                            <input 
+                              type="number" 
+                              value={plan.priority || 0}
+                              onChange={async (e) => {
+                                const newPriority = parseInt(e.target.value) || 0;
+                                await fetch("/api/admin/plans", {
+                                  method: "PATCH",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ id: plan.id, priority: newPriority }),
+                                });
+                                setPlans(plans.map((p) => (p.id === plan.id ? { ...p, priority: newPriority } : p)));
+                              }}
+                              className="w-12 bg-white border border-slate-300 rounded px-1 py-0.5 text-[10px] text-slate-800"
+                              title="Priority (higher = more visible)"
+                            />
+                            <select
+                              value={plan.badge || ""}
+                              onChange={async (e) => {
+                                const newBadge = e.target.value || null;
+                                await fetch("/api/admin/plans", {
+                                  method: "PATCH",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ id: plan.id, badge: newBadge }),
+                                });
+                                setPlans(plans.map((p) => (p.id === plan.id ? { ...p, badge: newBadge } : p)));
+                              }}
+                              className="bg-white border border-slate-300 rounded px-1 py-0.5 text-[10px] text-slate-800"
+                              title="Badge"
+                            >
+                              <option value="">None</option>
+                              <option value="unlimited">∞ Unlimited</option>
+                              <option value="new">New</option>
+                              <option value="recommended">Recommended</option>
+                            </select>
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
