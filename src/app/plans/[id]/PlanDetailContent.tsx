@@ -59,10 +59,12 @@ interface Plan {
   locationNetworkList: unknown;
 }
 
-function formatData(gb: number): string {
-  if (gb >= 999) return "Unlimited";
-  if (gb < 1) return `${Math.round(gb * 1024)}MB`;
-  return `${gb}GB`;
+function formatData(gb: number, volume?: number): string {
+  const dataValue = gb > 0 ? gb : (volume ? Math.round((volume / (1024 * 1024 * 1024)) * 10) / 10 : 0);
+  if (dataValue >= 999) return "Unlimited";
+  if (dataValue < 1 && dataValue > 0) return `${Math.round(dataValue * 1024)}MB`;
+  if (dataValue === 0) return "N/A";
+  return `${dataValue}GB`;
 }
 
 function getDataTypeLabel(type: number): string {
@@ -292,7 +294,7 @@ export default function PlanDetailContent() {
                       {plan.fupPolicy ? (
                         <>Unlimited <span className="text-green-600 text-sm">({plan.fupPolicy} after)</span></>
                       ) : (
-                        formatData(plan.dataAmount)
+                        formatData(plan.dataAmount, plan.dataVolume)
                       )}
                     </p>
                   </div>
@@ -377,7 +379,7 @@ export default function PlanDetailContent() {
                   {[
                     plan.fupPolicy 
                       ? `Unlimited Data (high speed, then ${plan.fupPolicy})` 
-                      : `${plan.dataAmount}GB Data`,
+                      : `${plan.dataAmount > 0 ? plan.dataAmount : Math.round(Number(plan.dataVolume) / (1024 * 1024 * 1024) * 10) / 10}GB Data`,
                     `${plan.durationDays} Days Validity`,
                     plan.speed || "4G LTE Network",
                     "Instant QR Code Delivery via Email",
