@@ -323,18 +323,28 @@ export default function OrdersPage() {
                                         </div>
                                       )}
                                       
-                                      {/* Top-up button */}
-                                      {item.esimIccid && (item as { plan?: { supportTopUpType?: number } }).plan?.supportTopUpType && ((item as { plan?: { supportTopUpType?: number } }).plan?.supportTopUpType === 2 || (item as { plan?: { supportTopUpType?: number } }).plan?.supportTopUpType === 3) && (
-                                        <Link href={`/topup?iccid=${item.esimIccid}`}>
-                                          <button className="mt-3 w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">
-                                            {(item as { plan?: { supportTopUpType?: number } }).plan?.supportTopUpType === 3 ? "↻ Extend Days" : "+ Top-up Data"}
-                                          </button>
-                                        </Link>
-                                      )}
-                                      {item.esimIccid && (item as { plan?: { supportTopUpType?: number } }).plan?.supportTopUpType === 1 && (
-                                        <div className="mt-3 text-center">
-                                          <span className="text-slate-400 text-xs">Top-up not available for this plan</span>
-                                        </div>
+                                      {/* Top-up button - check plan supportTopUpType */}
+                                      {item.esimIccid && (item as { plan?: { supportTopUpType?: number } }).plan && (
+                                        (() => {
+                                          const plan = (item as { plan?: { supportTopUpType?: number } }).plan;
+                                          if (plan?.supportTopUpType === 2 || plan?.supportTopUpType === 3) {
+                                            return (
+                                              <Link href={`/topup?iccid=${item.esimIccid}`}>
+                                                <button className="mt-3 w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">
+                                                  {plan.supportTopUpType === 3 ? "↻ Extend Days" : "+ Top-up Data"}
+                                                </button>
+                                              </Link>
+                                            );
+                                          }
+                                          if (plan?.supportTopUpType === 1) {
+                                            return (
+                                              <div className="mt-3 text-center">
+                                                <span className="text-slate-400 text-xs">Top-up not available for this plan</span>
+                                              </div>
+                                            );
+                                          }
+                                          return null;
+                                        })()
                                       )}
                                     </div>
                                   )}

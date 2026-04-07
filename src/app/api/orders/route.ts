@@ -171,7 +171,7 @@ export async function GET(request: Request) {
       include: {
         orderItems: {
           include: {
-            plan: { select: { id: true, supportTopUp: true, supportTopUpType: true, name: true } },
+            plan: { select: { id: true, supportTopUpType: true, name: true } },
           },
         },
         user: { select: { id: true, name: true, email: true } },
