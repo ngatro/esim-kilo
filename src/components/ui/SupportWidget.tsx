@@ -22,7 +22,16 @@ export default function SupportWidget() {
   const [phoneNumber, setPhoneNumber] = useState("84912345678");
   const [tawkSettings, setTawkSettings] = useState<TawkSettings>({ tawkPropertyId: "", tawkWidgetId: "" });
   const [isOpen, setIsOpen] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
   const widgetRef = useRef<HTMLDivElement>(null);
+
+  const handleToggle = () => {
+    const newState = !isOpen;
+    setIsOpen(newState);
+    if (newState && !hasOpened) {
+      setHasOpened(true);
+    }
+  };
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -37,6 +46,7 @@ export default function SupportWidget() {
   }, []);
 
   useEffect(() => {
+    if (!hasOpened) return;
     if (!tawkSettings.tawkPropertyId || !tawkSettings.tawkWidgetId) return;
 
     const existing = document.querySelector('script[src*="tawk.to"]');
@@ -48,7 +58,7 @@ export default function SupportWidget() {
       script.setAttribute("crossorigin", "*");
       document.body.appendChild(script);
     }
-  }, [tawkSettings]);
+  }, [tawkSettings, hasOpened]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -141,7 +151,7 @@ export default function SupportWidget() {
       </AnimatePresence>
 
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-4 rounded-full shadow-lg shadow-orange-500/30 flex items-center justify-center"
