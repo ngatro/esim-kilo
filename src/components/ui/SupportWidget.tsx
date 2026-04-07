@@ -52,10 +52,11 @@ export default function SupportWidget() {
     const existing = document.querySelector('script[src*="tawk.to"]');
     if (!existing) {
       const script = document.createElement("script");
-      script.src = "https://embed.tawk.to/" + tawkSettings.tawkPropertyId + "/" + tawkSettings.tawkWidgetId;
+      script.src = "https://embed.tawk.to/" + tawkSettings.tawkPropertyId + "/" + tawkSettings.tawkWidgetId + "?disableCollapsed=true";
       script.async = true;
       script.charset = "utf-8";
       script.setAttribute("crossorigin", "*");
+      script.setAttribute("data-auto-invisible", "true");
       document.body.appendChild(script);
     }
   }, [tawkSettings, hasOpened]);
