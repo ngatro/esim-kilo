@@ -20,15 +20,6 @@ const HOT_COUNTRIES = [
   { code: "DE", name: "Germany", emoji: "🇩🇪" },
 ];
 
-const DEVICES = [
-  { id: "iphone", name: "iPhone", emoji: "📱" },
-  { id: "android", name: "Android", emoji: "📱" },
-  { id: "ipad", name: "iPad", emoji: "📱" },
-  { id: "hotspot", name: "Mobile Hotspot", emoji: "📡" },
-  { id: "laptop", name: "Laptop", emoji: "💻" },
-  { id: "smartwatch", name: "Smartwatch", emoji: "⌚" },
-];
-
 const REGIONS = [
   { id: "asia", name: "Asia", emoji: "🌏" },
   { id: "europe", name: "Europe", emoji: "🏰" },
@@ -70,12 +61,8 @@ export default function Header() {
     },
     { 
       label: t("header.devices"), 
-      href: "/devices",
-      children: [
-        { label: t("header.allDevices"), href: "/devices" },
-        { label: "divider", href: "" },
-        { label: t("header.byDevice"), href: "", children: DEVICES.map(d => ({ label: d.name, href: `/devices?type=${d.id}`, emoji: d.emoji })) },
-      ]
+      href: "/compatibility",
+      children: null
     },
     { 
       label: t("common.blog"), 
