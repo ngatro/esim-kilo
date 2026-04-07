@@ -89,7 +89,7 @@ export async function GET(request: Request) {
     const orderItem = await prisma.orderItem.findFirst({
       where: { esimIccid: iccid },
       include: { order: { include: { orderItems: true } } },
-      orderBy: { createdAt: "desc" },
+      orderBy: { id: "desc" },
     });
 
     if (!orderItem) {

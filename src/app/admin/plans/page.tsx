@@ -19,6 +19,7 @@ interface Plan {
   isPopular: boolean;
   isBestSeller: boolean;
   isHot: boolean;
+  supportTopUp: boolean;
   badge: string | null;
   priority: number;
   networkType: string | null;
@@ -257,6 +258,13 @@ export default function AdminPlansPage() {
                               title="Popular"
                             >
                               ★
+                            </button>
+                            <button 
+                              onClick={() => toggleField(plan.id, "supportTopUp", plan.supportTopUp)} 
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full transition-colors ${plan.supportTopUp ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400 hover:bg-green-50"}`}
+                              title="Support Top-up"
+                            >
+                              ↑
                             </button>
                           </div>
                           <div className="flex items-center gap-1">

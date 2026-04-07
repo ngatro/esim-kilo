@@ -322,6 +322,20 @@ export default function OrdersPage() {
                                             </div>
                                         </div>
                                       )}
+                                      
+                                      {/* Top-up button */}
+                                      {item.esimIccid && (item as { plan?: { supportTopUp?: boolean } }).plan?.supportTopUp && (
+                                        <Link href={`/topup?iccid=${item.esimIccid}`}>
+                                          <button className="mt-3 w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">
+                                            + Top-up Data
+                                          </button>
+                                        </Link>
+                                      )}
+                                      {item.esimIccid && !(item as { plan?: { supportTopUp?: boolean } }).plan?.supportTopUp && (
+                                        <div className="mt-3 text-center">
+                                          <span className="text-slate-400 text-xs">Top-up not available for this plan</span>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>

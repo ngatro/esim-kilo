@@ -91,6 +91,7 @@ model Plan {
   isPopular       Boolean  @default(false)
   isBestSeller    Boolean  @default(false)
   isHot           Boolean  @default(false)
+  supportTopUp    Boolean  @default(false) // Whether this plan supports top-up
   badge           String?
   priority        Int      @default(0)
   
