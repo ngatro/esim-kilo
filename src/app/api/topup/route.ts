@@ -96,7 +96,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "No order found for this ICCID" }, { status: 404 });
     }
 
-    const packages = await getPackageList({ type: "TOPUP" });
+    const packages = await getPackageList({ iccid, type: "TOPUP" });
     const packageList = packages.packageList || [];
     const topUpPackages = packageList.map((p: { packageCode: string; name: string; price: number; volume: number; duration: number }) => ({
       packageCode: p.packageCode,
@@ -119,6 +119,10 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("[Top-up GET] Error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Unable to fetch top-up packages. Please try again later.",
+      topUpPackages: [],
+      currentPlan: null
+    }, { status: 500 });
   }
 }

@@ -50,10 +50,15 @@ export default function TopUpPage() {
       return;
     }
     setLoading(true);
+    setError("");
     try {
       const res = await fetch(`/api/topup?iccid=${encodeURIComponent(iccid)}`);
       const data = await res.json();
-      if (data.error) {
+      if (!res.ok) {
+        setError(data.error || "Failed to fetch top-up packages");
+        setPackages([]);
+        setCurrentPlan(null);
+      } else if (data.error) {
         setError(data.error);
         setPackages([]);
         setCurrentPlan(null);
