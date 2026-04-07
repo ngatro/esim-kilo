@@ -81,11 +81,11 @@ export async function POST(request: Request) {
       },
     });
 
-    // Create a new order item for the top-up record
+    // Create a new order item for the top-up record (no planId since it's a top-up)
     const newOrderItem = await prisma.orderItem.create({
       data: {
         orderId: orderItem.orderId,
-        planId: `topup-${packageCode}`,
+        planId: undefined, // No associated plan for top-up
         planName: `Top-up: ${topUpPackage.name || packageCode}`,
         price: priceUSD,
         quantity: 1,
