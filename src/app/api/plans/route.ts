@@ -3,6 +3,12 @@ import { getPackageList } from "@/lib/esim-access";
 import { prisma } from "@/lib/prisma";
 
 function bytesToGB(bytes: number): number {
+  if (!bytes || bytes <= 0) return 0;
+  // If value is very small (less than 100), assume it's already in GB
+  if (bytes < 100) return Math.round(bytes * 10) / 10;
+  // If value is reasonable for MB (less than 100000), assume MB
+  if (bytes < 100000) return Math.round((bytes / 1024) * 10) / 10;
+  // Otherwise assume bytes
   return Math.round((bytes / (1024 * 1024 * 1024)) * 10) / 10;
 }
 
