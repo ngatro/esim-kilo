@@ -255,13 +255,20 @@ export async function GET(request: Request) {
 
     const where: Record<string, unknown> = { isActive: true };
     if (regionId) where.regionId = regionId;
-    if (countryId) where.countryId = countryId;
-    if (planType === "local") {
+    if (countryId) {
+      where.OR = [
+        { countryId: countryId },
+        { countryId: { contains: countryId } },
+        { destination: { contains: countryId, mode: "insensitive" } },
+      ];
+    } else if (planType === "local") {
       where.countryId = { not: null };
       where.coverageCount = 1;
-    }
-    if (planType === "region") {
+    } else if (planType === "region") {
       where.coverageCount = { gte: 2 };
+    } else if (!countryId) {
+      where.countryId = { not: null };
+      where.coverageCount = 1;
     }
     if (search) {
       where.OR = [

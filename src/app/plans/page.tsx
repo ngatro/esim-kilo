@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useI18n } from "@/components/providers/I18nProvider";
@@ -77,6 +78,7 @@ interface Region {
 
 export default function PlansPage() {
   const { t } = useI18n();
+  const searchParams = useSearchParams();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,6 +101,24 @@ export default function PlansPage() {
   const [dynamicDurationOptions, setDynamicDurationOptions] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [planType, setPlanType] = useState<"all" | "local" | "region">("all");
+
+  // Initialize state from URL params
+  useEffect(() => {
+    const regionId = searchParams.get("regionId");
+    const countryId = searchParams.get("countryId");
+    
+    if (regionId) {
+      setSelectedRegion(regionId);
+    }
+    if (countryId) {
+      setSelectedCountry(countryId);
+      // Also set country name from regions if available
+      const foundRegion = regions.find(r => r.id === countryId);
+      if (foundRegion) {
+        setSelectedRegion(foundRegion.id);
+      }
+    }
+  }, [searchParams, regions]);
 
   useEffect(() => {
     fetch("/api/regions")
