@@ -91,7 +91,8 @@ model Plan {
   isPopular       Boolean  @default(false)
   isBestSeller    Boolean  @default(false)
   isHot           Boolean  @default(false)
-  supportTopUp    Boolean  @default(false) // Whether this plan supports top-up
+  supportTopUp    Boolean  @default(false) // Whether this plan supports top-up (legacy)
+  supportTopUpType Int     @default(1) // 1 = no, 2 = yes, 3 = yes with period
   badge           String?
   priority        Int      @default(0)
   

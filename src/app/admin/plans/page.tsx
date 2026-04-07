@@ -20,6 +20,7 @@ interface Plan {
   isBestSeller: boolean;
   isHot: boolean;
   supportTopUp: boolean;
+  supportTopUpType: number;
   badge: string | null;
   priority: number;
   networkType: string | null;
@@ -61,13 +62,20 @@ export default function AdminPlansPage() {
     }
   }, [user]);
 
-  async function toggleField(id: string, field: string, value: boolean) {
+  async function toggleField(id: string, field: string, value: boolean | number) {
+    let newValue: boolean | number = !value;
+    
+    if (field === "supportTopUpType") {
+      const currentType = value as number;
+      newValue = currentType >= 3 ? 1 : currentType + 1;
+    }
+    
     await fetch("/api/admin/plans", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, [field]: !value }),
+      body: JSON.stringify({ id, [field]: newValue }),
     });
-    setPlans(plans.map((p) => (p.id === id ? { ...p, [field]: !value } : p)));
+    setPlans(plans.map((p) => (p.id === id ? { ...p, [field]: newValue } : p)));
   }
 
   function startEdit(plan: Plan) {
@@ -260,11 +268,15 @@ export default function AdminPlansPage() {
                               ★
                             </button>
                             <button 
-                              onClick={() => toggleField(plan.id, "supportTopUp", plan.supportTopUp)} 
-                              className={`text-[10px] px-1.5 py-0.5 rounded-full transition-colors ${plan.supportTopUp ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400 hover:bg-green-50"}`}
-                              title="Support Top-up"
+                              onClick={() => toggleField(plan.id, "supportTopUpType", plan.supportTopUpType)} 
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full transition-colors ${
+                                plan.supportTopUpType === 1 ? "bg-slate-100 text-slate-400 hover:bg-slate-200" :
+                                plan.supportTopUpType === 2 ? "bg-green-100 text-green-700 hover:bg-green-200" :
+                                "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                              }`}
+                              title={plan.supportTopUpType === 1 ? "No top-up" : plan.supportTopUpType === 2 ? "Top-up available" : "Top-up with period"}
                             >
-                              ↑
+                              {plan.supportTopUpType === 1 ? "✕" : plan.supportTopUpType === 2 ? "↑" : "↻"}
                             </button>
                           </div>
                           <div className="flex items-center gap-1">
