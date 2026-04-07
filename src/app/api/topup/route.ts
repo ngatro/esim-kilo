@@ -4,7 +4,7 @@ import { createOrder, getPackageList } from "@/lib/esim-access";
 
 export async function POST(request: Request) {
   try {
-    const { orderItemId, packageCode } = await request.json();
+    const { orderItemId, packageCode, periodNum } = await request.json();
 
     if (!orderItemId || !packageCode) {
       return NextResponse.json({ error: "orderItemId and packageCode required" }, { status: 400 });
@@ -19,11 +19,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Order item not found" }, { status: 404 });
     }
 
-    if (!orderItem.esimIccid) {
-      return NextResponse.json({ error: "No ICCID found for this order" }, { status: 400 });
+    if (!orderItem.esimIccid && !orderItem.esimTranNo) {
+      return NextResponse.json({ error: "No ICCID or esimTranNo found for this order" }, { status: 400 });
     }
 
-    const packages = await getPackageList({ type: "TOPUP" });
+    // Check plan supportTopUpType
+    let supportTopUpType = 1;
+    if (orderItem.planId) {
+      const plan = await prisma.plan.findUnique({ where: { id: orderItem.planId } });
+      if (plan) {
+        supportTopUpType = plan.supportTopUpType || 1;
+      }
+    }
+
+    // For type 3, periodNum is required
+    if (supportTopUpType === 3 && !periodNum) {
+      return NextResponse.json({ error: "Period number is required for this top-up type" }, { status: 400 });
+    }
+
+    const packages = await getPackageList({ iccid: orderItem.esimIccid, type: "TOPUP" });
     const packageList = packages.packageList || [];
     const topUpPackage = packageList.find((p: { packageCode: string }) => p.packageCode === packageCode);
 
@@ -33,16 +47,35 @@ export async function POST(request: Request) {
 
     const priceUSD = topUpPackage.price / 10000;
 
-    const esimOrder = await createOrder({
+    // Build createOrder params
+    const orderParams: {
+      packageCode: string;
+      iccid?: string;
+      esimTranNo?: string;
+      count?: number;
+      periodNum?: string;
+    } = {
       packageCode,
-      iccid: orderItem.esimIccid,
       count: 1,
-    });
+    };
 
-    if (!esimOrder?.qrCodeUrl) {
+    if (orderItem.esimIccid) {
+      orderParams.iccid = orderItem.esimIccid;
+    } else if (orderItem.esimTranNo) {
+      orderParams.esimTranNo = orderItem.esimTranNo;
+    }
+    
+    if (supportTopUpType === 3 && periodNum) {
+      orderParams.periodNum = periodNum;
+    }
+
+    const esimOrder = await createOrder(orderParams);
+
+    if (!esimOrder?.qrCodeUrl && supportTopUpType !== 3) {
       return NextResponse.json({ error: "Top-up activation failed" }, { status: 500 });
     }
 
+    // For type 3, the API returns updated info without QR code
     const newOrderItem = await prisma.orderItem.create({
       data: {
         orderId: orderItem.orderId,
@@ -51,8 +84,12 @@ export async function POST(request: Request) {
         price: priceUSD,
         quantity: 1,
         esimIccid: orderItem.esimIccid,
-        esimQrImage: esimOrder.qrCodeUrl,
+        esimQrImage: esimOrder.qrCodeUrl || null,
+        esimTranNo: esimOrder.tranNo || null,
         esimStatus: "IN_USE",
+        smdpStatus: "ENABLED",
+        totalVolume: esimOrder.totalVolume || topUpPackage.volume,
+        orderUsage: 0,
       },
     });
 
@@ -67,8 +104,12 @@ export async function POST(request: Request) {
         id: newOrderItem.id,
         packageCode,
         price: priceUSD,
-        qrCode: esimOrder.qrCodeUrl,
+        qrCode: esimOrder.qrCodeUrl || null,
         iccid: orderItem.esimIccid,
+        expiredTime: esimOrder.expiredTime || null,
+        totalVolume: esimOrder.totalVolume || topUpPackage.volume,
+        totalDuration: esimOrder.totalDuration || topUpPackage.duration,
+        supportTopUpType,
       },
     });
   } catch (error) {
@@ -98,6 +139,16 @@ export async function GET(request: Request) {
 
     const packages = await getPackageList({ iccid, type: "TOPUP" });
     const packageList = packages.packageList || [];
+    
+    // Get plan to check supportTopUpType
+    let supportTopUpType = 1;
+    if (orderItem.planId) {
+      const plan = await prisma.plan.findUnique({ where: { id: orderItem.planId } });
+      if (plan) {
+        supportTopUpType = plan.supportTopUpType || 1;
+      }
+    }
+
     const topUpPackages = packageList.map((p: { packageCode: string; name: string; price: number; volume: number; duration: number }) => ({
       packageCode: p.packageCode,
       name: p.name,
@@ -109,11 +160,13 @@ export async function GET(request: Request) {
     return NextResponse.json({
       currentPlan: {
         planName: orderItem.planName,
-        iccid: orderItem.esimIccid,
+        iccid: orderItem.esimIccid!,
         esimStatus: orderItem.esimStatus,
         smdpStatus: orderItem.smdpStatus,
-        totalVolume: orderItem.totalVolume,
-        orderUsage: orderItem.orderUsage,
+        totalVolume: orderItem.totalVolume || 0,
+        orderUsage: orderItem.orderUsage || 0,
+        orderItemId: orderItem.id,
+        supportTopUpType,
       },
       topUpPackages,
     });

@@ -93,8 +93,10 @@ interface EsimListItem {
   smdpAddress?: string;
   smdpStatus?: string;
   totalVolume?: number;
+  totalDuration?: number;
   orderUsage?: number;
   esimStatus?: string;
+  expiredTime?: string;
 }
 
 function getAccessCode(): string {
@@ -193,6 +195,8 @@ export async function createOrder(params: {
   count?: number;
   orderId?: string;
   iccid?: string;
+  esimTranNo?: string;
+  periodNum?: string;
 }): Promise<EsimListItem> {
   const transactionId = `OW-${params.orderId || Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -205,6 +209,14 @@ export async function createOrder(params: {
 
   if (params.iccid) {
     body.iccid = params.iccid;
+  }
+
+  if (params.esimTranNo) {
+    body.esimTranNo = params.esimTranNo;
+  }
+
+  if (params.periodNum) {
+    body.periodNum = params.periodNum;
   }
 
   const res = await esimAccessPost("/esim/order", body);

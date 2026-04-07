@@ -20,6 +20,8 @@ interface CurrentPlan {
   esimStatus: string;
   totalVolume: number;
   orderUsage: number;
+  orderItemId: number;
+  supportTopUpType: number;
 }
 
 export default function TopUpPage() {
@@ -84,8 +86,9 @@ export default function TopUpPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          orderItemId: currentPlan.iccid,
+          orderItemId: currentPlan.orderItemId,
           packageCode: selectedPackage.packageCode,
+          periodNum: currentPlan.supportTopUpType === 3 ? selectedPackage.duration.toString() : undefined,
         }),
       });
       const data = await res.json();
