@@ -82,7 +82,7 @@ interface I18nProviderProps {
 export function I18nProvider({ children, initialRates, initialLocale }: I18nProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale || "en");
   const [isReady, setIsReady] = useState(false);
-  const rates = initialRates || DEFAULT_RATES;
+  const [rates, setRates] = useState<ExchangeRates>(initialRates || DEFAULT_RATES);
 
   useEffect(() => {
     async function initLocale() {
@@ -103,6 +103,29 @@ export function I18nProvider({ children, initialRates, initialLocale }: I18nProv
     }
     
     initLocale();
+  }, []);
+
+  useEffect(() => {
+    async function loadRates() {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.currencyRates) {
+            setRates({
+              USD: 1,
+              EUR: data.currencyRates.EUR || 0.92,
+              VND: data.currencyRates.VND || 24500,
+              GBP: data.currencyRates.GBP || 0.79,
+              JPY: data.currencyRates.JPY || 150,
+            });
+          }
+        }
+      } catch {
+        // use default rates
+      }
+    }
+    loadRates();
   }, []);
 
   const setLocale = (newLocale: Locale) => {

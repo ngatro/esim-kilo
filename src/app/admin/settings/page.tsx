@@ -9,6 +9,12 @@ interface SiteSettings {
   supportEmail: string;
   tawkPropertyId: string;
   tawkWidgetId: string;
+  currencyRates: {
+    EUR: number;
+    VND: number;
+    GBP: number;
+    JPY: number;
+  };
 }
 
 export default function AdminSettingsPage() {
@@ -18,6 +24,7 @@ export default function AdminSettingsPage() {
     supportEmail: "support@openworldesim.com",
     tawkPropertyId: "",
     tawkWidgetId: "",
+    currencyRates: { EUR: 0.92, VND: 24500, GBP: 0.79, JPY: 150 },
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -35,6 +42,7 @@ export default function AdminSettingsPage() {
         if (data.supportEmail) setSettings((prev) => ({ ...prev, supportEmail: data.supportEmail }));
         if (data.tawkPropertyId) setSettings((prev) => ({ ...prev, tawkPropertyId: data.tawkPropertyId }));
         if (data.tawkWidgetId) setSettings((prev) => ({ ...prev, tawkWidgetId: data.tawkWidgetId }));
+        if (data.currencyRates) setSettings((prev) => ({ ...prev, currencyRates: data.currencyRates }));
       }
     } catch (error) {
       console.error("Failed to fetch settings:", error);
@@ -150,6 +158,60 @@ export default function AdminSettingsPage() {
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
               />
               <p className="text-xs text-slate-500 mt-1">Your Tawk.to widget ID (from Dashboard → Chat Widget → Widget ID)</p>
+            </div>
+
+            <div className="border-t border-slate-200 pt-6">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Currency Exchange Rates</h3>
+              <p className="text-sm text-slate-500 mb-4">Set exchange rates from USD (1 USD = ?)</p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">EUR (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={settings.currencyRates.EUR}
+                  onChange={(e) => setSettings({ ...settings, currencyRates: { ...settings.currencyRates, EUR: parseFloat(e.target.value) || 0 } })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">VND (₫)</label>
+                <input
+                  type="number"
+                  step="1"
+                  value={settings.currencyRates.VND}
+                  onChange={(e) => setSettings({ ...settings, currencyRates: { ...settings.currencyRates, VND: parseFloat(e.target.value) || 0 } })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">GBP (£)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={settings.currencyRates.GBP}
+                  onChange={(e) => setSettings({ ...settings, currencyRates: { ...settings.currencyRates, GBP: parseFloat(e.target.value) || 0 } })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">JPY (¥)</label>
+                <input
+                  type="number"
+                  step="1"
+                  value={settings.currencyRates.JPY}
+                  onChange={(e) => setSettings({ ...settings, currencyRates: { ...settings.currencyRates, JPY: parseFloat(e.target.value) || 0 } })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm text-slate-600">
+                <strong>Preview:</strong> 1 USD = {settings.currencyRates.EUR.toFixed(2)}€ | {settings.currencyRates.VND.toLocaleString()}₫ | {settings.currencyRates.GBP.toFixed(2)}£ | {settings.currencyRates.JPY.toLocaleString()}¥
+              </p>
             </div>
 
             <div className="pt-4 flex items-center gap-4">

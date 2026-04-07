@@ -155,11 +155,12 @@ export default function AdminPlansPage() {
                 <thead className="bg-slate-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Plan</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Slug</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Region</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Data</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Days</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Cost</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Price</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Cost ($)</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Price ($)</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Labels</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Active</th>
                   </tr>
@@ -172,17 +173,17 @@ export default function AdminPlansPage() {
                           <div className="space-y-1">
                             <input 
                               type="text" 
-                              value={editName} 
-                              onChange={(e) => setEditName(e.target.value)} 
-                              className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-xs w-full" 
-                              placeholder="Name"
-                            />
-                            <input 
-                              type="text" 
                               value={editDestination} 
                               onChange={(e) => setEditDestination(e.target.value)} 
                               className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-xs w-full" 
                               placeholder="Destination"
+                            />
+                            <input 
+                              type="text" 
+                              value={editName} 
+                              onChange={(e) => setEditName(e.target.value)} 
+                              className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-xs w-full" 
+                              placeholder="Name"
                             />
                           </div>
                         ) : (
@@ -198,12 +199,15 @@ export default function AdminPlansPage() {
                             type="text" 
                             value={editSlug} 
                             onChange={(e) => setEditSlug(e.target.value)} 
-                            className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-xs w-24" 
+                            className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-xs w-full" 
                             placeholder="Slug"
                           />
                         ) : (
-                          <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">{plan.regionName || "Global"}</span>
+                          <span className="text-xs text-slate-500 truncate max-w-[120px] block">{plan.slug || "-"}</span>
                         )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">{plan.regionName || "Global"}</span>
                       </td>
                       <td className="px-4 py-3 text-sm text-slate-600">{formatData(plan.dataAmount)}</td>
                       <td className="px-4 py-3 text-sm text-slate-600">{plan.durationDays}</td>

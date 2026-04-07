@@ -14,11 +14,12 @@ async function getSettings() {
       supportEmail: "support@openworldesim.com",
       tawkPropertyId: "",
       tawkWidgetId: "",
+      currencyRates: { EUR: 0.92, VND: 24500, GBP: 0.79, JPY: 150 },
     };
   }
 }
 
-async function saveSettings(settings: Record<string, string>) {
+async function saveSettings(settings: Record<string, unknown>) {
   try {
     const dir = join(process.cwd(), "data");
     await import("fs/promises").then((fs) => fs.mkdir(dir, { recursive: true }));
@@ -50,6 +51,9 @@ export async function POST(request: Request) {
     }
     if (body.tawkWidgetId !== undefined) {
       settings.tawkWidgetId = body.tawkWidgetId;
+    }
+    if (body.currencyRates !== undefined) {
+      settings.currencyRates = body.currencyRates;
     }
 
     const saved = await saveSettings(settings);
