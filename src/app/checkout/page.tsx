@@ -87,8 +87,7 @@ export default function CheckoutPage() {
             // Clean up localStorage
             localStorage.removeItem("paypal_planId");
             localStorage.removeItem("paypal_qty");
-            // Redirect to orders page to remove token from URL
-            setTimeout(() => router.replace("/orders"), 3000);
+            // Don't redirect, let user scan QR code
           } else {
             setError(data.error || "Payment confirmation failed");
           }
@@ -295,43 +294,43 @@ export default function CheckoutPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white py-8 sm:py-12">
+      <div className="min-h-screen bg-orange-50 text-slate-800 py-8 sm:py-12">
         <div className="max-w-lg mx-auto px-4 text-center">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", duration: 0.6 }}>
             <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
           </motion.div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">Order Complete!</h1>
-          <p className="text-slate-400 mb-6">Order #{success.orderId}</p>
+          <p className="text-slate-600 mb-6">Order #{success.orderId}</p>
 
           {success.qrCode && (
-            <div className="bg-white rounded-2xl p-4 sm:p-6 mb-6 inline-block">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 mb-6 inline-block shadow-sm">
               <img src={success.qrCode} alt="eSIM QR Code" className="w-48 h-48 sm:w-64 sm:h-64 mx-auto" />
             </div>
           )}
 
           {success.activationCode && (
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4 mb-6">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-6">
               <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Activation Code</p>
-              <code className="text-sky-400 text-xs sm:text-sm break-all">{success.activationCode}</code>
+              <code className="text-orange-500 text-xs sm:text-sm break-all">{success.activationCode}</code>
             </div>
           )}
 
-          <p className="text-slate-400 text-sm mb-8">
+          <p className="text-slate-600 text-sm mb-8">
             Scan this QR code in your phone&apos;s eSIM settings to activate your plan.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/orders">
-              <button className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-xl transition-colors">
+              <button className="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-6 py-3 rounded-xl transition-colors">
                 View Orders
               </button>
             </Link>
             <Link href="/plans">
-              <button className="w-full sm:w-auto bg-sky-500 hover:bg-sky-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+              <button className="w-full sm:w-auto bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
                 Buy Another Plan
               </button>
             </Link>

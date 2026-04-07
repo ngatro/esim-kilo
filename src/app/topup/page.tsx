@@ -31,7 +31,7 @@ export default function TopUpPage() {
   const [iccid, setIccid] = useState(initialIccid);
   const [packages, setPackages] = useState<TopUpPackage[]>([]);
   const [currentPlan, setCurrentPlan] = useState<CurrentPlan | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -44,13 +44,19 @@ export default function TopUpPage() {
   }, [iccid]);
 
   async function fetchPackages() {
-    if (iccid.length < 19) return;
+    if (iccid.length < 19) {
+      setPackages([]);
+      setCurrentPlan(null);
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch(`/api/topup?iccid=${encodeURIComponent(iccid)}`);
       const data = await res.json();
       if (data.error) {
         setError(data.error);
+        setPackages([]);
+        setCurrentPlan(null);
       } else {
         setPackages(data.topUpPackages || []);
         setCurrentPlan(data.currentPlan);
@@ -58,6 +64,8 @@ export default function TopUpPage() {
       }
     } catch (err) {
       setError("Failed to fetch top-up packages");
+      setPackages([]);
+      setCurrentPlan(null);
     } finally {
       setLoading(false);
     }
@@ -135,13 +143,26 @@ export default function TopUpPage() {
           {/* ICCID Input */}
           <div className="bg-white/80 border border-slate-200 rounded-2xl p-5 mb-6">
             <label className="block text-sm text-slate-600 mb-2">Your eSIM ICCID</label>
-            <input
-              type="text"
-              value={iccid}
-              onChange={(e) => setIccid(e.target.value.replace(/\D/g, ""))}
-              placeholder="Enter 19-20 digit ICCID"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-mono text-sm focus:outline-none focus:border-orange-500"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={iccid}
+                onChange={(e) => setIccid(e.target.value.replace(/\D/g, ""))}
+                placeholder="Enter 19-20 digit ICCID"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 font-mono text-sm focus:outline-none focus:border-orange-500"
+              />
+              <button
+                onClick={fetchPackages}
+                disabled={iccid.length < 19 || loading}
+                className="bg-orange-500 hover:bg-orange-400 disabled:bg-slate-300 text-white font-semibold px-4 py-3 rounded-xl transition-colors"
+              >
+                {loading ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  "Search"
+                )}
+              </button>
+            </div>
             <p className="text-slate-500 text-xs mt-2">Find ICCID in your order confirmation email or in Settings → Cellular</p>
           </div>
 
@@ -206,12 +227,21 @@ export default function TopUpPage() {
               <button
                 onClick={handleTopUp}
                 disabled={!selectedPackage || processing}
-                className="w-full bg-orange-500 hover:bg-orange-400 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl mt-4 transition-colors"
+                className="w-full bg-orange-500 hover:bg-orange-400 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl mt-4 transition-colors flex items-center justify-center gap-2"
               >
-                {processing ? "Processing..." : selectedPackage ? `Top-up for ${formatPrice(selectedPackage.priceUSD)}` : "Select a package"}
+                {processing ? (
+                  <>
+                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                    Processing...
+                  </>
+                ) : selectedPackage ? (
+                  `Top-up for ${formatPrice(selectedPackage.priceUSD)}`
+                ) : (
+                  "Select a package"
+                )}
               </button>
             </div>
-          ) : iccid.length >= 19 && !loading && !error ? (
+          ) : !loading && !error && iccid.length >= 19 ? (
             <div className="text-center py-8 text-slate-600">
               No top-up packages found for this ICCID
             </div>
