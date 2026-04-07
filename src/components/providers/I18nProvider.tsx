@@ -23,6 +23,31 @@ export const SUPPORTED_LOCALES: { code: Locale; label: string; flag: string }[] 
   { code: "fr", label: "Français", flag: "🇫🇷" },
 ];
 
+const COUNTRY_TO_LOCALE: Record<string, Locale> = {
+  US: "en", GB: "en", CA: "en", AU: "en", NZ: "en",
+  VN: "vi",
+  DE: "de", AT: "de", CH: "de",
+  FR: "fr", BE: "fr", LU: "fr",
+};
+
+async function detectLocaleFromIP(): Promise<Locale> {
+  try {
+    const res = await fetch("https://ipapi.co/json/", {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const countryCode = data.country_code;
+      if (countryCode && COUNTRY_TO_LOCALE[countryCode]) {
+        return COUNTRY_TO_LOCALE[countryCode];
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return "en";
+}
+
 interface I18nContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
@@ -51,23 +76,33 @@ function getNestedValue(obj: Record<string, unknown>, path: string): string {
 interface I18nProviderProps {
   children: ReactNode;
   initialRates?: ExchangeRates;
+  initialLocale?: Locale;
 }
 
-export function I18nProvider({ children, initialRates }: I18nProviderProps) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+export function I18nProvider({ children, initialRates, initialLocale }: I18nProviderProps) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale || "en");
   const [isReady, setIsReady] = useState(false);
   const rates = initialRates || DEFAULT_RATES;
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("locale");
-      if (saved && SUPPORTED_LOCALES.some(l => l.code === saved)) {
-        setLocaleState(saved as Locale);
+    async function initLocale() {
+      try {
+        const saved = localStorage.getItem("locale");
+        if (saved && SUPPORTED_LOCALES.some(l => l.code === saved)) {
+          setLocaleState(saved as Locale);
+          setIsReady(true);
+          return;
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
+      
+      const detected = await detectLocaleFromIP();
+      setLocaleState(detected);
+      setIsReady(true);
     }
-    setIsReady(true);
+    
+    initLocale();
   }, []);
 
   const setLocale = (newLocale: Locale) => {

@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useUI } from "@/components/providers/UIProvider";
-import { useI18n } from "@/components/providers/I18nProvider";
+import { useI18n, SUPPORTED_LOCALES } from "@/components/providers/I18nProvider";
 import { useState, useEffect } from "react";
 
 const HOT_COUNTRIES = [
@@ -29,7 +30,8 @@ const REGIONS = [
 ];
 
 export default function Header() {
-  const { t } = useI18n();
+  const { t, locale, setLocale } = useI18n();
+  const router = useRouter();
   const { user, logout, loading: authLoading } = useAuth();
   const { items } = useCart();
   const { openLogin } = useUI();
@@ -40,6 +42,13 @@ export default function Header() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleLanguageChange = (newLocale: string) => {
+    setLocale(newLocale as typeof locale);
+    router.refresh();
+  };
+
+  const currentLocaleLabel = SUPPORTED_LOCALES.find(l => l.code === locale)?.code.toUpperCase() || "EN";
 
   const cartCount = mounted ? items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
@@ -211,17 +220,22 @@ export default function Header() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                 </svg>
-                <span className="text-xs">EN</span>
+                <span className="text-xs">{currentLocaleLabel}</span>
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden group-hover:block min-w-[120px]">
-                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">English</button>
-                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">中文</button>
-                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">日本語</button>
-                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">한국어</button>
-                <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">Tiếng Việt</button>
+              <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden group-hover:block min-w-[140px]">
+                {SUPPORTED_LOCALES.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => handleLanguageChange(l.code)}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-orange-50 hover:text-orange-500 flex items-center gap-2 ${locale === l.code ? "text-orange-500 bg-orange-50" : "text-slate-600"}`}
+                  >
+                    <span>{l.flag}</span>
+                    <span>{l.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
 
