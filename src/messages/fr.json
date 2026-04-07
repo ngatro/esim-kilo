@@ -36,13 +36,17 @@
   },
 
   "header": {
-    "login": "Login",
-    "logout": "Logout",
-    "myOrders": "My Orders",
-    "cart": "Cart",
-    "allPlans": "All Plans",
-    "popularRegions": "Popular Regions",
-    "hotCountries": "Hot Countries"
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "myOrders": "Mes commandes",
+    "cart": "Panier",
+    "allPlans": "Tous les forfaits",
+    "popularRegions": "Régions populaires",
+    "hotCountries": "Pays populaires",
+    "devices": "Appareils",
+    "allDevices": "Tous les appareils",
+    "byDevice": "Par appareil",
+    "support": "Support"
   },
 
   "hero": {

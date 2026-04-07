@@ -42,7 +42,11 @@
     "cart": "Cart",
     "allPlans": "All Plans",
     "popularRegions": "Popular Regions",
-    "hotCountries": "Hot Countries"
+    "hotCountries": "Hot Countries",
+    "devices": "Devices",
+    "allDevices": "All Devices",
+    "byDevice": "By Device",
+    "support": "Support"
   },
 
   "hero": {

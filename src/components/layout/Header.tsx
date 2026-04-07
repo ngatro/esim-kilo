@@ -20,6 +20,15 @@ const HOT_COUNTRIES = [
   { code: "DE", name: "Germany", emoji: "🇩🇪" },
 ];
 
+const DEVICES = [
+  { id: "iphone", name: "iPhone", emoji: "📱" },
+  { id: "android", name: "Android", emoji: "📱" },
+  { id: "ipad", name: "iPad", emoji: "📱" },
+  { id: "hotspot", name: "Mobile Hotspot", emoji: "📡" },
+  { id: "laptop", name: "Laptop", emoji: "💻" },
+  { id: "smartwatch", name: "Smartwatch", emoji: "⌚" },
+];
+
 const REGIONS = [
   { id: "asia", name: "Asia", emoji: "🌏" },
   { id: "europe", name: "Europe", emoji: "🏰" },
@@ -60,8 +69,22 @@ export default function Header() {
       ]
     },
     { 
+      label: t("header.devices"), 
+      href: "/devices",
+      children: [
+        { label: t("header.allDevices"), href: "/devices" },
+        { label: "divider", href: "" },
+        { label: t("header.byDevice"), href: "", children: DEVICES.map(d => ({ label: d.name, href: `/devices?type=${d.id}`, emoji: d.emoji })) },
+      ]
+    },
+    { 
       label: t("common.blog"), 
       href: "/blog",
+      children: null 
+    },
+    { 
+      label: t("header.support"), 
+      href: "/support",
       children: null 
     },
   ];
@@ -118,37 +141,74 @@ export default function Header() {
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -5 }}
-                      className="absolute top-full left-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-50"
+                      className={`absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-50 ${
+                        item.href === "/plans" ? "w-[480px]" : "w-56"
+                      }`}
                     >
-                      {item.children.map((child, idx) => (
-                        child.label === "divider" ? (
-                          <div key={idx} className="my-1 border-t border-slate-100" />
-                        ) : child.children ? (
-                          <div key={idx} className="px-4 py-1">
-                            <p className="text-xs font-semibold text-slate-400 uppercase mb-1">{child.label}</p>
+                      {item.href === "/plans" ? (
+                        <div className="grid grid-cols-2 gap-4 px-4">
+                          <div>
+                            <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{t("header.popularRegions")}</p>
                             <div className="space-y-0.5">
-                              {child.children.map((sub: { label: string; href: string; emoji?: string }, subIdx: number) => (
+                              {REGIONS.map((r, idx) => (
                                 <Link
-                                  key={subIdx}
-                                  href={sub.href}
+                                  key={idx}
+                                  href={`/plans?regionId=${r.id}`}
                                   className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
                                 >
-                                  {sub.emoji && <span>{sub.emoji}</span>}
-                                  {sub.label}
+                                  {r.emoji && <span>{r.emoji}</span>}
+                                  {r.name}
                                 </Link>
                               ))}
                             </div>
                           </div>
-                        ) : (
-                          <Link
-                            key={idx}
-                            href={child.href}
-                            className="block px-4 py-2 text-sm text-slate-600 hover:text-orange-500 hover:bg-orange-50 transition-colors"
-                          >
-                            {child.label}
-                          </Link>
-                        )
-                      ))}
+                          <div>
+                            <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{t("header.hotCountries")}</p>
+                            <div className="space-y-0.5">
+                              {HOT_COUNTRIES.map((c, idx) => (
+                                <Link
+                                  key={idx}
+                                  href={`/plans?countryId=${c.code}`}
+                                  className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
+                                >
+                                  {c.emoji && <span>{c.emoji}</span>}
+                                  {c.name}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        item.children.map((child, idx) => (
+                          child.label === "divider" ? (
+                            <div key={idx} className="my-1 border-t border-slate-100" />
+                          ) : child.children ? (
+                            <div key={idx} className="px-4 py-1">
+                              <p className="text-xs font-semibold text-slate-400 uppercase mb-1">{child.label}</p>
+                              <div className="space-y-0.5">
+                                {child.children.map((sub: { label: string; href: string; emoji?: string }, subIdx: number) => (
+                                  <Link
+                                    key={subIdx}
+                                    href={sub.href}
+                                    className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
+                                  >
+                                    {sub.emoji && <span>{sub.emoji}</span>}
+                                    {sub.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <Link
+                              key={idx}
+                              href={child.href}
+                              className="block px-4 py-2 text-sm text-slate-600 hover:text-orange-500 hover:bg-orange-50 transition-colors"
+                            >
+                              {child.label}
+                            </Link>
+                          )
+                        ))
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
