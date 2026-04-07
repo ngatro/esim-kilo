@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 interface Plan {
   id: string;
   name: string;
+  slug: string | null;
   destination: string;
   dataAmount: number;
   durationDays: number;
@@ -20,6 +21,9 @@ interface Plan {
   isHot: boolean;
   badge: string | null;
   priority: number;
+  networkType: string | null;
+  speed: string | null;
+  coverageCount: number;
 }
 
 function formatData(gb: number): string {
@@ -35,6 +39,9 @@ export default function AdminPlansPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editSlug, setEditSlug] = useState("");
+  const [editDestination, setEditDestination] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editRetail, setEditRetail] = useState("");
   const [saving, setSaving] = useState(false);
@@ -64,11 +71,14 @@ export default function AdminPlansPage() {
 
   function startEdit(plan: Plan) {
     setEditingId(plan.id);
+    setEditName(plan.name || "");
+    setEditSlug(plan.slug || "");
+    setEditDestination(plan.destination || "");
     setEditPrice(plan.priceUsd.toString());
     setEditRetail(plan.retailPriceUsd.toString());
   }
 
-  async function savePrice(id: string) {
+  async function savePlan(id: string) {
     setSaving(true);
     const priceUsd = parseFloat(editPrice) || 0;
     const retailPriceUsd = parseFloat(editRetail) || 0;
@@ -77,13 +87,23 @@ export default function AdminPlansPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id,
+        name: editName,
+        slug: editSlug,
+        destination: editDestination,
         priceUsd,
         priceRaw: Math.round(priceUsd * 10000),
         retailPriceUsd,
         retailPriceRaw: Math.round(retailPriceUsd * 10000),
       }),
     });
-    setPlans(plans.map((p) => (p.id === id ? { ...p, priceUsd, retailPriceUsd } : p)));
+    setPlans(plans.map((p) => (p.id === id ? { 
+      ...p, 
+      name: editName, 
+      slug: editSlug, 
+      destination: editDestination,
+      priceUsd, 
+      retailPriceUsd 
+    } : p)));
     setEditingId(null);
     setSaving(false);
   }
@@ -148,11 +168,42 @@ export default function AdminPlansPage() {
                   {filtered.slice(0, 100).map((plan) => (
                     <tr key={plan.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-slate-800">{plan.destination}</p>
-                        <p className="text-xs text-slate-500 truncate max-w-[200px]">{plan.name}</p>
+                        {editingId === plan.id ? (
+                          <div className="space-y-1">
+                            <input 
+                              type="text" 
+                              value={editName} 
+                              onChange={(e) => setEditName(e.target.value)} 
+                              className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-xs w-full" 
+                              placeholder="Name"
+                            />
+                            <input 
+                              type="text" 
+                              value={editDestination} 
+                              onChange={(e) => setEditDestination(e.target.value)} 
+                              className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-xs w-full" 
+                              placeholder="Destination"
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm font-medium text-slate-800">{plan.destination}</p>
+                            <p className="text-xs text-slate-500 truncate max-w-[200px]">{plan.name}</p>
+                          </>
+                        )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">{plan.regionName || "Global"}</span>
+                        {editingId === plan.id ? (
+                          <input 
+                            type="text" 
+                            value={editSlug} 
+                            onChange={(e) => setEditSlug(e.target.value)} 
+                            className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-xs w-24" 
+                            placeholder="Slug"
+                          />
+                        ) : (
+                          <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">{plan.regionName || "Global"}</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-sm text-slate-600">{formatData(plan.dataAmount)}</td>
                       <td className="px-4 py-3 text-sm text-slate-600">{plan.durationDays}</td>
@@ -161,7 +212,7 @@ export default function AdminPlansPage() {
                       </td>
                       <td className="px-4 py-3">
                         {editingId === plan.id ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <input 
                               type="number" 
                               value={editRetail} 
@@ -169,7 +220,7 @@ export default function AdminPlansPage() {
                               className="bg-white border border-slate-300 rounded px-2 py-1 text-slate-800 text-sm w-20" 
                               step="0.01" 
                             />
-                            <button onClick={() => savePrice(plan.id)} disabled={saving} className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded">✓</button>
+                            <button onClick={() => savePlan(plan.id)} disabled={saving} className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded">✓</button>
                             <button onClick={() => setEditingId(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-2 py-1 rounded">✕</button>
                           </div>
                         ) : (
