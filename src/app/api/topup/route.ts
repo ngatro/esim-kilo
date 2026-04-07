@@ -69,6 +69,8 @@ export async function POST(request: Request) {
       orderParams.periodNum = periodNum;
     }
 
+    console.log("[Top-up] Creating order with params:", JSON.stringify(orderParams, null, 2));
+
     const esimOrder = await createOrder(orderParams);
 
     if (!esimOrder?.qrCodeUrl && supportTopUpType !== 3) {

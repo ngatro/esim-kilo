@@ -219,7 +219,11 @@ export async function createOrder(params: {
     body.periodNum = params.periodNum;
   }
 
+  console.log("[createOrder] Request body:", JSON.stringify(body, null, 2));
+
   const res = await esimAccessPost("/esim/order", body);
+
+  console.log("[createOrder] Response:", JSON.stringify(res, null, 2));
 
   if (!res.success || !res.obj) {
     throw new Error(res.message || "eSIM order creation failed");
