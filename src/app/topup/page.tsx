@@ -30,6 +30,11 @@ export default function TopUpPage() {
   const { formatPrice } = useI18n();
   
   const initialIccid = searchParams.get("iccid") || "";
+  const successParam = searchParams.get("success");
+  const orderItemIdParam = searchParams.get("orderItemId");
+  const packageCodeParam = searchParams.get("packageCode");
+  const cancelled = searchParams.get("cancelled");
+  
   const [iccid, setIccid] = useState(initialIccid);
   const [packages, setPackages] = useState<TopUpPackage[]>([]);
   const [currentPlan, setCurrentPlan] = useState<CurrentPlan | null>(null);
@@ -38,12 +43,122 @@ export default function TopUpPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<TopUpPackage | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"paypal" | "lemonsqueezy" | "gumroad">("paypal");
 
+  // Handle PayPal success redirect
   useEffect(() => {
-    if (iccid.length >= 19) {
-      fetchPackages();
+    if (successParam === "true" && orderItemIdParam && packageCodeParam) {
+      const doTopUp = async () => {
+        setProcessing(true);
+        try {
+          const res = await fetch("/api/topup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderItemId: parseInt(orderItemIdParam),
+              packageCode: packageCodeParam,
+            }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setSuccess(true);
+          } else {
+            setError(data.error || "Top-up failed");
+          }
+        } catch (err) {
+          setError("Top-up request failed");
+        } finally {
+          setProcessing(false);
+        }
+      };
+      doTopUp();
     }
-  }, [iccid]);
+    
+    if (cancelled) {
+      setError("Payment was cancelled");
+    }
+  }, [successParam, orderItemIdParam, packageCodeParam, cancelled]);
+
+  async function handleTopUp() {
+    if (!selectedPackage || !currentPlan) return;
+    setProcessing(true);
+    
+    try {
+      if (paymentMethod === "paypal") {
+        // Create PayPal order first
+        const paypalRes = await fetch("/api/payment/paypal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            planId: `topup-${selectedPackage.packageCode}`,
+            planName: `Top-up: ${selectedPackage.name}`,
+            price: selectedPackage.priceUSD,
+            customerEmail: "", // Will be filled from user session
+            isTopUp: true,
+            orderItemId: currentPlan.orderItemId,
+            packageCode: selectedPackage.packageCode,
+            periodNum: currentPlan.supportTopUpType === 3 ? selectedPackage.duration.toString() : undefined,
+          }),
+        });
+        
+        const paypalData = await paypalRes.json();
+        if (!paypalRes.ok) throw new Error(paypalData.error || "PayPal failed");
+        
+        if (paypalData.approveUrl) {
+          localStorage.setItem("topup_orderItemId", currentPlan.orderItemId.toString());
+          localStorage.setItem("topup_packageCode", selectedPackage.packageCode);
+          localStorage.setItem("topup_periodNum", currentPlan.supportTopUpType === 3 ? selectedPackage.duration.toString() : "");
+          window.location.href = paypalData.approveUrl;
+          return;
+        }
+      } else if (paymentMethod === "lemonsqueezy") {
+        const lsRes = await fetch("/api/payment/lemonsqueezy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            planId: `topup-${selectedPackage.packageCode}`,
+            planName: `Top-up: ${selectedPackage.name}`,
+            price: selectedPackage.priceUSD,
+            customerEmail: "",
+            isTopUp: true,
+            orderItemId: currentPlan.orderItemId,
+            packageCode: selectedPackage.packageCode,
+          }),
+        });
+        
+        const lsData = await lsRes.json();
+        if (!lsRes.ok) throw new Error(lsData.error || "LemonSqueezy failed");
+        
+        if (lsData.checkoutUrl) {
+          window.location.href = lsData.checkoutUrl;
+          return;
+        }
+      } else {
+        // Gumroad - open in new tab
+        const gumroadRes = await fetch("/api/payment/gumroad", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            planId: `topup-${selectedPackage.packageCode}`,
+            planName: `Top-up: ${selectedPackage.name}`,
+            price: selectedPackage.priceUSD,
+            customerEmail: "",
+          }),
+        });
+        
+        const gumroadData = await gumroadRes.json();
+        if (!gumroadRes.ok) throw new Error(gumroadData.error || "Gumroad failed");
+        
+        if (gumroadData.checkoutUrl) {
+          window.open(gumroadData.checkoutUrl, "_blank");
+          return;
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Payment failed");
+      setProcessing(false);
+    }
+  }
 
   async function fetchPackages() {
     if (iccid.length < 19) {
@@ -75,32 +190,6 @@ export default function TopUpPage() {
       setCurrentPlan(null);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleTopUp() {
-    if (!selectedPackage || !currentPlan) return;
-    setProcessing(true);
-    try {
-      const res = await fetch("/api/topup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderItemId: currentPlan.orderItemId,
-          packageCode: selectedPackage.packageCode,
-          periodNum: currentPlan.supportTopUpType === 3 ? selectedPackage.duration.toString() : undefined,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSuccess(true);
-      } else {
-        setError(data.error || "Top-up failed");
-      }
-    } catch (err) {
-      setError("Top-up request failed");
-    } finally {
-      setProcessing(false);
     }
   }
 
@@ -232,6 +321,37 @@ export default function TopUpPage() {
                 </motion.button>
               ))}
 
+              {/* Payment Method Selection */}
+              <div className="mt-4">
+                <p className="text-sm text-slate-600 mb-2">Payment Method</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPaymentMethod("paypal")}
+                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                      paymentMethod === "paypal" ? "bg-blue-50 border-blue-500 text-blue-700" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    PayPal
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod("lemonsqueezy")}
+                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                      paymentMethod === "lemonsqueezy" ? "bg-yellow-50 border-yellow-500 text-yellow-700" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    Card
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod("gumroad")}
+                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                      paymentMethod === "gumroad" ? "bg-pink-50 border-pink-500 text-pink-700" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    Gumroad
+                  </button>
+                </div>
+              </div>
+
               <button
                 onClick={handleTopUp}
                 disabled={!selectedPackage || processing}
@@ -243,7 +363,7 @@ export default function TopUpPage() {
                     Processing...
                   </>
                 ) : selectedPackage ? (
-                  `Top-up for ${formatPrice(selectedPackage.priceUSD)}`
+                  `Pay ${formatPrice(selectedPackage.priceUSD)}`
                 ) : (
                   "Select a package"
                 )}

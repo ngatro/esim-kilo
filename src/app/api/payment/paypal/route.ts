@@ -32,7 +32,7 @@ async function getAccessToken(): Promise<string> {
 
 export async function POST(request: Request) {
   try {
-    const { planId, planName, price, customerEmail } = await request.json();
+    const { planId, planName, price, customerEmail, isTopUp, orderItemId, packageCode, periodNum } = await request.json();
 
     if (!price || price <= 0) {
       return NextResponse.json({ error: "Invalid price" }, { status: 400 });
@@ -40,6 +40,12 @@ export async function POST(request: Request) {
 
     const token = await getAccessToken();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    // Build return URL based on whether it's a top-up or new order
+    let returnUrl = `${appUrl}/checkout?success=true&planId=${planId}`;
+    if (isTopUp) {
+      returnUrl = `${appUrl}/topup?success=true&orderItemId=${orderItemId}&packageCode=${packageCode || ""}`;
+    }
 
     const res = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
       method: "POST",
@@ -57,7 +63,7 @@ export async function POST(request: Request) {
               currency_code: "USD",
               value: price.toFixed(2),
             },
-            custom_id: JSON.stringify({ planId, planName, email: customerEmail }),
+            custom_id: JSON.stringify({ planId, planName, email: customerEmail, isTopUp, orderItemId, packageCode, periodNum }),
           },
         ],
         application_context: {
@@ -65,8 +71,8 @@ export async function POST(request: Request) {
           landing_page: "BILLING",
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
-          return_url: `${appUrl}/checkout?success=true&planId=${planId}`,
-          cancel_url: `${appUrl}/checkout?cancelled=true`,
+          return_url: returnUrl,
+          cancel_url: isTopUp ? `${appUrl}/topup?cancelled=true` : `${appUrl}/checkout?cancelled=true`,
         },
       }),
     });
