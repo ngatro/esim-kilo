@@ -27,7 +27,17 @@ export async function PATCH(request: Request) {
       data: updateData,
     });
 
-    return NextResponse.json({ success: true, plan });
+    const serializedPlan = {
+      ...plan,
+      dataVolume: plan.dataVolume.toString(),
+      dataAmount: Number(plan.dataAmount),
+      priceUsd: Number(plan.priceUsd),
+      retailPriceUsd: Number(plan.retailPriceUsd),
+      priceRaw: Number(plan.priceRaw),
+      retailPriceRaw: Number(plan.retailPriceRaw),
+    };
+
+    return NextResponse.json({ success: true, plan: serializedPlan });
   } catch (error) {
     console.error("Plan update error:", error);
     return NextResponse.json({ error: "Failed to update plan" }, { status: 500 });
