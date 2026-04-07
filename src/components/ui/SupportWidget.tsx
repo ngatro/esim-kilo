@@ -87,7 +87,7 @@ export default function SupportWidget() {
   };
 
   return (
-    <div ref={widgetRef} className="fixed bottom-6 right-6 z-50">
+    <div ref={widgetRef} className="fixed bottom-24 md:bottom-6 right-6 z-50">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -154,7 +154,7 @@ export default function SupportWidget() {
         onClick={handleToggle}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-4 rounded-full shadow-lg shadow-orange-500/30 flex items-center justify-center"
+        className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-4 rounded-full shadow-xl shadow-orange-500/40 border-2 border-white flex items-center justify-center"
         aria-label="Open support"
       >
         {isOpen ? (
