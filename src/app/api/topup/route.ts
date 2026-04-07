@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createOrder, getPackageList } from "@/lib/esim-access";
+import { createTopUp, getPackageList } from "@/lib/esim-access";
 
 export async function POST(request: Request) {
   try {
@@ -47,37 +47,41 @@ export async function POST(request: Request) {
 
     const priceUSD = topUpPackage.price / 10000;
 
-    // Build createOrder params
-    const orderParams: {
+    // Build createTopUp params
+    const topUpParams: {
       packageCode: string;
       iccid?: string;
       esimTranNo?: string;
-      count?: number;
       periodNum?: string;
+      amount?: string;
     } = {
       packageCode,
-      count: 1,
     };
 
     if (orderItem.esimIccid) {
-      orderParams.iccid = orderItem.esimIccid;
+      topUpParams.iccid = orderItem.esimIccid;
     } else if (orderItem.esimTranNo) {
-      orderParams.esimTranNo = orderItem.esimTranNo;
+      topUpParams.esimTranNo = orderItem.esimTranNo;
     }
     
     if (supportTopUpType === 3 && periodNum) {
-      orderParams.periodNum = periodNum;
+      topUpParams.periodNum = periodNum;
     }
 
-    console.log("[Top-up] Creating order with params:", JSON.stringify(orderParams, null, 2));
+    console.log("[Top-up] Creating top-up with params:", JSON.stringify(topUpParams, null, 2));
 
-    const esimOrder = await createOrder(orderParams);
+    const topUpResult = await createTopUp(topUpParams);
 
-    if (!esimOrder?.qrCodeUrl && supportTopUpType !== 3) {
-      return NextResponse.json({ error: "Top-up activation failed" }, { status: 500 });
-    }
+    // Update the order item with new volume
+    await prisma.orderItem.update({
+      where: { id: orderItem.id },
+      data: {
+        totalVolume: topUpResult.totalVolume,
+        orderUsage: topUpResult.orderUsage,
+      },
+    });
 
-    // For type 3, the API returns updated info without QR code
+    // Create a new order item for the top-up record
     const newOrderItem = await prisma.orderItem.create({
       data: {
         orderId: orderItem.orderId,
@@ -85,12 +89,11 @@ export async function POST(request: Request) {
         planName: `Top-up: ${topUpPackage.name || packageCode}`,
         price: priceUSD,
         quantity: 1,
-        esimIccid: orderItem.esimIccid,
-        esimQrImage: esimOrder.qrCodeUrl || null,
-        esimTranNo: esimOrder.tranNo || null,
+        esimIccid: topUpResult.iccid,
+        esimTranNo: topUpResult.topUpEsimTranNo,
         esimStatus: "IN_USE",
         smdpStatus: "ENABLED",
-        totalVolume: esimOrder.totalVolume || topUpPackage.volume,
+        totalVolume: topUpResult.totalVolume,
         orderUsage: 0,
       },
     });
@@ -106,11 +109,10 @@ export async function POST(request: Request) {
         id: newOrderItem.id,
         packageCode,
         price: priceUSD,
-        qrCode: esimOrder.qrCodeUrl || null,
-        iccid: orderItem.esimIccid,
-        expiredTime: esimOrder.expiredTime || null,
-        totalVolume: esimOrder.totalVolume || topUpPackage.volume,
-        totalDuration: esimOrder.totalDuration || topUpPackage.duration,
+        iccid: topUpResult.iccid,
+        expiredTime: topUpResult.expiredTime,
+        totalVolume: topUpResult.totalVolume,
+        totalDuration: topUpResult.totalDuration,
         supportTopUpType,
       },
     });

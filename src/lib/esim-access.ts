@@ -308,4 +308,63 @@ export async function refundOrder(orderNo: string): Promise<boolean> {
   return res.success;
 }
 
+export async function createTopUp(params: {
+  packageCode: string;
+  iccid?: string;
+  esimTranNo?: string;
+  periodNum?: string;
+  amount?: string;
+}): Promise<{
+  transactionId: string;
+  iccid: string;
+  expiredTime: string;
+  totalVolume: number;
+  totalDuration: number;
+  orderUsage: number;
+  topUpEsimTranNo: string;
+}> {
+  const transactionId = `OW-TOPUP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  const body: Record<string, unknown> = {
+    transactionId,
+    packageCode: params.packageCode,
+  };
+
+  if (params.iccid) {
+    body.iccid = params.iccid;
+  }
+
+  if (params.esimTranNo) {
+    body.esimTranNo = params.esimTranNo;
+  }
+
+  if (params.periodNum) {
+    body.periodNum = params.periodNum;
+  }
+
+  if (params.amount) {
+    body.amount = params.amount;
+  }
+
+  console.log("[createTopUp] Request body:", JSON.stringify(body, null, 2));
+
+  const res = await esimAccessPost("/esim/topup", body);
+
+  console.log("[createTopUp] Response:", JSON.stringify(res, null, 2));
+
+  if (!res.success || !res.obj) {
+    throw new Error(res.message || "eSIM top-up failed");
+  }
+
+  return res.obj as {
+    transactionId: string;
+    iccid: string;
+    expiredTime: string;
+    totalVolume: number;
+    totalDuration: number;
+    orderUsage: number;
+    topUpEsimTranNo: string;
+  };
+}
+
 export type { EsimPackage, OrderObj, BalanceObj, LocationNetwork, PackageListObj, EsimListItem };
