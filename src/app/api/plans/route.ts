@@ -261,22 +261,20 @@ export async function GET(request: Request) {
     }
 
     const where: Record<string, unknown> = { isActive: true };
-    if (regionId) where.regionId = regionId;
+    
+    // Exact country filter - match countryId exactly or in locations JSON
     if (countryId) {
       where.OR = [
         { countryId: countryId },
-        { countryId: { contains: countryId } },
-        { destination: { contains: countryId, mode: "insensitive" } },
+        { locations: { contains: `"${countryId}"` } },
       ];
     } else if (planType === "local") {
       where.countryId = { not: null };
       where.coverageCount = 1;
     } else if (planType === "region") {
       where.coverageCount = { gte: 2 };
-    } else if (!countryId) {
-      where.countryId = { not: null };
-      where.coverageCount = 1;
     }
+    // If no filter, show all active plans (no additional where clause)
     if (search) {
       where.OR = [
         { destination: { contains: search, mode: "insensitive" } },
