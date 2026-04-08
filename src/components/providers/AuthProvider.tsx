@@ -13,7 +13,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   refreshUser: () => Promise<void>;
@@ -81,11 +81,11 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
     }
   }, [status]);
 
-  async function login(email: string, password: string): Promise<boolean> {
+  async function login(email: string, password: string, rememberMe?: boolean): Promise<boolean> {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     });
 
     if (res.ok) {

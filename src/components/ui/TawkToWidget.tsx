@@ -2,16 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-declare global {
-  interface Window {
-    Tawk_API?: {
-      maximize?: () => void;
-      [key: string]: unknown;
-    };
-    Tawk_LoadStart?: number;
-  }
-}
-
 interface TawkSettings {
   tawkPropertyId: string;
   tawkWidgetId: string;
@@ -34,15 +24,19 @@ export default function TawkToWidget() {
   useEffect(() => {
     if (!settings.tawkPropertyId || !settings.tawkWidgetId) return;
 
+    const existing = document.querySelector('script[src*="tawk.to"]');
+    if (existing) return;
+
     const script = document.createElement("script");
-    script.src = "https://embed.tawk.to/" + settings.tawkPropertyId + "/" + settings.tawkWidgetId;
+    script.src = `https://embed.tawk.to/${settings.tawkPropertyId}/${settings.tawkWidgetId}?disableCollapsed=true`;
     script.async = true;
     script.charset = "utf-8";
     script.setAttribute("crossorigin", "*");
+    script.setAttribute("data-auto-invisible", "true");
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      // Don't remove script on unmount
     };
   }, [settings.tawkPropertyId, settings.tawkWidgetId]);
 

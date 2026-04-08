@@ -15,6 +15,7 @@ export default function LoginModal() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -34,7 +35,7 @@ export default function LoginModal() {
     setError("");
     setLoading(true);
     
-    const success = await login(email, password);
+    const success = await login(email, password, rememberMe);
     setLoading(false);
     
     if (success) {
@@ -177,6 +178,22 @@ export default function LoginModal() {
                     </button>
                   </div>
                 </motion.div>
+
+                {/* Remember me & Forgot password */}
+                <div className="flex items-center justify-between mt-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 text-orange-500 border-slate-300 rounded focus:ring-orange-500"
+                    />
+                    <span className="text-sm text-slate-600">Remember me</span>
+                  </label>
+                  <button type="button" onClick={() => openResetPassword()} className="text-sm text-orange-500 hover:text-orange-600 font-medium">
+                    Forgot password?
+                  </button>
+                </div>
               </div>
 
               {/* Google Login */}
@@ -186,7 +203,7 @@ export default function LoginModal() {
                   <span className="text-slate-400 text-xs">or</span>
                   <div className="flex-1 h-px bg-slate-200" />
                 </div>
-                <button type="button" onClick={() => signIn("google")}
+                <button type="button" onClick={() => signIn("google", { callbackUrl: "/" })}
                   className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium py-3 rounded-xl transition-colors">
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>

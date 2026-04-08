@@ -3,7 +3,7 @@ import { verifyLogin } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, rememberMe } = await request.json();
     
     const user = await verifyLogin(email, password);
     
@@ -23,11 +23,14 @@ export async function POST(request: Request) {
       }
     });
 
+    // Cookie expires in 7 days if rememberMe is true, otherwise session cookie (browser closes)
+    const maxAge = rememberMe ? 60 * 60 * 24 * 30 : undefined; // 30 days if rememberMe, otherwise session
+
     response.cookies.set("auth-token", String(user.id), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge,
     });
 
     return response;
