@@ -9,7 +9,7 @@ import { useUI } from "@/components/providers/UIProvider";
 import { useI18n, SUPPORTED_LOCALES } from "@/components/providers/I18nProvider";
 import { useState, useEffect, useRef } from "react";
 
-const HOT_COUNTRIES = [
+const DEFAULT_HOT_COUNTRIES = [
   { code: "JP", name: "Japan", emoji: "🇯🇵" },
   { code: "KR", name: "Korea", emoji: "🇰🇷" },
   { code: "TH", name: "Thailand", emoji: "🇹🇭" },
@@ -21,7 +21,7 @@ const HOT_COUNTRIES = [
   { code: "DE", name: "Germany", emoji: "🇩🇪" },
 ];
 
-const REGIONS = [
+const DEFAULT_REGIONS = [
   { id: "asia", name: "Asia", emoji: "🌏" },
   { id: "europe", name: "Europe", emoji: "🏰" },
   { id: "americas", name: "Americas", emoji: "🌎" },
@@ -41,10 +41,19 @@ export default function Header() {
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [hotCountries, setHotCountries] = useState(DEFAULT_HOT_COUNTRIES);
+  const [regions, setRegions] = useState(DEFAULT_REGIONS);
   const dropdownTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   useEffect(() => {
     setMounted(true);
+    fetch("/api/config/nav")
+      .then(res => res.json())
+      .then(data => {
+        if (data.hotCountries?.length) setHotCountries(data.hotCountries);
+        if (data.regions?.length) setRegions(data.regions);
+      })
+      .catch(() => {});
   }, []);
 
   const handleMouseEnter = (dropdown: string) => {
@@ -73,7 +82,7 @@ export default function Header() {
 
   const cartCount = mounted ? items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
-  const navItems = [
+  const navItems: { label: string; href: string; children?: { label: string; href: string; emoji?: string; children?: { label: string; href: string; emoji?: string }[] }[] | null }[] = [
     { 
       label: t("common.home"), 
       href: "/",
@@ -85,8 +94,8 @@ export default function Header() {
       children: [
         { label: t("header.allPlans"), href: "/plans" },
         { label: "divider", href: "" },
-        { label: t("header.popularRegions"), href: "", children: REGIONS.map(r => ({ label: r.name, href: `/plans?regionId=${r.id}`, emoji: r.emoji })) },
-        { label: t("header.hotCountries"), href: "", children: HOT_COUNTRIES.map(c => ({ label: c.name, href: `/plans?countryId=${c.code}`, emoji: c.emoji })) },
+        { label: t("header.popularRegions"), href: "", children: regions.map((r: { id: string; name: string; emoji: string }) => ({ label: r.name, href: `/plans?regionId=${r.id}`, emoji: r.emoji })) },
+        { label: t("header.hotCountries"), href: "", children: hotCountries.map((c: { code: string; name: string; emoji: string }) => ({ label: c.name, href: `/plans?countryId=${c.code}`, emoji: c.emoji })) },
       ]
     },
     { 
@@ -167,7 +176,7 @@ export default function Header() {
                           <div>
                             <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{t("header.popularRegions")}</p>
                             <div className="space-y-0.5">
-                              {REGIONS.map((r, idx) => (
+                              {regions.map((r: { id: string; name: string; emoji: string }, idx: number) => (
                                 <Link
                                   key={idx}
                                   href={`/plans?regionId=${r.id}`}
@@ -182,7 +191,7 @@ export default function Header() {
                           <div>
                             <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{t("header.hotCountries")}</p>
                             <div className="space-y-0.5">
-                              {HOT_COUNTRIES.map((c, idx) => (
+                              {hotCountries.map((c: { code: string; name: string; emoji: string }, idx: number) => (
                                 <Link
                                   key={idx}
                                   href={`/plans?countryId=${c.code}`}
@@ -196,7 +205,7 @@ export default function Header() {
                           </div>
                         </div>
                       ) : (
-                        item.children.map((child, idx) => (
+                        item.children.map((child: { label: string; href: string; children?: { label: string; href: string; emoji?: string }[] }, idx: number) => (
                           child.label === "divider" ? (
                             <div key={idx} className="my-1 border-t border-slate-100" />
                           ) : child.children ? (
@@ -437,7 +446,7 @@ export default function Header() {
                         </svg>
                       </summary>
                       <div className="pl-4 space-y-1 mt-1">
-                        {item.children.filter(c => c.label !== "divider").map((child, idx) => (
+                        {item.children.filter((c: { label: string }) => c.label !== "divider").map((child: { label: string; href: string; children?: { label: string; href: string; emoji?: string }[] }, idx: number) => (
                           <div key={idx}>
                             {child.children ? (
                               <div className="py-1">

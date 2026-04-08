@@ -15,6 +15,24 @@ async function getSettings() {
       tawkPropertyId: "",
       tawkWidgetId: "",
       currencyRates: { EUR: 0.92, VND: 24500, GBP: 0.79, JPY: 150 },
+      hotCountries: [
+        { code: "JP", name: "Japan", emoji: "🇯🇵" },
+        { code: "KR", name: "Korea", emoji: "🇰🇷" },
+        { code: "TH", name: "Thailand", emoji: "🇹🇭" },
+        { code: "SG", name: "Singapore", emoji: "🇸🇬" },
+        { code: "VN", name: "Vietnam", emoji: "🇻🇳" },
+        { code: "US", name: "USA", emoji: "🇺🇸" },
+        { code: "GB", name: "UK", emoji: "🇬🇧" },
+        { code: "FR", name: "France", emoji: "🇫🇷" },
+        { code: "DE", name: "Germany", emoji: "🇩🇪" },
+      ],
+      regions: [
+        { id: "asia", name: "Asia", emoji: "🌏" },
+        { id: "europe", name: "Europe", emoji: "🏰" },
+        { id: "americas", name: "Americas", emoji: "🌎" },
+        { id: "oceania", name: "Oceania", emoji: "🌴" },
+        { id: "global", name: "Global", emoji: "🌐" },
+      ],
     };
   }
 }
@@ -54,6 +72,12 @@ export async function POST(request: Request) {
     }
     if (body.currencyRates !== undefined) {
       settings.currencyRates = body.currencyRates;
+    }
+    if (body.hotCountries !== undefined) {
+      settings.hotCountries = body.hotCountries;
+    }
+    if (body.regions !== undefined) {
+      settings.regions = body.regions;
     }
 
     const saved = await saveSettings(settings);

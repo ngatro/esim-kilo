@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { PlanCard } from "./PlanCard";
 
-const HOT_COUNTRIES = [
+const DEFAULT_HOT_COUNTRIES = [
   { code: "JP", name: "Japan", emoji: "🇯🇵" },
   { code: "KR", name: "Korea", emoji: "🇰🇷" },
   { code: "TH", name: "Thailand", emoji: "🇹🇭" },
@@ -113,8 +113,18 @@ export default function PlansPage() {
   const [dynamicDurationOptions, setDynamicDurationOptions] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [planType, setPlanType] = useState<"all" | "local" | "region">("all");
+  const [hotCountries, setHotCountries] = useState(DEFAULT_HOT_COUNTRIES);
 
   // Initialize state from URL params
+  useEffect(() => {
+    fetch("/api/config/nav")
+      .then(res => res.json())
+      .then(data => {
+        if (data.hotCountries?.length) setHotCountries(data.hotCountries);
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     const regionId = searchParams.get("regionId");
     const countryId = searchParams.get("countryId");
@@ -124,13 +134,13 @@ export default function PlansPage() {
     }
     if (countryId) {
       setSelectedCountry(countryId);
-      // Set country name from HOT_COUNTRIES
-      const hotCountry = HOT_COUNTRIES.find(c => c.code === countryId);
+      // Set country name from hotCountries
+      const hotCountry = hotCountries.find((c: { code: string }) => c.code === countryId);
       if (hotCountry) {
         setSelectedCountryName(hotCountry.name);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, hotCountries]);
 
   useEffect(() => {
     fetch("/api/regions")

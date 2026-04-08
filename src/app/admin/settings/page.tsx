@@ -15,6 +15,8 @@ interface SiteSettings {
     GBP: number;
     JPY: number;
   };
+  hotCountries: { code: string; name: string; emoji: string }[];
+  regions: { id: string; name: string; emoji: string }[];
 }
 
 export default function AdminSettingsPage() {
@@ -25,6 +27,24 @@ export default function AdminSettingsPage() {
     tawkPropertyId: "",
     tawkWidgetId: "",
     currencyRates: { EUR: 0.92, VND: 24500, GBP: 0.79, JPY: 150 },
+    hotCountries: [
+      { code: "JP", name: "Japan", emoji: "🇯🇵" },
+      { code: "KR", name: "Korea", emoji: "🇰🇷" },
+      { code: "TH", name: "Thailand", emoji: "🇹🇭" },
+      { code: "SG", name: "Singapore", emoji: "🇸🇬" },
+      { code: "VN", name: "Vietnam", emoji: "🇻🇳" },
+      { code: "US", name: "USA", emoji: "🇺🇸" },
+      { code: "GB", name: "UK", emoji: "🇬🇧" },
+      { code: "FR", name: "France", emoji: "🇫🇷" },
+      { code: "DE", name: "Germany", emoji: "🇩🇪" },
+    ],
+    regions: [
+      { id: "asia", name: "Asia", emoji: "🌏" },
+      { id: "europe", name: "Europe", emoji: "🏰" },
+      { id: "americas", name: "Americas", emoji: "🌎" },
+      { id: "oceania", name: "Oceania", emoji: "🌴" },
+      { id: "global", name: "Global", emoji: "🌐" },
+    ],
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -43,6 +63,8 @@ export default function AdminSettingsPage() {
         if (data.tawkPropertyId) setSettings((prev) => ({ ...prev, tawkPropertyId: data.tawkPropertyId }));
         if (data.tawkWidgetId) setSettings((prev) => ({ ...prev, tawkWidgetId: data.tawkWidgetId }));
         if (data.currencyRates) setSettings((prev) => ({ ...prev, currencyRates: data.currencyRates }));
+        if (data.hotCountries) setSettings((prev) => ({ ...prev, hotCountries: data.hotCountries }));
+        if (data.regions) setSettings((prev) => ({ ...prev, regions: data.regions }));
       }
     } catch (error) {
       console.error("Failed to fetch settings:", error);
@@ -212,6 +234,134 @@ export default function AdminSettingsPage() {
               <p className="text-sm text-slate-600">
                 <strong>Preview:</strong> 1 USD = {settings.currencyRates.EUR.toFixed(2)}€ | {settings.currencyRates.VND.toLocaleString()}₫ | {settings.currencyRates.GBP.toFixed(2)}£ | {settings.currencyRates.JPY.toLocaleString()}¥
               </p>
+            </div>
+
+            {/* Hot Countries */}
+            <div className="border-t border-slate-200 pt-6">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Hot Countries (Header Menu)</h3>
+              <p className="text-sm text-slate-500 mb-4">Countries shown in the Plans dropdown menu</p>
+              <div className="space-y-2">
+                {settings.hotCountries.map((country, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={country.emoji}
+                      onChange={(e) => {
+                        const newCountries = [...settings.hotCountries];
+                        newCountries[idx] = { ...country, emoji: e.target.value };
+                        setSettings({ ...settings, hotCountries: newCountries });
+                      }}
+                      className="w-16 px-2 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400 text-center"
+                    />
+                    <input
+                      type="text"
+                      value={country.code}
+                      onChange={(e) => {
+                        const newCountries = [...settings.hotCountries];
+                        newCountries[idx] = { ...country, code: e.target.value.toUpperCase() };
+                        setSettings({ ...settings, hotCountries: newCountries });
+                      }}
+                      placeholder="Code"
+                      className="w-20 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+                    />
+                    <input
+                      type="text"
+                      value={country.name}
+                      onChange={(e) => {
+                        const newCountries = [...settings.hotCountries];
+                        newCountries[idx] = { ...country, name: e.target.value };
+                        setSettings({ ...settings, hotCountries: newCountries });
+                      }}
+                      placeholder="Country name"
+                      className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+                    />
+                    <button
+                      onClick={() => {
+                        const newCountries = settings.hotCountries.filter((_, i) => i !== idx);
+                        setSettings({ ...settings, hotCountries: newCountries });
+                      }}
+                      className="text-red-500 hover:text-red-700 p-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => {
+                    setSettings({
+                      ...settings,
+                      hotCountries: [...settings.hotCountries, { code: "", name: "", emoji: "🏳️" }],
+                    });
+                  }}
+                  className="text-orange-500 hover:text-orange-600 text-sm font-medium"
+                >
+                  + Add Country
+                </button>
+              </div>
+            </div>
+
+            {/* Regions */}
+            <div className="border-t border-slate-200 pt-6">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Regions (Header Menu)</h3>
+              <p className="text-sm text-slate-500 mb-4">Regions shown in the Plans dropdown menu</p>
+              <div className="space-y-2">
+                {settings.regions.map((region, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={region.emoji}
+                      onChange={(e) => {
+                        const newRegions = [...settings.regions];
+                        newRegions[idx] = { ...region, emoji: e.target.value };
+                        setSettings({ ...settings, regions: newRegions });
+                      }}
+                      className="w-16 px-2 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400 text-center"
+                    />
+                    <input
+                      type="text"
+                      value={region.id}
+                      onChange={(e) => {
+                        const newRegions = [...settings.regions];
+                        newRegions[idx] = { ...region, id: e.target.value.toLowerCase() };
+                        setSettings({ ...settings, regions: newRegions });
+                      }}
+                      placeholder="ID"
+                      className="w-24 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+                    />
+                    <input
+                      type="text"
+                      value={region.name}
+                      onChange={(e) => {
+                        const newRegions = [...settings.regions];
+                        newRegions[idx] = { ...region, name: e.target.value };
+                        setSettings({ ...settings, regions: newRegions });
+                      }}
+                      placeholder="Region name"
+                      className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-400"
+                    />
+                    <button
+                      onClick={() => {
+                        const newRegions = settings.regions.filter((_, i) => i !== idx);
+                        setSettings({ ...settings, regions: newRegions });
+                      }}
+                      className="text-red-500 hover:text-red-700 p-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => {
+                    setSettings({
+                      ...settings,
+                      regions: [...settings.regions, { id: "", name: "", emoji: "🌍" }],
+                    });
+                  }}
+                  className="text-orange-500 hover:text-orange-600 text-sm font-medium"
+                >
+                  + Add Region
+                </button>
+              </div>
             </div>
 
             <div className="pt-4 flex items-center gap-4">
