@@ -272,6 +272,16 @@ export async function GET(request: Request) {
           ],
         },
       ];
+    } else if (regionId) {
+      // Filter by regionId - match regionId field or regionName
+      where.AND = [
+        {
+          OR: [
+            { regionId: regionId },
+            { regionName: { equals: regionId, mode: "insensitive" } },
+          ],
+        },
+      ];
     } else if (planType === "local") {
       where.countryId = { not: null };
       where.coverageCount = 1;
