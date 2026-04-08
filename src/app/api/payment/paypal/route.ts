@@ -1,8 +1,31 @@
 import { NextResponse } from "next/server";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
 const PAYPAL_API = process.env.PAYPAL_SANDBOX === "true"
   ? "https://api-m.sandbox.paypal.com"
   : "https://api-m.paypal.com";
+
+const PAYPAL_SUPPORTED_CURRENCIES = ["AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "SEK", "SGD", "USD", "MXN", "BRL", "INR", "KRW"];
+
+async function getSettings() {
+  try {
+    const data = await readFile(join(process.cwd(), "data", "settings.json"), "utf-8");
+    return JSON.parse(data);
+  } catch {
+    return { currencyRates: { EUR: 0.92, VND: 24500, GBP: 0.79, JPY: 150 } };
+  }
+}
+
+function convertToUSD(amount: number, currency: string, rates: Record<string, number>): number {
+  if (currency === "USD") return amount;
+  
+  const rate = rates[currency];
+  if (!rate) return amount;
+  
+  // Convert from local currency to USD
+  return amount / rate;
+}
 
 async function getAccessToken(): Promise<string> {
   const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -32,10 +55,24 @@ async function getAccessToken(): Promise<string> {
 
 export async function POST(request: Request) {
   try {
-    const { planId, planName, price, customerEmail, isTopUp, orderItemId, packageCode, periodNum } = await request.json();
+    const { planId, planName, price, currency = "USD", customerEmail, isTopUp, orderItemId, packageCode, periodNum } = await request.json();
 
     if (!price || price <= 0) {
       return NextResponse.json({ error: "Invalid price" }, { status: 400 });
+    }
+
+    // Get settings for exchange rates
+    const settings = await getSettings();
+    const rates = settings.currencyRates || { EUR: 0.92, VND: 24500, GBP: 0.79, JPY: 150 };
+
+    // Determine PayPal currency - convert if not supported
+    let paypalCurrency = currency.toUpperCase();
+    let paypalAmount = price;
+
+    if (!PAYPAL_SUPPORTED_CURRENCIES.includes(paypalCurrency)) {
+      // Currency not supported by PayPal - convert to USD
+      paypalCurrency = "USD";
+      paypalAmount = convertToUSD(price, currency.toUpperCase(), rates);
     }
 
     const token = await getAccessToken();
@@ -60,8 +97,8 @@ export async function POST(request: Request) {
             reference_id: planId,
             description: `OW SIM eSIM: ${planName}`,
             amount: {
-              currency_code: "USD",
-              value: price.toFixed(2),
+              currency_code: paypalCurrency,
+              value: paypalAmount.toFixed(2),
             },
             custom_id: JSON.stringify({ planId, planName, email: customerEmail, isTopUp, orderItemId, packageCode, periodNum }),
           },

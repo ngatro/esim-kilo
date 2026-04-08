@@ -29,7 +29,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { formatPrice } = useI18n();
+  const { formatPrice, currency } = useI18n();
   const planId = searchParams.get("planId");
 
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -127,6 +127,7 @@ export default function CheckoutPage() {
         planId: plan!.id,
         planName: `${plan!.destination} eSIM`,
         price: plan!.priceUsd * quantity,
+        currency,
         customerEmail,
       }),
     });

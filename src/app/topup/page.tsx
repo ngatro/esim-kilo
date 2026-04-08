@@ -27,7 +27,7 @@ interface CurrentPlan {
 export default function TopUpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { formatPrice } = useI18n();
+  const { formatPrice, currency } = useI18n();
   
   const initialIccid = searchParams.get("iccid") || "";
   const successParam = searchParams.get("success");
@@ -93,6 +93,7 @@ export default function TopUpPage() {
             planId: `topup-${selectedPackage.packageCode}`,
             planName: `Top-up: ${selectedPackage.name}`,
             price: selectedPackage.priceUSD,
+            currency,
             customerEmail: "", // Will be filled from user session
             isTopUp: true,
             orderItemId: currentPlan.orderItemId,
