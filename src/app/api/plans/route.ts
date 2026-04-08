@@ -262,11 +262,14 @@ export async function GET(request: Request) {
 
     const where: Record<string, unknown> = { isActive: true };
     
-    // Exact country filter - match countryId exactly
+    // Exact country filter - match countryId exactly or in locations JSON
     if (countryId) {
       where.AND = [
         {
-          countryId: countryId,
+          OR: [
+            { countryId: countryId },
+            { locations: { contains: `"${countryId}"` } },
+          ],
         },
       ];
     } else if (regionId) {
