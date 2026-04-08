@@ -7,6 +7,18 @@ import Link from "next/link";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { PlanCard } from "./PlanCard";
 
+const HOT_COUNTRIES = [
+  { code: "JP", name: "Japan", emoji: "🇯🇵" },
+  { code: "KR", name: "Korea", emoji: "🇰🇷" },
+  { code: "TH", name: "Thailand", emoji: "🇹🇭" },
+  { code: "SG", name: "Singapore", emoji: "🇸🇬" },
+  { code: "VN", name: "Vietnam", emoji: "🇻🇳" },
+  { code: "US", name: "USA", emoji: "🇺🇸" },
+  { code: "GB", name: "UK", emoji: "🇬🇧" },
+  { code: "FR", name: "France", emoji: "🇫🇷" },
+  { code: "DE", name: "Germany", emoji: "🇩🇪" },
+];
+
 interface Plan {
   id: string;
   name: string;
@@ -112,13 +124,13 @@ export default function PlansPage() {
     }
     if (countryId) {
       setSelectedCountry(countryId);
-      // Also set country name from regions if available
-      const foundRegion = regions.find(r => r.id === countryId);
-      if (foundRegion) {
-        setSelectedRegion(foundRegion.id);
+      // Set country name from HOT_COUNTRIES
+      const hotCountry = HOT_COUNTRIES.find(c => c.code === countryId);
+      if (hotCountry) {
+        setSelectedCountryName(hotCountry.name);
       }
     }
-  }, [searchParams, regions]);
+  }, [searchParams]);
 
   useEffect(() => {
     fetch("/api/regions")
