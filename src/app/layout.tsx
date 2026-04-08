@@ -28,6 +28,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "OW SIM — OpenWorld eSIM | Stay Connected Anywhere",
   description: "Affordable eSIM data plans for international travel. Instant activation in 190+ countries. No roaming fees, no contracts.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 async function getRates(): Promise<ExchangeRates> {
