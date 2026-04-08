@@ -382,39 +382,6 @@ export default function PlansPage() {
             </div>
           )}
 
-          {/* Region chips */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            {/* Plan Type Toggle */}
-            <div className="flex gap-2 sm:order-2">
-              <button onClick={() => setPlanType("all")} 
-                className={`text-xs px-4 py-2 rounded-full border transition-colors ${
-                  planType === "all" ? "bg-orange-500 text-white border-orange-500" : "border-slate-200 text-slate-600 hover:border-orange-300"
-                }`}>All Plans</button>
-              <button onClick={() => setPlanType("local")} 
-                className={`text-xs px-4 py-2 rounded-full border transition-colors ${
-                  planType === "local" ? "bg-orange-500 text-white border-orange-500" : "border-slate-200 text-slate-600 hover:border-orange-300"
-                }`}>🌍 Local (1 Country)</button>
-              <button onClick={() => setPlanType("region")} 
-                className={`text-xs px-4 py-2 rounded-full border transition-colors ${
-                  planType === "region" ? "bg-orange-500 text-white border-orange-500" : "border-slate-200 text-slate-600 hover:border-orange-300"
-                }`}>🌐 Region (2+ Countries)</button>
-            </div>
-            
-            {/* Region Filter */}
-            <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap -mx-3 px-3 sm:mx-0 sm:px-0 sm:order-1">
-              <button onClick={() => { setSelectedRegion("all"); setSelectedCountry(""); }}
-                className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                  selectedRegion === "all" && !selectedCountry ? "bg-orange-100 border-orange-300 text-orange-700" : "border-slate-200 text-slate-500 hover:border-orange-300"
-                }`}>All</button>
-              {regions.map((r) => (
-                <button key={r.id} onClick={() => { setSelectedRegion(r.id); setSelectedCountry(""); }}
-                  className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap ${
-                    selectedRegion === r.id ? "bg-orange-100 border-orange-300 text-orange-700" : "border-slate-200 text-slate-500 hover:border-orange-300"
-                  }`}>{r.emoji} {r.name}</button>
-              ))}
-            </div>
-          </div>
-
           {/* Plans Grid */}
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
