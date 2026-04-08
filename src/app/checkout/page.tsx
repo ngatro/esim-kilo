@@ -25,11 +25,13 @@ interface Plan {
 
 type PaymentMethod = "paypal" | "lemonsqueezy" | "gumroad" | "payoneer";
 
+import { convertFromUSD } from "@/lib/currency";
+
 export default function CheckoutPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { formatPrice, currency } = useI18n();
+  const { formatPrice, currency, rates } = useI18n();
   const planId = searchParams.get("planId");
 
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -120,14 +122,25 @@ export default function CheckoutPage() {
   }, [user]);
 
   async function handlePayPal() {
+    // Get base price in USD - use priceUsd field or convert from displayed price
+    const basePrice = plan!.priceUsd && plan!.priceUsd > 0 
+      ? plan!.priceUsd 
+      : convertFromUSD(plan!.priceUsd || 0, currency, rates);
+    
+    const priceUSD = basePrice * quantity;
+    
+    if (!priceUSD || priceUSD <= 0) {
+      throw new Error("Invalid price");
+    }
+    
     const res = await fetch("/api/payment/paypal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         planId: plan!.id,
         planName: `${plan!.destination} eSIM`,
-        price: plan!.priceUsd * quantity,
-        currency,
+        price: priceUSD,
+        currency: "USD", // Always USD for PayPal
         customerEmail,
       }),
     });

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { convertFromUSD } from "@/lib/currency";
 
 interface TopUpPackage {
   packageCode: string;
@@ -27,7 +28,7 @@ interface CurrentPlan {
 export default function TopUpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { formatPrice, currency } = useI18n();
+  const { formatPrice, currency, rates } = useI18n();
   
   const initialIccid = searchParams.get("iccid") || "";
   const successParam = searchParams.get("success");
@@ -85,15 +86,20 @@ export default function TopUpPage() {
     
     try {
       if (paymentMethod === "paypal") {
-        // Create PayPal order first
+        // Always send USD to PayPal
+        let priceUSD = selectedPackage.priceUSD;
+        if (!priceUSD || priceUSD <= 0) {
+          priceUSD = convertFromUSD(selectedPackage.priceUSD, currency, rates);
+        }
+        
         const paypalRes = await fetch("/api/payment/paypal", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             planId: `topup-${selectedPackage.packageCode}`,
             planName: `Top-up: ${selectedPackage.name}`,
-            price: selectedPackage.priceUSD,
-            currency,
+            price: priceUSD,
+            currency: "USD", // Always USD for PayPal
             customerEmail: "", // Will be filled from user session
             isTopUp: true,
             orderItemId: currentPlan.orderItemId,

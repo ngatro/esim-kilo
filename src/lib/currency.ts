@@ -62,3 +62,13 @@ export function formatCurrency(
     return `${currency} ${fallback}`;
   }
 }
+
+export function convertFromUSD(
+  amountUSD: number,
+  targetCurrency: string,
+  rates?: ExchangeRates
+): number {
+  const currency = targetCurrency.toUpperCase();
+  const rate = getRate(currency, rates);
+  return amountUSD * rate;
+}
