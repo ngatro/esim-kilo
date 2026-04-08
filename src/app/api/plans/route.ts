@@ -264,9 +264,13 @@ export async function GET(request: Request) {
     
     // Exact country filter - match countryId exactly or in locations JSON
     if (countryId) {
-      where.OR = [
-        { countryId: countryId },
-        { locations: { contains: `"${countryId}"` } },
+      where.AND = [
+        {
+          OR: [
+            { countryId: countryId },
+            { locations: { contains: `"${countryId}"` } },
+          ],
+        },
       ];
     } else if (planType === "local") {
       where.countryId = { not: null };
@@ -276,11 +280,16 @@ export async function GET(request: Request) {
     }
     // If no filter, show all active plans (no additional where clause)
     if (search) {
-      where.OR = [
+      const searchConditions = [
         { destination: { contains: search, mode: "insensitive" } },
         { name: { contains: search, mode: "insensitive" } },
         { countryName: { contains: search, mode: "insensitive" } },
       ];
+      if (where.AND) {
+        (where.AND as unknown[]).push({ OR: searchConditions });
+      } else {
+        where.AND = [{ OR: searchConditions }];
+      }
     }
     if (networkType) where.networkType = { contains: networkType };
     if (dataType) where.dataType = parseInt(dataType);
