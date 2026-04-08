@@ -46,6 +46,9 @@ export default function TopUpPage() {
   const [selectedPackage, setSelectedPackage] = useState<TopUpPackage | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"paypal" | "lemonsqueezy" | "gumroad">("paypal");
 
+  const PAYPAL_SUPPORTED_CURRENCIES = ["AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "SEK", "SGD", "USD", "MXN", "BRL", "INR", "KRW"];
+  const isPayPalSupported = PAYPAL_SUPPORTED_CURRENCIES.includes(currency);
+
   // Handle PayPal success redirect
   useEffect(() => {
     if (successParam === "true" && orderItemIdParam && packageCodeParam) {
@@ -375,6 +378,11 @@ export default function TopUpPage() {
                   "Select a package"
                 )}
               </button>
+              {paymentMethod === "paypal" && selectedPackage && !isPayPalSupported && (
+                <p className="text-xs text-slate-500 text-center mt-2">
+                  ≈ ${selectedPackage.priceUSD.toFixed(2)} USD
+                </p>
+              )}
             </div>
           ) : !loading && !error && iccid.length >= 19 ? (
             <div className="text-center py-8 text-slate-600">

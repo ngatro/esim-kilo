@@ -140,7 +140,7 @@ export default function CheckoutPage() {
         planId: plan!.id,
         planName: `${plan!.destination} eSIM`,
         price: priceUSD,
-        currency: "USD", // Always USD for PayPal
+        currency: currency,
         customerEmail,
       }),
     });
@@ -371,7 +371,10 @@ export default function CheckoutPage() {
     );
   }
 
-  const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd) * quantity;
+  const PAYPAL_SUPPORTED_CURRENCIES = ["AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "SEK", "SGD", "USD", "MXN", "BRL", "INR", "KRW"];
+const isPayPalSupported = PAYPAL_SUPPORTED_CURRENCIES.includes(currency);
+
+const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd) * quantity;
   const isUnlimited = plan.dataAmount >= 999;
 
   return (
@@ -573,6 +576,11 @@ export default function CheckoutPage() {
                   <span className="text-base sm:text-lg font-semibold text-slate-800">Total</span>
                   <span className="text-xl sm:text-2xl font-bold text-slate-800">{formatPrice(totalPrice)}</span>
                 </div>
+                {!isPayPalSupported && rates[currency] && (
+                  <div className="mt-2 text-xs sm:text-sm text-slate-500 text-right">
+                    ≈ ${totalPrice.toFixed(2)} USD
+                  </div>
+                )}
               </div>
 
               {error && (
