@@ -557,7 +557,7 @@ export default function CheckoutPage() {
               <div className="border-t border-slate-200 pt-3 sm:pt-4 mb-4 sm:mb-6">
                 <div className="flex justify-between">
                   <span className="text-base sm:text-lg font-semibold text-slate-800">Total</span>
-                  <span className="text-xl sm:text-2xl font-bold text-slate-800">${totalPrice.toFixed(2)}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-slate-800">{formatPrice(totalPrice)}</span>
                 </div>
               </div>
 
@@ -580,7 +580,7 @@ export default function CheckoutPage() {
                     Processing...
                   </span>
                 ) : (
-                  `Pay $${totalPrice.toFixed(2)}`
+                  `Pay ${formatPrice(totalPrice)}`
                 )}
               </motion.button>
 
