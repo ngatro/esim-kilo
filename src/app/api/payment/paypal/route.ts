@@ -8,6 +8,18 @@ const PAYPAL_API = process.env.PAYPAL_SANDBOX === "true"
 
 const PAYPAL_SUPPORTED_CURRENCIES = ["AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "SEK", "SGD", "USD", "MXN", "BRL", "INR", "KRW"];
 
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const check = url.searchParams.get("check");
+  
+  if (check === "config") {
+    const configured = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+    return NextResponse.json({ configured });
+  }
+  
+  return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+}
+
 async function getSettings() {
   try {
     const data = await readFile(join(process.cwd(), "data", "settings.json"), "utf-8");

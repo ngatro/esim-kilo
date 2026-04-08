@@ -338,6 +338,35 @@ export default function PlansPage() {
             </div>
           </div>
 
+          {/* Region Filter Bar */}
+          {!selectedCountryName && (
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+              <button
+                onClick={() => { setSelectedRegion("all"); setSelectedCountry(""); setSelectedCountryName(""); }}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  selectedRegion === "all" && !selectedCountryName
+                    ? "bg-orange-500 text-white"
+                    : "bg-white border border-slate-200 text-slate-600 hover:border-orange-300"
+                }`}
+              >
+                🌍 All Regions
+              </button>
+              {regions.slice(0, 7).map((region) => (
+                <button
+                  key={region.id}
+                  onClick={() => { setSelectedRegion(region.id); setSelectedCountry(""); setSelectedCountryName(""); }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    selectedRegion === region.id && !selectedCountryName
+                      ? "bg-orange-500 text-white"
+                      : "bg-white border border-slate-200 text-slate-600 hover:border-orange-300"
+                  }`}
+                >
+                  {region.emoji} {region.name}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Simple Filter Bar - Only show when country is selected */}
           {selectedCountryName && (
             <div className="flex flex-wrap items-center justify-center gap-3 mb-8">

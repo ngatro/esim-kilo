@@ -43,6 +43,15 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paypal");
   const [success, setSuccess] = useState<{ orderId: number; qrCode?: string; activationCode?: string } | null>(null);
+  const [paypalConfigured, setPaypalConfigured] = useState<boolean | null>(null);
+
+  // Check PayPal configuration
+  useEffect(() => {
+    fetch("/api/payment/paypal?check=config")
+      .then(r => r.json())
+      .then(data => setPaypalConfigured(data.configured !== false))
+      .catch(() => setPaypalConfigured(false));
+  }, []);
 
   // Handle PayPal success redirect
   useEffect(() => {
@@ -459,11 +468,12 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                 {/* PayPal */}
                 <button
                   onClick={() => setPaymentMethod("paypal")}
+                  disabled={paypalConfigured === false}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     paymentMethod === "paypal"
                       ? "bg-orange-50 border-orange-400 ring-1 ring-orange-200"
                       : "bg-white border-slate-200 hover:border-slate-300"
-                  }`}
+                  } ${paypalConfigured === false ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <div className="w-12 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-xs font-bold">PayPal</span>
@@ -471,6 +481,9 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                   <div className="text-left flex-1">
                     <p className="text-slate-800 font-medium text-sm">PayPal</p>
                     <p className="text-slate-500 text-xs">Credit Card, Apple Pay, Google Pay</p>
+                    {paypalConfigured === false && (
+                      <p className="text-red-500 text-xs">Not configured - use direct checkout</p>
+                    )}
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     paymentMethod === "paypal" ? "border-orange-500" : "border-slate-300"
