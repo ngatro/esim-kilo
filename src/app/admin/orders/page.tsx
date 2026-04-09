@@ -6,6 +6,25 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface Plan {
+  id: string;
+  name: string;
+  packageCode: string;
+  destination: string;
+  dataAmount: number;
+  durationDays: number;
+  priceUsd: number;
+  regionName: string | null;
+  countryName: string | null;
+}
+
+interface User {
+  id: number;
+  name: string | null;
+  email: string;
+  role: string;
+}
+
 interface OrderItem {
   id: number;
   planId: string | null;
@@ -81,6 +100,18 @@ export default function AdminOrdersPage() {
   const [activating, setActivating] = useState<number | null>(null);
   const [syncing, setSyncing] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
+  const [showGiftModal, setShowGiftModal] = useState(false);
+  const [giftLoading, setGiftLoading] = useState(false);
+  const [giftForm, setGiftForm] = useState({
+    userId: "",
+    userEmail: "",
+    packageCode: "",
+    quantity: 1,
+    customerName: "",
+  });
+  const [userSearch, setUserSearch] = useState("");
+  const [userResults, setUserResults] = useState<User[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "admin")) router.push("/");
@@ -143,6 +174,72 @@ export default function AdminOrdersPage() {
     }
   }
 
+  async function openGiftModal() {
+    setShowGiftModal(true);
+    setGiftLoading(true);
+    // No longer need to fetch plans - admin will input packageCode directly
+    setGiftLoading(false);
+  }
+
+  async function searchUsers(query: string) {
+    setUserSearch(query);
+    if (query.length < 2) {
+      setUserResults([]);
+      return;
+    }
+    setSearchingUsers(true);
+    try {
+      const res = await fetch(`/api/admin/users/search?search=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setUserResults(data.users || []);
+    } catch (err) {
+      console.error("User search failed:", err);
+    } finally {
+      setSearchingUsers(false);
+    }
+  }
+
+  function selectUser(user: User) {
+    setGiftForm({ ...giftForm, userId: String(user.id), userEmail: user.email, customerName: user.name || "" });
+    setUserSearch(user.email);
+    setUserResults([]);
+  }
+
+  async function submitGift(e: React.FormEvent) {
+    e.preventDefault();
+    if (!giftForm.packageCode) {
+      alert("Please enter package code");
+      return;
+    }
+    if (!giftForm.userId && !giftForm.userEmail) {
+      alert("Please select or enter a user email");
+      return;
+    }
+    setGiftLoading(true);
+    try {
+      const res = await fetch("/api/admin/orders/gift", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(giftForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Gift eSIM created successfully!\nICCID: " + data.esim.iccid);
+        setShowGiftModal(false);
+        setGiftForm({ userId: "", userEmail: "", packageCode: "", quantity: 1, customerName: "" });
+        setUserSearch("");
+        await fetchOrders();
+      } else {
+        alert("Failed: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Gift creation failed:", err);
+      alert("Failed to create gift");
+    } finally {
+      setGiftLoading(false);
+    }
+  }
+
   if (authLoading || !user || user.role !== "admin") {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -160,6 +257,10 @@ export default function AdminOrdersPage() {
             <p className="text-slate-400 text-sm mt-1">{orders.length} orders</p>
           </div>
           <div className="flex gap-3 items-center">
+            <button onClick={openGiftModal}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white text-sm px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2">
+              🎁 Give Free Plan
+            </button>
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
               className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm">
               <option value="">All Status</option>
@@ -321,6 +422,71 @@ export default function AdminOrdersPage() {
           </div>
         )}
       </div>
+
+      {/* Gift Modal - moved inside return */}
+      <AnimatePresence>
+        {showGiftModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowGiftModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">🎁 Give Free eSIM Plan</h2>
+              <button onClick={() => setShowGiftModal(false)} className="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+
+            <form onSubmit={submitGift} className="space-y-4">
+              {/* User Search */}
+              <div>
+                <label className="block text-slate-300 text-sm mb-2">User (search by email)</label>
+                <div className="relative">
+                  <input type="text" value={userSearch} onChange={(e) => searchUsers(e.target.value)}
+                    placeholder="Search user by email..."
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm" />
+                  {userResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 bg-slate-700 border border-slate-600 rounded-lg mt-1 max-h-48 overflow-y-auto z-10">
+                      {userResults.map((user) => (
+                        <button key={user.id} type="button" onClick={() => selectUser(user)}
+                          className="w-full text-left px-4 py-2 hover:bg-slate-600 text-white text-sm">
+                          <span className="font-medium">{user.email}</span>
+                          <span className="text-slate-400 text-xs ml-2">{user.name || "(no name)"}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {searchingUsers && <p className="text-slate-400 text-xs mt-1">Searching...</p>}
+                </div>
+              </div>
+
+              {/* Plan Selection - Package Code Input */}
+              <div>
+                <label className="block text-slate-300 text-sm mb-2">Package Code</label>
+                <input type="text" value={giftForm.packageCode}
+                  onChange={(e) => setGiftForm({ ...giftForm, packageCode: e.target.value })}
+                  placeholder="Enter package code (e.g., JP-500MB-30D)"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm" />
+              </div>
+
+              {/* Quantity */}
+              <div>
+                <label className="block text-slate-300 text-sm mb-2">Quantity</label>
+                <input type="number" min="1" max="10" value={giftForm.quantity}
+                  onChange={(e) => setGiftForm({ ...giftForm, quantity: parseInt(e.target.value) || 1 })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm" />
+              </div>
+
+              {/* Submit */}
+              <button type="submit" disabled={giftLoading}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-medium py-3 rounded-lg transition-all disabled:opacity-50">
+                {giftLoading ? "Creating..." : "🎁 Give Free eSIM"}
+              </button>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+      </AnimatePresence>
     </div>
   );
 }

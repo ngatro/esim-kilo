@@ -289,7 +289,7 @@ export default function PlanDetailContent() {
                 <h2 className="text-xl font-bold text-slate-800 mb-4">Plan Specifications</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-xs text-slate-500 mb-1">Data</p>
+                    <p className="text-xs text-slate-500 mb-1">{t("planDetail.data")}</p>
                     <p className="text-lg font-semibold text-slate-800">
                       {plan.fupPolicy ? (
                         <>Unlimited <span className="text-green-600 text-sm">({plan.fupPolicy} after)</span></>
@@ -299,24 +299,24 @@ export default function PlanDetailContent() {
                     </p>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-xs text-slate-500 mb-1">Validity</p>
-                    <p className="text-lg font-semibold text-slate-800">{plan.durationDays} Days</p>
+                    <p className="text-xs text-slate-500 mb-1">{t("planDetail.validity")}</p>
+                    <p className="text-lg font-semibold text-slate-800">{plan.durationDays} {t("planDetail.days")}</p>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-xs text-slate-500 mb-1">Network Speed</p>
+                    <p className="text-xs text-slate-500 mb-1">{t("planDetail.networkSpeed")}</p>
                     <p className="text-lg font-semibold text-slate-800">{plan.speed || "4G LTE"}</p>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-xs text-slate-500 mb-1">Plan Type</p>
+                    <p className="text-xs text-slate-500 mb-1">{t("planDetail.planType")}</p>
                     <p className="text-lg font-semibold text-slate-800">{plan.smsStatus === 0 ? "Data Only" : "Data + SMS"}</p>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-xs text-slate-500 mb-1">Tethering/Hotspot</p>
-                    <p className="text-lg font-semibold text-slate-800">{plan.ipExport ? `Supported (${plan.ipExport})` : "Not supported"}</p>
+                    <p className="text-xs text-slate-500 mb-1">{t("planDetail.tetheringDetail")}</p>
+                    <p className="text-lg font-semibold text-slate-800">{plan.ipExport ? `${t("planDetail.supported")} (${plan.ipExport})` : t("planDetail.notSupported")}</p>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-xs text-slate-500 mb-1">Activation</p>
-                    <p className="text-lg font-semibold text-slate-800">{plan.activeType === 1 ? "On first installation" : "On first connection"}</p>
+                    <p className="text-xs text-slate-500 mb-1">{t("planDetail.activation")}</p>
+                    <p className="text-lg font-semibold text-slate-800">{plan.activeType === 1 ? t("planDetail.onFirstInstallation") : t("planDetail.onFirstConnection")}</p>
                   </div>
                   {plan.unusedValidTime > 0 && (
                     <div className="bg-slate-50 rounded-xl p-4">
@@ -325,8 +325,8 @@ export default function PlanDetailContent() {
                     </div>
                   )}
                   <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-xs text-slate-500 mb-1">Top-Up</p>
-                    <p className="text-lg font-semibold text-slate-800">{plan.supportTopUp ? "Supported" : "Not supported"}</p>
+                    <p className="text-xs text-slate-500 mb-1">{t("planDetail.topUp")}</p>
+                    <p className="text-lg font-semibold text-slate-800">{plan.supportTopUp ? t("planDetail.supported") : t("planDetail.notSupported")}</p>
                   </div>
                 </div>
               </div>
@@ -334,15 +334,15 @@ export default function PlanDetailContent() {
               {/* Fair Use Policy */}
               {plan.fupPolicy && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 sm:p-6">
-                  <h2 className="text-lg font-bold text-amber-700 mb-2">Fair Use Policy</h2>
-                  <p className="text-amber-600 text-sm">After full speed data is depleted, speed will be reduced to <strong className="text-amber-800">{plan.fupPolicy}</strong></p>
+                  <h2 className="text-lg font-bold text-amber-700 mb-2">{t("planDetail.fairUsePolicy")}</h2>
+                  <p className="text-amber-600 text-sm">{t("planDetail.fairUsePolicyDesc")} <strong className="text-amber-800">{plan.fupPolicy}</strong></p>
                 </div>
               )}
 
               {/* Coverage */}
               {locations.length > 0 && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
-                  <h2 className="text-xl font-bold text-slate-800 mb-4">Coverage ({locations.length} {locations.length === 1 ? "country" : "countries"})</h2>
+                  <h2 className="text-xl font-bold text-slate-800 mb-4">{t("planDetail.coverage")} ({locations.length} {locations.length === 1 ? t("planDetail.country") : t("planDetail.countries")})</h2>
                   <div className="flex flex-wrap gap-2">
                     {locations.map((loc) => (
                       <span key={loc} className="bg-slate-100 text-slate-700 text-sm px-3 py-1.5 rounded-full font-medium">{loc}</span>
@@ -354,7 +354,7 @@ export default function PlanDetailContent() {
               {/* Network Operators */}
               {networkList.length > 0 && (
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
-                  <h2 className="text-xl font-bold text-slate-800 mb-4">Network Operators</h2>
+                  <h2 className="text-xl font-bold text-slate-800 mb-4">{t("planDetail.networkOperators")}</h2>
                   <div className="space-y-3">
                     {networkList.map((net) => (
                       <div key={net.locationCode} className="p-3 bg-slate-50 rounded-xl">
@@ -374,7 +374,7 @@ export default function PlanDetailContent() {
 
               {/* What's Included */}
               <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">What&apos;s Included</h2>
+                <h2 className="text-xl font-bold text-slate-800 mb-4">{t("planDetail.whatsIncluded")}</h2>
                 <ul className="space-y-3">
                   {[
                     plan.fupPolicy 
@@ -403,44 +403,44 @@ export default function PlanDetailContent() {
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
                 <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5">
-                  <h3 className="font-bold text-slate-800 mb-3">Why Choose Us?</h3>
+                  <h3 className="font-bold text-slate-800 mb-3">{t("planDetail.whyChooseUs")}</h3>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <span className="text-xl">⚡</span>
                       <div>
-                        <p className="font-medium text-slate-800 text-sm">Instant Activation</p>
-                        <p className="text-xs text-slate-500">QR code delivered in minutes</p>
+                        <p className="font-medium text-slate-800 text-sm">{t("planDetail.instantActivation")}</p>
+                        <p className="text-xs text-slate-500">{t("planDetail.qrDeliveredMinutes")}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="text-xl">💰</span>
                       <div>
-                        <p className="font-medium text-slate-800 text-sm">Best Price Guarantee</p>
-                        <p className="text-xs text-slate-500">Up to 80% cheaper than roaming</p>
+                        <p className="font-medium text-slate-800 text-sm">{t("planDetail.bestPriceGuarantee")}</p>
+                        <p className="text-xs text-slate-500">{t("planDetail.cheaperThanRoaming")}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="text-xl">🔒</span>
                       <div>
-                        <p className="font-medium text-slate-800 text-sm">Secure Payment</p>
-                        <p className="text-xs text-slate-500">SSL encrypted checkout</p>
+                        <p className="font-medium text-slate-800 text-sm">{t("planDetail.securePayment")}</p>
+                        <p className="text-xs text-slate-500">{t("planDetail.sslEncrypted")}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="text-xl">📱</span>
                       <div>
-                        <p className="font-medium text-slate-800 text-sm">190+ Countries</p>
-                        <p className="text-xs text-slate-500">Global coverage</p>
+                        <p className="font-medium text-slate-800 text-sm">{t("planDetail.globalCoverage")}</p>
+                        <p className="text-xs text-slate-500">{t("planDetail.globalCoverageDesc")}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-                  <h3 className="font-bold text-slate-800 mb-3">Need Help?</h3>
-                  <p className="text-sm text-slate-500 mb-3">Contact our support team for assistance</p>
+                  <h3 className="font-bold text-slate-800 mb-3">{t("planDetail.needHelp")}</h3>
+                  <p className="text-sm text-slate-500 mb-3">{t("planDetail.contactSupportDesc")}</p>
                   <a href="mailto:support@openworldesim.com" className="block text-center bg-white border border-slate-200 hover:border-orange-400 text-slate-700 font-medium py-2.5 rounded-xl text-sm transition-colors">
-                    Contact Support
+                    {t("planDetail.contactSupport")}
                   </a>
                 </div>
               </div>

@@ -56,7 +56,7 @@ function formatVolume(bytes: number): string {
 }
 
 export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
-  const { formatPrice } = useI18n();
+  const { formatPrice, t } = useI18n();
   const router = useRouter();
   const [imgError, setImgError] = useState(false);
   const isUnlimited = plan.badge === "unlimited";
@@ -124,15 +124,15 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="bg-orange-50 rounded-xl p-2.5 text-center">
             <p className="text-lg sm:text-xl font-bold text-orange-600">{isUnlimited ? "∞" : formatVolume(plan.dataVolume)}</p>
-            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{isUnlimited ? "Unlimited" : "Data"}</p>
+            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{isUnlimited ? t("plans.unlimitedBadge") : t("plans.data")}</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-2.5 text-center">
             <p className="text-lg sm:text-xl font-bold text-slate-700">{plan.durationDays}</p>
-            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">Days</p>
+            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{t("plans.days")}</p>
           </div>
           <div className="bg-cyan-50 rounded-xl p-2.5 text-center">
             <p className="text-lg sm:text-xl font-bold text-cyan-600">{pricePerDay}</p>
-            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">/Day</p>
+            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-wider">{t("plans.perDay")}</p>
           </div>
         </div>
 
@@ -140,7 +140,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
           {plan.supportTopUp && (
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-              Supports Top-Up
+              {t("plans.topUpSupported")}
             </div>
           )}
           {plan.ipExport && (
@@ -169,7 +169,7 @@ export function PlanCard({ plan, index }: { plan: Plan; index: number }) {
             <p className="text-2xl font-bold text-slate-800">{formatPrice(displayPrice)}</p>
           </div>
           <span className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm">
-            Buy Now
+            {t("plans.buyNow")}
           </span>
         </div>
       </div>

@@ -31,6 +31,8 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 - [x] **User orders** - View order history
 - [x] **Admin dashboard** - Plan management page
 - [x] **Plans page** - Country search with autocomplete (max 20), dynamic data/duration filters based on selected country
+- [x] **Translation files** - Updated all 4 languages (en.json, vi.json, fr.json, de.json) with complete translations and fixed duplicate keys
+- [x] **Admin Gift eSIM** - Admin can give free eSIM plans to users via "Give Free Plan" button in orders page (input packageCode)
 
 ## Current Structure
 

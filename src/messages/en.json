@@ -32,7 +32,11 @@
     "remove": "Remove",
     "noResults": "No results found",
     "viewSite": "View Site",
-    "welcome": "Welcome"
+    "welcome": "Welcome",
+    "noHiddenFees": "No hidden fees",
+    "instantDelivery": "Instant delivery",
+    "refundPolicy": "7-day refund policy",
+    "profile": "Profile"
   },
 
   "header": {
@@ -50,7 +54,11 @@
   },
 
   "hero": {
-    "title": "Stay Connected Anywhere",
+    "title": {
+      "stayConnected": "Stay Connected",
+      "anywhere": "Anywhere",
+      "youGo": "You Go"
+    },
     "subtitle": "Affordable eSIM data plans for international travel",
     "cta": "Get Started",
     "countries": "Countries",
@@ -128,7 +136,48 @@
     "priceLowToHigh": "Price: Low to High",
     "priceHighToLow": "Price: High to Low",
     "mostData": "Most Data",
-    "longestDuration": "Longest Duration"
+    "longestDuration": "Longest Duration",
+    "plansAvailable": "plans available",
+    "noPlansFound": "No plans found",
+    "tryAdjustingFilters": "Try adjusting your filters or browse all regions",
+    "clearFilters": "Clear Filters",
+    "dataType": "Data Type",
+    "networkType": "Network Type",
+    "allNetworks": "All Networks",
+    "filterByDuration": "Filter by Duration",
+    "filterByData": "Filter by Data",
+    "durationDays": "days",
+    "selectDuration": "Select Duration",
+    "selectData": "Select Data",
+    "perDay": "/day",
+    "days": "days",
+    "dataUnit": "Data",
+    "buyNow": "Buy Now",
+    "qty": "Qty:",
+    "planSpecifications": "Plan Specifications",
+    "validityDays": "Validity",
+    "networkSpeed": "Network Speed",
+    "planType": "Plan Type",
+    "tetheringHotspot": "Tethering/Hotspot",
+    "activation": "Activation",
+    "topUp": "Top-Up",
+    "fairUsePolicy": "Fair Use Policy",
+    "fairUsePolicyDesc": "After full speed data is depleted, speed will be reduced to",
+    "coverage": "Coverage",
+    "country": "country",
+    "countries": "countries",
+    "networkOperators": "Network Operators",
+    "whatsIncluded": "What's Included",
+    "whyChooseUs": "Why Choose Us?",
+    "needHelp": "Need Help?",
+    "contactSupport": "Contact Support",
+    "instantActivation": "Instant Activation",
+    "qrDeliveredMinutes": "QR code delivered in minutes",
+    "bestPriceGuarantee": "Best Price Guarantee",
+    "cheaperThanRoaming": "Up to 80% cheaper than roaming",
+    "securePayment": "Secure Payment",
+    "sslEncrypted": "SSL encrypted checkout",
+    "globalCoverage": "190+ Countries"
   },
 
   "planDetail": {
@@ -175,7 +224,27 @@
     "sslEncrypted": "SSL encrypted checkout",
     "needHelp": "Need Help?",
     "contactSupport": "Contact Support",
-    "contactEmail": "support@openworldesim.com"
+    "contactEmail": "support@openworldesim.com",
+    "data": "Data",
+    "validity": "Validity",
+    "days": "days",
+    "planType": "Plan Type",
+    "activation": "Activation",
+    "topUp": "Top-Up",
+    "supported": "Supported",
+    "notSupported": "Not supported",
+    "fairUsePolicy": "Fair Use Policy",
+    "fairUsePolicyDesc": "After full speed data is depleted, speed will be reduced to",
+    "coverage": "Coverage",
+    "country": "country",
+    "countries": "countries",
+    "networkOperators": "Network Operators",
+    "globalCoverage": "190+ Countries",
+    "globalCoverageDesc": "Global coverage",
+    "contactSupportDesc": "Contact our support team for assistance",
+    "onFirstInstallation": "On first installation",
+    "onFirstConnection": "On first connection",
+    "validAfterPurchase": "Valid after purchase"
   },
 
   "checkout": {
@@ -315,6 +384,8 @@
     "description": "Stay connected anywhere in the world with affordable eSIM data plans for 190+ countries.",
     "copyright": "All rights reserved.",
     "madeFor": "Made for travelers. Powered by global networks.",
+    "siteName": "OpenWorld eSIM",
+    "siteDomain": "openworldesim.com",
     "plans": "Plans",
     "browseAllPlans": "Browse All Plans",
     "globalPlans": "Global Plans",
@@ -360,6 +431,7 @@
   "comparison": {
     "title": "Why Choose OW SIM?",
     "subtitle": "Compare OW SIM with traditional roaming and see how much you can save",
+    "recommended": "Recommended",
     "ow-sim": "OW SIM eSIM",
     "roaming": "Traditional Roaming",
     "local": "Local SIM Cards",
@@ -448,10 +520,26 @@
     }
   },
 
+  "testimonials": {
+    "title": "What Travelers Say",
+    "subtitle": "Join hundreds of thousands of happy travelers who stay connected with OW SIM"
+  },
+
+  "partners": {
+    "title": "Trusted Networks Worldwide",
+    "subtitle": "We partner with top carriers to bring you the best coverage"
+  },
+
 "cta": {
     "title": "Ready to Stay Connected?",
     "subtitle": "Join 500,000+ travelers who stay connected without the roaming bill shock.",
-    "button": "Get Your eSIM Now"
+    "button": "Get Your eSIM Now",
+    "button1": "Browse Plans"
+  },
+
+  "compatibility": {
+    "title": "Device Compatibility",
+    "subtitle": "Check if your device supports eSIM before purchasing. Most modern smartphones support eSIM technology."
   },
 
   "profile": {

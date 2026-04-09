@@ -89,11 +89,8 @@ export default function TopUpPage() {
     
     try {
       if (paymentMethod === "paypal") {
-        // Always send USD to PayPal
-        let priceUSD = selectedPackage.priceUSD;
-        if (!priceUSD || priceUSD <= 0) {
-          priceUSD = convertFromUSD(selectedPackage.priceUSD, currency, rates);
-        }
+        // Get price in display currency - always convert from USD to display currency
+        const priceDisplay = convertFromUSD(selectedPackage.priceUSD || 0, currency, rates);
         
         const paypalRes = await fetch("/api/payment/paypal", {
           method: "POST",
@@ -101,8 +98,8 @@ export default function TopUpPage() {
           body: JSON.stringify({
             planId: `topup-${selectedPackage.packageCode}`,
             planName: `Top-up: ${selectedPackage.name}`,
-            price: priceUSD,
-            currency: "USD", // Always USD for PayPal
+            price: priceDisplay,
+            currency: currency,
             customerEmail: "", // Will be filled from user session
             isTopUp: true,
             orderItemId: currentPlan.orderItemId,

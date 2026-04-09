@@ -262,13 +262,16 @@ export async function GET(request: Request) {
 
     const where: Record<string, unknown> = { isActive: true };
     
-    // Exact country filter - match countryId exactly or in locations JSON
+    // Exact country filter - match countryId exactly or in locations JSON array
     if (countryId) {
+      const upperCountryId = countryId.toUpperCase();
       where.AND = [
         {
           OR: [
-            { countryId: countryId },
-            { locations: { contains: `"${countryId}"` } },
+            { countryId: upperCountryId },
+            // Use JSON path query to search inside the JSON array
+            // This properly handles array search without false positives
+            { locations: { path: [], array_contains: [upperCountryId] } },
           ],
         },
       ];

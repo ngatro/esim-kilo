@@ -1,0 +1,86 @@
+{
+  "whatsappNumber": "84981992292",
+  "supportEmail": "support@openworldesim.com",
+  "tawkPropertyId": "69d51c0db7c31c1c33019891",
+  "tawkWidgetId": "1jlk7b5cv",
+  "currencyRates": {
+    "EUR": 0.92,
+    "VND": 24500,
+    "GBP": 0.79,
+    "JPY": 150
+  },
+  "hotCountries": [
+    {
+      "code": "JP",
+      "name": "Japan",
+      "emoji": "🇯🇵"
+    },
+    {
+      "code": "KR",
+      "name": "Korea",
+      "emoji": "🇰🇷"
+    },
+    {
+      "code": "TH",
+      "name": "Thailand",
+      "emoji": "🇹🇭"
+    },
+    {
+      "code": "MY",
+      "name": "MyanMa",
+      "emoji": "🇸🇬"
+    },
+    {
+      "code": "VN",
+      "name": "Viet Nam",
+      "emoji": "🇻🇳"
+    },
+    {
+      "code": "US",
+      "name": "USA",
+      "emoji": "🇺🇸"
+    },
+    {
+      "code": "GB",
+      "name": "UK",
+      "emoji": "🇬🇧"
+    },
+    {
+      "code": "FR",
+      "name": "France",
+      "emoji": "🇫🇷"
+    },
+    {
+      "code": "DE",
+      "name": "Germany",
+      "emoji": "🇩🇪"
+    }
+  ],
+  "regions": [
+    {
+      "id": "asia",
+      "name": "Asia",
+      "emoji": "🌏"
+    },
+    {
+      "id": "europe",
+      "name": "Europe",
+      "emoji": "🏰"
+    },
+    {
+      "id": "americas",
+      "name": "Americas",
+      "emoji": "🌎"
+    },
+    {
+      "id": "oceania",
+      "name": "Oceania",
+      "emoji": "🌴"
+    },
+    {
+      "id": "global",
+      "name": "Global",
+      "emoji": "🌐"
+    }
+  ]
+}

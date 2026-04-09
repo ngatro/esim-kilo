@@ -131,14 +131,11 @@ export default function CheckoutPage() {
   }, [user]);
 
   async function handlePayPal() {
-    // Get base price in USD - use priceUsd field or convert from displayed price
-    const basePrice = plan!.priceUsd && plan!.priceUsd > 0 
-      ? plan!.priceUsd 
-      : convertFromUSD(plan!.priceUsd || 0, currency, rates);
+    // Get price in display currency - always convert from USD to display currency
+    const displayPrice = convertFromUSD(plan!.retailPriceUsd || 0, currency, rates);
+    const priceDisplay = displayPrice * quantity;
     
-    const priceUSD = basePrice * quantity;
-    
-    if (!priceUSD || priceUSD <= 0) {
+    if (!priceDisplay || priceDisplay <= 0) {
       throw new Error("Invalid price");
     }
     
@@ -148,7 +145,7 @@ export default function CheckoutPage() {
       body: JSON.stringify({
         planId: plan!.id,
         planName: `${plan!.destination} eSIM`,
-        price: priceUSD,
+        price: priceDisplay,
         currency: currency,
         customerEmail,
       }),

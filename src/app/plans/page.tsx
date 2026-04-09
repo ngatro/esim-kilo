@@ -292,7 +292,7 @@ export default function PlansPage() {
           <div className="text-center mb-6 sm:mb-10">
             <h1 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-2 sm:mb-3">{t("plans.title")}</h1>
             <p className="text-slate-600 text-sm sm:text-lg">{t("plans.subtitle")}</p>
-            <p className="text-slate-500 text-xs sm:text-sm mt-1">{plans.length} plans available</p>
+            <p className="text-slate-500 text-xs sm:text-sm mt-1">{plans.length} {t("plans.plansAvailable")}</p>
           </div>
 
           {/* Simple Search Bar */}
@@ -307,7 +307,7 @@ export default function PlansPage() {
                 onChange={(e) => { setSearchQuery(e.target.value); setShowSearchDropdown(true); }}
                 onFocus={() => setShowSearchDropdown(true)}
                 onKeyDown={(e) => { if (e.key === "Enter") setShowSearchDropdown(false); }}
-                placeholder="Search destination... (e.g. Japan, Thailand, Europe)"
+                placeholder={t("plans.searchPlaceholder")}
                 className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-4 text-slate-800 text-base placeholder:text-slate-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all shadow-lg"
               />
               
@@ -402,11 +402,11 @@ export default function PlansPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-orange-400 transition-colors"
               >
-                <option value="best">⚡ Best Match</option>
-                <option value="price-low">💰 Price: Low to High</option>
-                <option value="price-high">💰 Price: High to Low</option>
-                <option value="data">📈 Most Data</option>
-                <option value="duration">📅 Longest Duration</option>
+                <option value="best">⚡ {t("plans.bestMatch")}</option>
+                <option value="price-low">💰 {t("plans.priceLowToHigh")}</option>
+                <option value="price-high">💰 {t("plans.priceHighToLow")}</option>
+                <option value="data">📈 {t("plans.mostData")}</option>
+                <option value="duration">📅 {t("plans.longestDuration")}</option>
               </select>
 
               {hasActiveFilters && (
@@ -451,9 +451,9 @@ export default function PlansPage() {
           ) : plans.length === 0 ? (
             <div className="text-center py-16 sm:py-20">
               <p className="text-4xl sm:text-5xl mb-4">📦</p>
-              <h3 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">No plans found</h3>
-              <p className="text-slate-500 text-sm mb-6">Try adjusting your filters or browse all regions</p>
-              <button onClick={clearAll} className="bg-orange-500 hover:bg-orange-400 text-white px-6 py-2.5 rounded-xl text-sm transition-colors">Clear Filters</button>
+              <h3 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">{t("plans.noPlansFound")}</h3>
+              <p className="text-slate-500 text-sm mb-6">{t("plans.tryAdjustingFilters")}</p>
+              <button onClick={clearAll} className="bg-orange-500 hover:bg-orange-400 text-white px-6 py-2.5 rounded-xl text-sm transition-colors">{t("plans.clearFilters")}</button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
