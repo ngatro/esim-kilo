@@ -49,6 +49,18 @@ export function middleware(request: NextRequest) {
     );
   }
 
+  // Redirect query URL /plans?countryId=TH → /esim/TH
+  const countryId = request.nextUrl.searchParams.get('countryId');
+  if (pathname === '/plans' && countryId) {
+    return NextResponse.redirect(new URL(`/esim/${countryId}`, request.url), { status: 301 });
+  }
+
+  // Redirect query URL /plans?regionId=asia → /esim/asia
+  const regionId = request.nextUrl.searchParams.get('regionId');
+  if (pathname === '/plans' && regionId) {
+    return NextResponse.redirect(new URL(`/esim/${regionId}`, request.url), { status: 301 });
+  }
+
   return response;
 }
 
