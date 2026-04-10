@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Period number is required for this top-up type" }, { status: 400 });
     }
 
-    const packages = await getPackageList({ iccid: orderItem.esimIccid, type: "TOPUP" });
+    const packages = await getPackageList({ iccid: orderItem.esimIccid ?? undefined, type: "TOPUP" });
     const packageList = packages.packageList || [];
     const topUpPackage = packageList.find((p: { packageCode: string }) => p.packageCode === packageCode);
 

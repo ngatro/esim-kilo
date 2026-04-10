@@ -29,13 +29,15 @@ export async function POST() {
           fs.writeFileSync(filePath, buffer);
           success++;
         }
-      } catch (e) {
-        console.error(`Lỗi tải ${iso}:`, e.message);
+      } catch (e: unknown) {
+        const errMsg = e instanceof Error ? e.message : 'Unknown error';
+        console.error(`Lỗi tải ${iso}:`, errMsg);
       }
     }
 
     return NextResponse.json({ status: "Xong", downloaded: success });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ error: errMsg }, { status: 500 });
   }
 }

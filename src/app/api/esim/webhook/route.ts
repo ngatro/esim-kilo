@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       order = await prisma.order.findFirst({
         where: { esimaccessOrderId: orderNo },
         include: { orderItems: true },
-      });
+      }) as any;
     }
 
     if (!order && iccid) {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    const items = orderItems || order.orderItems;
+    const items: any = orderItems || (order as any).orderItems;
 
     switch (notifyType) {
       case "ORDER_STATUS":
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
               const qrImageUrl = esimData.qrCodeUrl || esimData.qrCode || null;
               const lpaStr = esimData.ac || esimData.lpaString || null;
 
-              await Promise.all(items.map(item =>
+              await Promise.all(items.map((item: any) =>
                 prisma.orderItem.update({
                   where: { id: item.id },
                   data: {
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
                       id: order.id,
                       totalAmount: order.totalAmount,
                       customerName: order.customerName,
-                      items: items.map(item => ({
+                      items: items.map((item: any) => ({
                         planName: item.planName,
                         price: item.price,
                         quantity: item.quantity,
@@ -158,7 +158,7 @@ export async function POST(request: Request) {
             updateData.esimEid = eid;
           }
 
-          await Promise.all(items.map(item =>
+          await Promise.all(items.map((item: any) =>
             prisma.orderItem.update({
               where: { id: item.id },
               data: updateData,
