@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { createUser, getUserByEmail } from "@/lib/auth";
+import { getReferralCode, setReferralCookie } from "@/lib/referral-tracking";
+import { processReferral } from "@/lib/affiliate";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json();
+    const { name, email, password, refCode } = await request.json();
     
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -20,7 +22,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = await createUser(name, email, password);
+    // Process referral - from params or cookie
+    let referredById: number | null = null;
+    if (refCode) {
+      referredById = await processReferral(refCode);
+    } else {
+      // Check cookie
+      const cookieRef = await getReferralCode();
+      if (cookieRef) {
+        referredById = await processReferral(cookieRef);
+      }
+    }
+
+    const user = await createUser(name, email, password, referredById);
     
     const response = NextResponse.json({
       user: {
@@ -28,6 +42,7 @@ export async function POST(request: Request) {
         name: user.name,
         email: user.email,
         role: user.role,
+        affiliateCode: (user as any).affiliateCode,
       }
     });
 

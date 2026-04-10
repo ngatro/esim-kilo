@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createOrder, queryOrder } from "@/lib/esim-access";
 import { sendEmail, getOrderConfirmationHtml } from "@/lib/email";
+import { createCommission } from "@/lib/affiliate";
 
 export async function POST(request: Request) {
   try {
@@ -139,6 +140,29 @@ export async function POST(request: Request) {
           })),
         }),
       });
+    }
+
+    // Create commission for referrer if user was referred (after order confirmation)
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { referredById: true },
+      });
+
+      if (user?.referredById) {
+        try {
+          await createCommission(
+            user.referredById,
+            userId,
+            order.id,
+            String(order.id),
+            totalAmount
+          );
+        } catch (commissionError) {
+          // Log but don't fail the order if commission creation fails
+          console.error("Commission creation error:", commissionError);
+        }
+      }
     }
 
     return NextResponse.json({ success: true, order: updatedOrder, esimResults });

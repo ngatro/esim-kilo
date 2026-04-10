@@ -18,8 +18,21 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Wallet balance (for purchasing eSIM)
+  walletBalance Float @default(0)
+
+  // Affiliate fields
+  affiliateCode     String?   @unique  // Unique referral code
+  affiliateBalance  Float     @default(0) // Commission balance
+  rank              String     @default("bronze") // bronze, silver, gold, diamond
+  referredById      Int?      // User who referred this user
+  referredBy        User?      @relation("ReferralRelation", fields: [referredById], references: [id])
+  referrals         User[]    @relation("ReferralRelation") // Users referred by this user
+
   orders    Order[]
   cartItems CartItem[]
+  commissionsReceived Commission[] @relation("CommissionReceiver")
+  withdrawals Withdrawal[]
 }
 
 model Region {
@@ -214,4 +227,40 @@ model Setting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// Affiliate Models
+model Commission {
+  id            Int       @id @default(autoincrement())
+  referrerId    Int       // User who receives commission
+  referrer      User      @relation("CommissionReceiver", fields: [referrerId], references: [id])
+  buyerId       Int       // User who made the purchase
+  orderId       Int       // The order that generated commission
+  orderNo       String?   // Order number for display
+  amount        Float     // Commission amount
+  percentage    Float     // Commission percentage at time of order
+  rank          String     // Rank at time of commission
+  status        String     @default("pending") // pending, approved, paid
+  createdAt     DateTime  @default(now())
+  paidAt        DateTime?
+
+  @@index([referrerId])
+  @@index([orderId])
+  @@index([status])
+}
+
+model Withdrawal {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  user            User      @relation(fields: [userId], references: [id])
+  amount          Float
+  paymentMethod   String    // bank_transfer, paypal, etc.
+  paymentDetails Json      // { bankName, accountNumber, accountName } or { email }
+  status          String    @default("pending") // pending, approved, rejected, completed
+  adminNote       String?
+  createdAt       DateTime  @default(now())
+  processedAt     DateTime?
+
+  @@index([userId])
+  @@index([status])
 }

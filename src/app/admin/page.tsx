@@ -206,6 +206,16 @@ export default function AdminDashboardPage() {
             </div>
           </Link>
 
+          <Link href="/admin/affiliate">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center text-lg">💰</div>
+                <h3 className="font-semibold text-slate-800">Affiliate</h3>
+              </div>
+              <p className="text-sm text-slate-500">Manage commissions & withdrawals</p>
+            </div>
+          </Link>
+
           <Link href="/admin/settings">
             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
               <div className="flex items-center gap-3 mb-2">

@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { generateAffiliateCode } from "./affiliate";
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
@@ -9,7 +10,7 @@ export async function verifyPassword(password: string, hashedPassword: string): 
   return bcrypt.compare(password, hashedPassword);
 }
 
-export async function createUser(name: string, email: string, password: string) {
+export async function createUser(name: string, email: string, password: string, referredById?: number | null) {
   const hashedPassword = await hashPassword(password);
   const user = await prisma.user.create({
     data: {
@@ -17,9 +18,19 @@ export async function createUser(name: string, email: string, password: string) 
       email,
       password: hashedPassword,
       role: "user",
+      referredById,
+      affiliateCode: await generateAffiliateCode(0), // Will be updated after create
     },
   });
-  return user;
+  
+  // Update with unique affiliate code
+  const affiliateCode = await generateAffiliateCode(user.id);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { affiliateCode },
+  });
+  
+  return { ...user, affiliateCode };
 }
 
 export async function getUserByEmail(email: string) {

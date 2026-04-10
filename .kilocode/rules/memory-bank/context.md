@@ -2,9 +2,9 @@
 
 ## Current State
 
-**App Status**: ✅ SimPal — eSIM Travel Data Marketplace with i18n, Auth, Cart & Admin
+**App Status**: ✅ SimPal — eSIM Travel Data Marketplace with i18n, Auth, Cart, Admin & Affiliate
 
-A full-featured eSIM marketplace built on Next.js 16 with internationalization, user authentication, shopping cart, and admin dashboard.
+A full-featured eSIM marketplace built on Next.js 16 with internationalization, user authentication, shopping cart, admin dashboard, and affiliate system.
 
 ## Recently Completed
 
@@ -33,6 +33,13 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 - [x] **Plans page** - Country search with autocomplete (max 20), dynamic data/duration filters based on selected country
 - [x] **Translation files** - Updated all 4 languages (en.json, vi.json, fr.json, de.json) with complete translations and fixed duplicate keys
 - [x] **Admin Gift eSIM** - Admin can give free eSIM plans to users via "Give Free Plan" button in orders page (input packageCode)
+- [x] **Affiliate System** - Complete affiliate/referral system with:
+  - Cookie-based tracking (30 days)
+  - Commission rates by rank (Bronze 5%, Silver 8%, Gold 12%, Diamond 15%)
+  - Auto-commission on successful orders
+  - User affiliate dashboard with referral link, stats, and withdrawal
+  - Admin affiliate management (withdrawals, commission rates)
+  - Middleware for referral cookie handling
 
 ## Current Structure
 
@@ -47,12 +54,20 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 | `src/app/[locale]/admin/page.tsx` | Admin dashboard | ✅ Ready |
 | `src/app/[locale]/admin/plans/page.tsx` | Admin plan management | ✅ Ready |
 | `src/app/plans/page.tsx` | Plans browse page with country search & dynamic filters | ✅ Ready |
+| `src/app/affiliate/page.tsx` | User affiliate dashboard | ✅ Ready |
+| `src/app/admin/affiliate/page.tsx` | Admin affiliate management | ✅ Ready |
 | `src/app/api/auth/` | Auth API routes | ✅ Ready |
 | `src/app/api/orders/route.ts` | Orders API | ✅ Ready |
+| `src/app/api/affiliate/stats/route.ts` | Affiliate stats API | ✅ Ready |
+| `src/app/api/affiliate/withdraw/route.ts` | Withdrawal request API | ✅ Ready |
+| `src/app/api/admin/affiliate/route.ts` | Admin affiliate API | ✅ Ready |
 | `src/app/api/countries/search/route.ts` | Country autocomplete search (max 20) | ✅ Ready |
 | `src/app/api/countries/[id]/filters/route.ts` | Country dynamic filters API | ✅ Ready |
 | `src/db/schema.ts` | Database schema | ✅ Ready |
 | `src/lib/auth.ts` | Auth utilities | ✅ Ready |
+| `src/lib/affiliate.ts` | Affiliate logic (commission rates, tracking) | ✅ Ready |
+| `src/lib/referral-tracking.ts` | Referral cookie handling | ✅ Ready |
+| `src/middleware.ts` | Referral cookie middleware | ✅ Ready |
 | `src/components/providers/AuthProvider.tsx` | Auth context | ✅ Ready |
 | `src/components/providers/CartProvider.tsx` | Cart context | ✅ Ready |
 | `src/components/ui/LanguageSwitcher.tsx` | Language switcher | ✅ Ready |
@@ -60,15 +75,42 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 
 ## Database Schema
 
-- **users**: id, name, email, password, role, createdAt
+- **users**: id, name, email, password, role, createdAt, affiliateCode, affiliateBalance, rank, referredById
 - **orders**: id, userId, totalAmount, status, createdAt
 - **orderItems**: id, orderId, planId, planName, price, quantity
 - **cartItems**: id, userId, planId, planName, price, quantity, createdAt
+- **commissions**: id, referrerId, buyerId, orderId, amount, percentage, rank, status, createdAt
+- **withdrawals**: id, userId, amount, paymentMethod, paymentDetails, status, createdAt
+
+## Affiliate Commission Rates
+
+| Rank | Commission Rate | Threshold |
+|------|-----------------|------------|
+| Bronze | 5% | Default |
+| Silver | 8% | $50+ earnings |
+| Gold | 12% | $200+ earnings |
+| Diamond | 15% | $500+ earnings |
 
 ## Current Focus
 
+- Run `npx prisma generate` to update Prisma types (done)
 - Add real payment integration (Stripe)
 - Add email notifications
+
+## Security Fixes Applied (2026-04-10)
+
+- Added admin role verification in `/api/admin/affiliate` route
+- Commission creation wrapped in try-catch to not fail order
+- Disabled wallet top-up (return 501 - requires payment gateway)
+- Added paymentDetails validation in withdrawal API
+- Replaced alert() with state-based UI feedback in affiliate page
+
+## Changes (2026-04-11)
+
+- Removed wallet top-up functionality completely
+- Wallet balance can only be increased via affiliate commissions
+- Updated wallet page to show only affiliate earnings
+- Kept withdrawal functionality (PayPal Payouts API pending)
 
 ## Quick Start Guide
 
@@ -81,6 +123,9 @@ Create a file at `src/app/[locale]/[route]/page.tsx`
 
 ### To add API routes:
 Create `src/app/api/[route]/route.ts`
+
+### Referral Link Format:
+`?ref=AFFILIATE_CODE` - Cookie tracks for 30 days
 
 ## Available Recipes
 
@@ -97,3 +142,4 @@ Create `src/app/api/[route]/route.ts`
 | 2026-03-22 | Added i18n (English/Vietnamese), auth, cart, admin dashboard |
 | 2026-04-05 | Enhanced plans page with search dropdown, dynamic filters, display limit |
 | 2026-04-05 | Added country search with autocomplete + dynamic data/duration filters |
+| 2026-04-10 | Added complete Affiliate system with cookie tracking, commission by rank, dashboard, withdrawals, admin management |
