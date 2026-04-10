@@ -7,26 +7,28 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
+  // 1. Final statuses from esimStatus (highest priority)
+  if (item.esimStatus === "IN_USE") return { label: "In Use", color: "bg-green-500/20 text-green-400" };
   if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "bg-red-500/20 text-red-400" };
+  if (item.esimStatus === "UNUSED_EXPIRED") return { label: "Expired", color: "bg-slate-500/20 text-slate-400" };
   if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "bg-slate-500/20 text-slate-500" };
 
-  if (item.smdpStatus === "ENABLED" || item.esimStatus === "IN_USE") {
-    return { label: "In Use", color: "bg-green-500/20 text-green-400" };
-  }
+  // 2. Real-time from smdpStatus
+  if (item.smdpStatus === "DOWNLOAD") return { label: "Downloading", color: "bg-orange-500/20 text-orange-400" };
+  if (item.smdpStatus === "INSTALLATION") return { label: "Installing", color: "bg-orange-500/20 text-orange-400" };
+  if (item.smdpStatus === "ENABLED") return { label: "Activating", color: "bg-green-500/20 text-green-400" };
+  if (item.smdpStatus === "DISABLED") return { label: "Disabled", color: "bg-slate-500/20 text-slate-400" };
+  if (item.smdpStatus === "DELETED") return { label: "Deleted", color: "bg-red-500/20 text-red-400" };
 
-  if (item.smdpStatus === "DOWNLOAD" || item.smdpStatus === "INSTALLATION") {
-    return { label: "Installing...", color: "bg-orange-500/20 text-orange-400" };
-  }
+  // 3. Order level (GOT_RESOURCE from esimStatus - not from order)
+  if (item.esimStatus === "GOT_RESOURCE") return { label: "Ready to Scan", color: "bg-yellow-500/20 text-yellow-400" };
 
-  if (item.esimStatus === "GOT_RESOURCE") {
-    return { label: "Ready to Scan", color: "bg-yellow-500/20 text-yellow-400" };
-  }
-  
+  // 4. Fallback
   if (item.esimQrImage || item.esimIccid) {
-    return { label: "Issued", color: "bg-yellow-500/20 text-yellow-400/80" };
+    return { label: "Issued", color: "bg-yellow-500/20 text-yellow-400" };
   }
 
-  return { label: "Processing", color: "bg-slate-500/20 text-slate-400" };
+  return { label: "Processing", color: "bg-yellow-500/20 text-yellow-400" };
 }
 
 interface OrderItem {
@@ -291,12 +293,14 @@ export default function OrdersPage() {
                                     <div className="mt-3 space-y-2">
                                       <div className="flex items-center justify-between">
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Status</p>
-                                        <span className={"text-xs font-medium px-2 py-0.5 rounded-full " + 
-                                          (item.smdpStatus === "ENABLED" ? "bg-green-500/20 text-green-400" : 
-                                           item.smdpStatus === "DOWNLOADED" ? "bg-yellow-500/20 text-yellow-400" : 
-                                           "bg-slate-500/20 text-slate-400")}>
-                                          {item.smdpStatus || item.esimStatus}
-                                        </span>
+                                        {(() => {
+                                          const status = getEsimStatusLabel(item);
+                                          return (
+                                            <span className={"text-xs font-medium px-2 py-0.5 rounded-full " + status.color}>
+                                              {status.label}
+                                            </span>
+                                          );
+                                        })()}
                                       </div>
                                       {item.enabledAt && (
                                         <p className="text-[10px] text-green-400/70">✓ Enabled on {new Date(item.enabledAt).toLocaleString()}</p>
@@ -354,7 +358,24 @@ export default function OrdersPage() {
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs">
                             <div><p className="text-slate-500">Amount</p><p className="text-slate-800 font-semibold">{formatPrice(order.totalAmount)}</p></div>
                             <div><p className="text-slate-500">Payment</p><p className={order.status === "completed" ? "text-green-400" : "text-yellow-400"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
-                            <div><p className="text-slate-500">eSIM</p><p className={order.orderItems.every(i => i.smdpStatus === "ENABLED") ? "text-green-400" : order.orderItems.some(i => i.esimQrImage) ? "text-yellow-400" : "text-slate-400"}>{order.orderItems.every(i => i.smdpStatus === "ENABLED") ? "✅ In Use" : order.orderItems.some(i => i.esimQrImage) ? "✅ Ready" : "⏳ Processing"}</p></div>
+                            <div><p className="text-slate-500">eSIM</p>
+                              {(() => {
+                                const labels = order.orderItems.map(i => getEsimStatusLabel(i).label);
+                                // Show worst-case status (prioritized: In Use > Activating > Ready > Issued > Processing)
+                                const label = labels.includes("In Use") ? "✅ In Use" :
+                                         labels.includes("Activating") ? "⏳ Activating" :
+                                         labels.includes("Ready to Scan") ? "📱 Ready to Scan" :
+                                         labels.includes("Installing") ? "⏳ Installing" :
+                                         labels.includes("Downloading") ? "⏳ Downloading" :
+                                         labels.includes("Issued") ? "📨 Issued" :
+                                         "⏳ Processing";
+                                const color = labels.includes("In Use") ? "text-green-400" :
+                                          labels.includes("Activating") ? "text-yellow-400" :
+                                          labels.includes("Depleted") || labels.includes("Expired") ? "text-red-400" :
+                                          "text-yellow-400";
+                                return <p className={color}>{label}</p>;
+                              })()}
+                            </div>
                             {order.esimaccessOrderId && (
                               <div><p className="text-slate-500">Order ID</p><p className="text-slate-600 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
                             )}
