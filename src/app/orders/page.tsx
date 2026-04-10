@@ -236,8 +236,11 @@ export default function OrdersPage() {
                         {order.status === "pending" && (
                           <button
                             onClick={() => window.location.href = `/checkout?planId=${order.orderItems[0]?.planId || ''}`}
-                            className="ml-2 inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full bg-orange-500/20 text-orange-400 hover:bg-orange-500/30"
+                            className="ml-2 inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm font-semibold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
                           >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l3 3-3 3m0 0l-3-3 3-3" />
+                            </svg>
                             Pay Now
                           </button>
                         )}
