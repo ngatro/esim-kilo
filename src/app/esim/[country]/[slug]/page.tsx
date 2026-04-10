@@ -11,8 +11,9 @@ interface PageProps {
 export default async function EsimPlanPage({ params }: PageProps) {
   const { country, slug } = await params;
   
-  // Build full slug: country + provided slug
-  const fullSlug = slug.includes('esim-') ? slug : `esim-${country}-${slug}`;
+  // Build full slug: If slug already starts with "esim-", use as-is, otherwise prefix
+  // Convert short "100mb-7days" to "esim-thailand-100mb-7days"
+  const fullSlug = slug.startsWith('esim-') ? slug : `esim-${country}-${slug}`;
   
   // Fetch plan by slug
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/plans?slug=${fullSlug}`);
