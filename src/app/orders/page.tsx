@@ -160,18 +160,6 @@ export default function OrdersPage() {
             <p className="text-slate-600 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleRefresh} disabled={refreshing}
-              className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2 disabled:opacity-50">
-              <svg className={"w-4 h-4 " + (refreshing ? "animate-spin" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Refresh
-            </button>
-            <Link href="/topup">
-              <motion.button className="bg-green-600 hover:bg-green-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
-                Top-up
-              </motion.button>
-            </Link>
             <Link href="/plans">
               <motion.button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
                 Buy New eSIM
@@ -233,17 +221,7 @@ export default function OrdersPage() {
                         }`}>
                           {order.status === "completed" ? "Paid" : order.status === "awaiting_payment" ? "Awaiting Payment" : order.status}
                         </span>
-                        {order.status === "pending" && (
-                          <button
-                            onClick={() => window.location.href = `/checkout?planId=${order.orderItems[0]?.planId || ''}`}
-                            className="ml-2 inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm font-semibold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l3 3-3 3m0 0l-3-3 3-3" />
-                            </svg>
-                            Pay Now
-                          </button>
-                        )}
+
                         {(() => {
                           const firstItem = order.orderItems[0];
                           const status = firstItem ? getEsimStatusLabel(firstItem) : { label: "Processing", color: "bg-slate-500/20 text-slate-400" };
@@ -381,6 +359,17 @@ export default function OrdersPage() {
                               <div><p className="text-slate-500">Order ID</p><p className="text-slate-600 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
                             )}
                           </div>
+                          {order.status === "pending" && (
+                            <button
+                              onClick={() => window.location.href = `/checkout?planId=${order.orderItems[0]?.planId || ''}`}
+                              className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l3 3-3 3m0 0l-3-3 3-3" />
+                              </svg>
+                              Pay Now
+                            </button>
+                          )}
                         </div>
                       </div>
                     </motion.div>
