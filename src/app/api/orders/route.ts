@@ -66,7 +66,13 @@ export async function POST(request: Request) {
       },
     });
 
+    // Skip eSIM creation for pending orders - will create when payment completed
+    if (orderStatus === "pending") {
+      return NextResponse.json({ success: true, order, message: "Pending order created" });
+    }
+
     const esimResults: { orderItem: number; status: string; orderNo: string }[] = [];
+
 
     for (const orderItem of order.orderItems) {
       const plan = await prisma.plan.findUnique({
