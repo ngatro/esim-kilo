@@ -28,23 +28,27 @@ const countryNames: Record<string, string> = {
   IT: "Italy",
   ES: "Spain",
   NL: "Netherlands",
-  US: "United States",
   CA: "Canada",
   MX: "Mexico",
   BR: "Brazil",
-  // Add more as needed
 };
+
+// List of regions for detection
+const regions = ["global", "asia", "europe", "americas", "oceania"];
 
 export default async function EsimCountryPage({ params }: PageProps) {
   const { country } = await params;
   
-  // Normalize: treat "asia" as region, or use country code directly
-  const isRegion = ["global", "asia", "europe", "americas", "oceania"].includes(country.toLowerCase());
+  // Determine if slug is a region or specific country
+  const isRegion = regions.includes(country.toLowerCase());
   const displayName = countryNames[country.toUpperCase()] || country;
 
-  // Fetch plans for this country/region
-  const apiSlug = isRegion ? country.toLowerCase() : country.toUpperCase();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/plans?regionId=${apiSlug}`);
+  // Fetch plans - use regionId for regions, countryId for specific countries
+  const queryParam = isRegion ? 'regionId' : 'countryId';
+  const queryValue = isRegion ? country.toLowerCase() : country.toUpperCase();
+  
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/api/plans?${queryParam}=${queryValue}`;
+  const res = await fetch(apiUrl);
   
   if (!res.ok) return notFound();
   
