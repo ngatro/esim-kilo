@@ -49,16 +49,56 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  // Redirect query URL /plans?countryId=TH → /esim/TH
+  // Map country codes to slug names
+  const codeToCountry: Record<string, string> = {
+    TH: 'thailand',
+    VN: 'vietnam',
+    JP: 'japan',
+    KR: 'south-korea',
+    CN: 'china',
+    US: 'usa',
+    AU: 'australia',
+    SG: 'singapore',
+    MY: 'malaysia',
+    ID: 'indonesia',
+    PH: 'philippines',
+    HK: 'hong-kong',
+    TW: 'taiwan',
+    IN: 'india',
+    AE: 'uae',
+    GB: 'uk',
+    FR: 'france',
+    DE: 'germany',
+    IT: 'italy',
+    ES: 'spain',
+    NL: 'netherlands',
+    CA: 'canada',
+    MX: 'mexico',
+    BR: 'brazil',
+  };
+  
+  const regionMap: Record<string, string> = {
+    global: 'global',
+    asia: 'asia',
+    europe: 'europe',
+    americas: 'americas',
+    oceania: 'oceania',
+  };
+
+  // Redirect query URL /plans?countryId=TH → /esim/thailand
   const countryId = request.nextUrl.searchParams.get('countryId');
   if (pathname === '/plans' && countryId) {
-    return NextResponse.redirect(new URL(`/esim/${countryId}`, request.url), { status: 301 });
+    const slug = countryId.toLowerCase() in codeToCountry 
+      ? codeToCountry[countryId] 
+      : countryId.toLowerCase();
+    return NextResponse.redirect(new URL(`/esim/${slug}`, request.url), { status: 301 });
   }
 
   // Redirect query URL /plans?regionId=asia → /esim/asia
   const regionId = request.nextUrl.searchParams.get('regionId');
   if (pathname === '/plans' && regionId) {
-    return NextResponse.redirect(new URL(`/esim/${regionId}`, request.url), { status: 301 });
+    const slug = regionMap[regionId] || regionId.toLowerCase();
+    return NextResponse.redirect(new URL(`/esim/${slug}`, request.url), { status: 301 });
   }
 
   return response;
