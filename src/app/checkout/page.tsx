@@ -53,6 +53,27 @@ export default function CheckoutPage() {
       .catch(() => setPaypalConfigured(false));
   }, []);
 
+  // Create pending order when payment cancelled
+  async function createPendingOrder(planId: string, qty: number) {
+    if (!planId) return null;
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [{ planId, quantity: qty }],
+          customerName,
+          customerEmail,
+          status: "pending",
+        }),
+      });
+      return res.ok ? (await res.json()).order : null;
+    } catch (err) {
+      console.error("Failed to create pending order:", err);
+      return null;
+    }
+  }
+
   // Handle PayPal success redirect
   useEffect(() => {
     const paypalSuccess = searchParams.get("success");
@@ -60,7 +81,17 @@ export default function CheckoutPage() {
     const cancelled = searchParams.get("cancelled");
 
     if (cancelled) {
-      setError("Payment was cancelled");
+      const savedPlanId = localStorage.getItem("paypal_planId") || planId;
+      const savedQty = parseInt(localStorage.getItem("paypal_qty") || "1");
+      if (savedPlanId) {
+        createPendingOrder(savedPlanId, savedQty).then(order => {
+          if (order) {
+            router.replace("/orders?pending=" + order.id);
+          } else {
+            setError("Payment cancelled - please try again");
+          }
+        });
+      }
       return;
     }
 
