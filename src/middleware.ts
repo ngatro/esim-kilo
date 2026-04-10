@@ -37,7 +37,18 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(`/esim/${country}/${slugParam}`, request.url), { status: 301 });
     }
   }
-  
+
+  // Redirect short /esim/{country}/{slug} to canonical /esim/{country}/esim-{country}-{slug}
+  const esimShortMatch = pathname.match(/^\/esim\/(\w+)\/((?!esim-)(\w+.+))$/);
+  if (esimShortMatch) {
+    const country = esimShortMatch[1];
+    const shortSlug = esimShortMatch[2];
+    return NextResponse.redirect(
+      new URL(`/esim/${country}/esim-${country}-${shortSlug}`, request.url),
+      { status: 301 }
+    );
+  }
+
   return response;
 }
 
