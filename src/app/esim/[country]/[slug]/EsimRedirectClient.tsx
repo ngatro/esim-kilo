@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 interface Plan {
   id: string;
@@ -11,49 +10,53 @@ interface Plan {
   retailPriceUsd: number;
   dataAmount: number;
   durationDays: number;
-  // Add other fields as needed
+  packageCode: string;
 }
 
-export default function EsimRedirectClient({ planId, country, slug }: { planId: string; country: string; slug: string }) {
-  const [plan, setPlan] = useState<Plan | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Keep the current SEO-friendly URL in browser address bar
-    // (already at /esim/{country}/{slug} but ensure it stays on any client-side navigation)
-    // This runs after plan fetch to ensure URL doesn't change
-    
-    // Fetch plan by ID for display
-    fetch(`/api/plans?id=${planId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.plans?.[0]) setPlan(data.plans[0]);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [planId, country, slug]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (!plan) {
-    return <div className="min-h-screen flex items-center justify-center">Plan not found</div>;
-  }
-
-  // Render plan details inline with country in URL
+export default function EsimRedirectClient({ plan, country, slug }: { plan: any; country: string; slug: string }) {
+  const displayPrice = plan?.retailPriceUsd > 0 ? plan.retailPriceUsd : plan?.priceUsd || 0;
+  
   return (
     <div className="min-h-screen bg-white text-slate-800">
-      <div className="max-w-7xl mx-auto px-4 py-10">
-        <h1 className="text-4xl font-bold mb-4">{plan.destination}</h1>
-        <p className="text-2xl font-bold text-orange-500">${plan.priceUsd}</p>
-        <a href={`/checkout?planId=${plan.id}&qty=1`} className="mt-4 inline-block bg-orange-500 text-white px-6 py-3 rounded-lg font-medium">
-          Buy Now
-        </a>
+      {/* Breadcrumb */}
+      <div className="border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Link href="/" className="hover:text-orange-500">Home</Link>
+            <span>/</span>
+            <Link href="/plans" className="hover:text-orange-500">Plans</Link>
+            <span>/</span>
+            <span className="text-slate-800">{plan?.destination}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Plan Details */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10">
+        <h1 className="text-4xl font-bold text-slate-800 mb-4">{plan?.destination}</h1>
+        
+        <div className="flex items-baseline gap-3 mb-6">
+          <span className="text-4xl font-bold text-orange-500">${displayPrice}</span>
+          <span className="text-slate-500">one-time</span>
+        </div>
+
+        <Link 
+          href={`/checkout?planId=${plan?.id}&qty=1`}
+          className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors"
+        >
+          Buy Now - ${displayPrice}
+        </Link>
+
+        <div className="mt-8 grid grid-cols-2 gap-4 max-w-md">
+          <div className="bg-slate-50 rounded-xl p-4">
+            <p className="text-xs text-slate-500 mb-1">Data</p>
+            <p className="text-lg font-semibold text-slate-800">{plan?.dataAmount || 0}MB</p>
+          </div>
+          <div className="bg-slate-50 rounded-xl p-4">
+            <p className="text-xs text-slate-500 mb-1">Validity</p>
+            <p className="text-lg font-semibold text-slate-800">{plan?.durationDays} Days</p>
+          </div>
+        </div>
       </div>
     </div>
   );
