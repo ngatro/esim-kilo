@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import EsimRedirectClient from "./EsimRedirectClient";
 
 interface PageProps {
   params: Promise<{
@@ -10,25 +11,23 @@ interface PageProps {
 export default async function EsimPlanPage({ params }: PageProps) {
   const { country, slug } = await params;
   
-  // Build API URL for plan-by-slug
-  // This fetches plan using provided slug via param
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/plans?slug=${slug}`);
+  // Build full slug: country + provided slug
+  const fullSlug = slug.includes('esim-') ? slug : `esim-${country}-${slug}`;
+  
+  // Fetch plan by slug
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/plans?slug=${fullSlug}`);
   
   if (!res.ok) {
-    // If not found, 404
-    redirect("/404");
+    return notFound();
   }
   
-  const plans = await res.json();
-  
-  // Find the matching plan
-  const plan = plans.find((p: any) => p.slug === slug);
+  const data = await res.json();
+  const plan = data.plans?.[0];
   
   if (!plan?.id) {
-    // Not found, go to 404
-    redirect("/404");
+    return notFound();
   }
   
-  // Use existing route now with numeric ID
-  redirect(`/plans/${plan.id}`);
+  // Pass all needed info to client component for rendering with URL preserve
+  return <EsimRedirectClient planId={plan.id} country={country} slug={slug} />;
 }
