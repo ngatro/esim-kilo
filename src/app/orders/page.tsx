@@ -8,27 +8,27 @@ import { useI18n } from "@/components/providers/I18nProvider";
 
 function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   // 1. Final statuses from esimStatus (highest priority)
-  if (item.esimStatus === "IN_USE") return { label: "In Use", color: "bg-green-500/20 text-green-400" };
-  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "bg-red-500/20 text-red-400" };
-  if (item.esimStatus === "UNUSED_EXPIRED") return { label: "Expired", color: "bg-slate-500/20 text-slate-400" };
-  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "bg-slate-500/20 text-slate-500" };
+  if (item.esimStatus === "IN_USE") return { label: "In Use", color: "bg-green-500/20 text-green-600" };
+  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "bg-red-500/20 text-red-600" };
+  if (item.esimStatus === "UNUSED_EXPIRED") return { label: "Expired", color: "bg-slate-500/20 text-slate-600" };
+  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "bg-slate-500/20 text-slate-600" };
 
-  // 2. Real-time from smdpStatus
-  if (item.smdpStatus === "DOWNLOAD") return { label: "Downloading", color: "bg-orange-500/20 text-orange-400" };
-  if (item.smdpStatus === "INSTALLATION") return { label: "Installing", color: "bg-orange-500/20 text-orange-400" };
-  if (item.smdpStatus === "ENABLED") return { label: "Activating", color: "bg-green-500/20 text-green-400" };
-  if (item.smdpStatus === "DISABLED") return { label: "Disabled", color: "bg-slate-500/20 text-slate-400" };
-  if (item.smdpStatus === "DELETED") return { label: "Deleted", color: "bg-red-500/20 text-red-400" };
+  // 2. Real-time from smdpStatus (in progress - yellow/orange)
+  if (item.smdpStatus === "DOWNLOAD") return { label: "Downloading", color: "bg-yellow-500/20 text-yellow-600" };
+  if (item.smdpStatus === "INSTALLATION") return { label: "Installing", color: "bg-yellow-500/20 text-yellow-600" };
+  if (item.smdpStatus === "ENABLED") return { label: "Activating", color: "bg-yellow-500/20 text-yellow-600" };
+  if (item.smdpStatus === "DISABLED") return { label: "Disabled", color: "bg-slate-500/20 text-slate-600" };
+  if (item.smdpStatus === "DELETED") return { label: "Deleted", color: "bg-red-500/20 text-red-600" };
 
-  // 3. Order level (GOT_RESOURCE from esimStatus - not from order)
-  if (item.esimStatus === "GOT_RESOURCE") return { label: "Ready to Scan", color: "bg-yellow-500/20 text-yellow-400" };
+  // 3. Order level (GOT_RESOURCE from esimStatus - ready state)
+  if (item.esimStatus === "GOT_RESOURCE") return { label: "Ready to Scan", color: "bg-blue-500/20 text-blue-600" };
 
   // 4. Fallback
   if (item.esimQrImage || item.esimIccid) {
-    return { label: "Issued", color: "bg-yellow-500/20 text-yellow-400" };
+    return { label: "Issued", color: "bg-yellow-500/20 text-yellow-600" };
   }
 
-  return { label: "Processing", color: "bg-yellow-500/20 text-yellow-400" };
+  return { label: "Processing", color: "bg-yellow-500/20 text-yellow-600" };
 }
 
 interface OrderItem {
@@ -216,10 +216,10 @@ export default function OrdersPage() {
                       <p className="text-base sm:text-lg font-bold text-slate-800">{formatPrice(order.totalAmount)}</p>
                       <div className="flex gap-1 mt-1">
                         <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${
-                          order.status === "completed" ? "bg-green-500/20 text-green-400" :
-                          order.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
-                          order.status === "awaiting_payment" ? "bg-orange-500/20 text-orange-400" :
-                          "bg-red-500/20 text-red-400"
+                          order.status === "completed" ? "bg-green-500/20 text-green-600" :
+                          order.status === "pending" ? "bg-yellow-500/20 text-yellow-600" :
+                          order.status === "awaiting_payment" ? "bg-orange-500/20 text-orange-600" :
+                          "bg-red-500/20 text-red-600"
                         }`}>
                           {order.status === "completed" ? "Paid" : order.status === "awaiting_payment" ? "Awaiting Payment" : order.status}
                         </span>
@@ -357,7 +357,7 @@ export default function OrdersPage() {
                         <div className="bg-slate-50/80 rounded-xl p-3 sm:p-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs">
                             <div><p className="text-slate-500">Amount</p><p className="text-slate-800 font-semibold">{formatPrice(order.totalAmount)}</p></div>
-                            <div><p className="text-slate-500">Payment</p><p className={order.status === "completed" ? "text-green-400" : "text-yellow-400"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
+                            <div><p className="text-slate-500">Payment</p><p className={order.status === "completed" ? "text-green-600" : "text-yellow-600"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
                             <div><p className="text-slate-500">eSIM</p>
                               {(() => {
                                 const labels = order.orderItems.map(i => getEsimStatusLabel(i).label);
@@ -369,10 +369,10 @@ export default function OrdersPage() {
                                          labels.includes("Downloading") ? "⏳ Downloading" :
                                          labels.includes("Issued") ? "📨 Issued" :
                                          "⏳ Processing";
-                                const color = labels.includes("In Use") ? "text-green-400" :
-                                          labels.includes("Activating") ? "text-yellow-400" :
-                                          labels.includes("Depleted") || labels.includes("Expired") ? "text-red-400" :
-                                          "text-yellow-400";
+                                const color = labels.includes("In Use") ? "text-green-600" :
+                                          labels.includes("Ready to Scan") ? "text-blue-600" :
+                                          labels.includes("Depleted") || labels.includes("Expired") ? "text-red-600" :
+                                          "text-yellow-600";
                                 return <p className={color}>{label}</p>;
                               })()}
                             </div>

@@ -9,6 +9,7 @@
     "register": "Register",
     "logout": "Logout",
     "orders": "My Orders",
+    "affiliate": "Affiliate",
     "admin": "Admin",
     "search": "Search",
     "searchPlaceholder": "Search destination...",

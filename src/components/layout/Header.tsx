@@ -117,6 +117,7 @@ export default function Header() {
 
   const userItems = mounted && user ? [
     { label: t("header.myOrders"), href: "/orders", children: null },
+    { label: t("common.affiliate"), href: "/affiliate", children: null },
     ...(user.role === "admin" ? [{ label: t("common.admin"), href: "/admin", children: null }] : []),
   ] : [];
 
