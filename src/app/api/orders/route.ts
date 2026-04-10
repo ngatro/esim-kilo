@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
     
     const userId = token ? parseInt(token) : null;
-    const { items, customerName, customerEmail } = await request.json();
+    const { items, customerName, customerEmail, status } = await request.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items" }, { status: 400 });
@@ -47,11 +47,14 @@ export async function POST(request: Request) {
       });
     }
 
+    // Determine order status: pending for failed payments, otherwise completed
+    const orderStatus = status === "pending" ? "pending" : "completed";
+    
     const order = await prisma.order.create({
       data: {
         userId,
         totalAmount,
-        status: "completed",
+        status: orderStatus,
         customerName: customerName || null,
         customerEmail: customerEmail || null,
         orderItems: {
@@ -169,6 +172,49 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Order creation error:", error);
     return NextResponse.json({ error: "Order failed" }, { status: 500 });
+  }
+}
+
+// PUT: Retry payment for pending order
+export async function PUT(request: Request) {
+  try {
+    const cookie = request.headers.get("cookie");
+    const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
+    
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    const { orderId, paymentMethod } = await request.json();
+    
+    if (!orderId) {
+      return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
+    }
+    
+    // Find the pending order
+    const order = await prisma.order.findFirst({
+      where: { 
+        id: orderId,
+        userId: parseInt(token),
+        status: "pending",
+      },
+      include: { orderItems: true },
+    });
+    
+    if (!order) {
+      return NextResponse.json({ error: "Pending order not found" }, { status: 404 });
+    }
+    
+    // Mark as awaiting payment
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status: "awaiting_payment" },
+    });
+    
+    return NextResponse.json({ success: true, order, message: "Ready for payment" });
+  } catch (error) {
+    console.error("Retry payment error:", error);
+    return NextResponse.json({ error: "Failed to prepare payment" }, { status: 500 });
   }
 }
 

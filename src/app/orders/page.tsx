@@ -228,10 +228,19 @@ export default function OrdersPage() {
                         <span className={`inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${
                           order.status === "completed" ? "bg-green-500/20 text-green-400" :
                           order.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                          order.status === "awaiting_payment" ? "bg-orange-500/20 text-orange-400" :
                           "bg-red-500/20 text-red-400"
                         }`}>
-                          {order.status === "completed" ? "Paid" : order.status}
+                          {order.status === "completed" ? "Paid" : order.status === "awaiting_payment" ? "Awaiting Payment" : order.status}
                         </span>
+                        {order.status === "pending" && (
+                          <button
+                            onClick={() => window.location.href = `/checkout?planId=${order.orderItems[0]?.planId || ''}`}
+                            className="ml-2 inline-block px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full bg-orange-500/20 text-orange-400 hover:bg-orange-500/30"
+                          >
+                            Pay Now
+                          </button>
+                        )}
                         {(() => {
                           const firstItem = order.orderItems[0];
                           const status = firstItem ? getEsimStatusLabel(firstItem) : { label: "Processing", color: "bg-slate-500/20 text-slate-400" };
