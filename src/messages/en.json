@@ -39,7 +39,6 @@
     "refundPolicy": "7-day refund policy",
     "profile": "Profile"
   },
-
   "header": {
     "login": "Login",
     "logout": "Logout",
@@ -53,7 +52,6 @@
     "byDevice": "By Device",
     "support": "Support"
   },
-
   "hero": {
     "title": {
       "stayConnected": "Stay Connected",
@@ -69,7 +67,6 @@
     "howItWorks": "How It Works",
     "nowServing": "Now serving 190+ countries"
   },
-
   "howItWorks": {
     "title": "How It Works",
     "subtitle": "Get connected in just 4 simple steps",
@@ -82,7 +79,6 @@
     "step4": "Activate",
     "step4Desc": "Scan the QR code to install your eSIM and start using data"
   },
-
   "plans": {
     "title": "Available Plans",
     "subtitle": "Browse our extensive collection of eSIM data plans",
@@ -138,36 +134,20 @@
     "priceHighToLow": "Price: High to Low",
     "mostData": "Most Data",
     "longestDuration": "Longest Duration",
-    "plansAvailable": "plans available",
-    "noPlansFound": "No plans found",
-    "tryAdjustingFilters": "Try adjusting your filters or browse all regions",
     "clearFilters": "Clear Filters",
     "dataType": "Data Type",
     "networkType": "Network Type",
     "allNetworks": "All Networks",
     "filterByDuration": "Filter by Duration",
     "filterByData": "Filter by Data",
-    "durationDays": "days",
     "selectDuration": "Select Duration",
     "selectData": "Select Data",
     "perDay": "/day",
-    "days": "days",
     "dataUnit": "Data",
-    "buyNow": "Buy Now",
     "qty": "Qty:",
     "planSpecifications": "Plan Specifications",
     "validityDays": "Validity",
     "networkSpeed": "Network Speed",
-    "planType": "Plan Type",
-    "tetheringHotspot": "Tethering/Hotspot",
-    "activation": "Activation",
-    "topUp": "Top-Up",
-    "fairUsePolicy": "Fair Use Policy",
-    "fairUsePolicyDesc": "After full speed data is depleted, speed will be reduced to",
-    "coverage": "Coverage",
-    "country": "country",
-    "countries": "countries",
-    "networkOperators": "Network Operators",
     "whatsIncluded": "What's Included",
     "whyChooseUs": "Why Choose Us?",
     "needHelp": "Need Help?",
@@ -180,7 +160,6 @@
     "sslEncrypted": "SSL encrypted checkout",
     "globalCoverage": "190+ Countries"
   },
-
   "planDetail": {
     "localEsims": "Local eSIMs",
     "excellent": "Excellent",
@@ -245,9 +224,10 @@
     "contactSupportDesc": "Contact our support team for assistance",
     "onFirstInstallation": "On first installation",
     "onFirstConnection": "On first connection",
-    "validAfterPurchase": "Valid after purchase"
+    "validAfterPurchase": "Valid after purchase",
+    "bestSeller": "Best Seller",
+    "support": "support"
   },
-
   "checkout": {
     "title": "Checkout",
     "subtitle": "Review your order and complete your purchase",
@@ -283,7 +263,6 @@
     "processingFee": "Processing Fee",
     "grandTotal": "Grand Total"
   },
-
   "cart": {
     "title": "Shopping Cart",
     "empty": "Your cart is empty",
@@ -292,7 +271,6 @@
     "clearCart": "Clear Cart",
     "removeItem": "Remove"
   },
-
   "auth": {
     "signIn": "Sign in to your account",
     "signUp": "Create your account",
@@ -309,7 +287,6 @@
     "loginError": "Invalid email or password",
     "registerError": "Registration failed"
   },
-
   "orders": {
     "title": "My Orders",
     "orderId": "Order ID",
@@ -325,7 +302,6 @@
     "refunded": "refunded",
     "viewDetails": "View Details"
   },
-
   "admin": {
     "dashboard": "Admin Dashboard",
     "managePlans": "Manage Plans",
@@ -358,7 +334,6 @@
     "plansFromEsim": "plans from eSIM Access",
     "showingOf": "Showing {shown} of {total} plans"
   },
-
   "blog": {
     "title": "Blog",
     "subtitle": "Travel tips, eSIM guides, and latest news",
@@ -380,7 +355,6 @@
     "readMore": "Read More",
     "backToBlog": "Back to Blog"
   },
-
   "footer": {
     "description": "Stay connected anywhere in the world with affordable eSIM data plans for 190+ countries.",
     "copyright": "All rights reserved.",
@@ -403,7 +377,6 @@
     "terms": "Terms of Service",
     "refund": "Refund Policy"
   },
-
   "coverage": {
     "title": "Global Coverage",
     "subtitle": "Stay connected in over 190 countries and territories worldwide",
@@ -419,7 +392,6 @@
     },
     "countries": "countries"
   },
-
   "device": {
     "title": "Device Compatibility",
     "subtitle": "eSIM works with most modern smartphones. Check if your device supports eSIM technology.",
@@ -428,7 +400,6 @@
     "notSure": "Not sure if your device supports eSIM?",
     "checkList": "Check full compatibility list"
   },
-
   "comparison": {
     "title": "Why Choose OW SIM?",
     "subtitle": "Compare OW SIM with traditional roaming and see how much you can save",
@@ -457,7 +428,6 @@
       "number": "Phone number issues"
     }
   },
-
   "trust": {
     "countries": "Countries",
     "users": "Happy Users",
@@ -466,7 +436,6 @@
     "rating": "User Rating",
     "savings": "Savings"
   },
-
   "whyChoose": {
     "title": "Why Choose OW SIM?",
     "subtitle": "We're revolutionizing how travelers stay connected abroad",
@@ -497,7 +466,6 @@
       }
     }
   },
-
   "faq": {
     "title": "Frequently Asked Questions",
     "subtitle": "Everything you need to know about OW SIM eSIM",
@@ -520,29 +488,24 @@
       "hotspotAns": "Yes! Most of our plans support hotspot sharing. Check the plan details to confirm hotspot is included before purchasing."
     }
   },
-
   "testimonials": {
     "title": "What Travelers Say",
     "subtitle": "Join hundreds of thousands of happy travelers who stay connected with OW SIM"
   },
-
   "partners": {
     "title": "Trusted Networks Worldwide",
     "subtitle": "We partner with top carriers to bring you the best coverage"
   },
-
-"cta": {
+  "cta": {
     "title": "Ready to Stay Connected?",
     "subtitle": "Join 500,000+ travelers who stay connected without the roaming bill shock.",
     "button": "Get Your eSIM Now",
     "button1": "Browse Plans"
   },
-
   "compatibility": {
     "title": "Device Compatibility",
     "subtitle": "Check if your device supports eSIM before purchasing. Most modern smartphones support eSIM technology."
   },
-
   "profile": {
     "title": "My Profile",
     "subtitle": "Manage your account settings",
