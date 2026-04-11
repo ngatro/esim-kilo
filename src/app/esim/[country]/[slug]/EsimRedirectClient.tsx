@@ -102,7 +102,11 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
   let locations: string[] = [];
   try {
     if (plan?.locationNetworkList) {
-      networkList = Array.isArray(plan.locationNetworkList) ? plan.locationNetworkList as LocationNetwork[] : [];
+      // Parse string if needed
+      const networkData = typeof plan.locationNetworkList === 'string' 
+        ? JSON.parse(plan.locationNetworkList) 
+        : plan.locationNetworkList;
+      networkList = Array.isArray(networkData) ? networkData as LocationNetwork[] : [];
     }
     if (plan?.locations) {
       locations = Array.isArray(plan.locations) ? plan.locations as string[] : JSON.parse(plan.locations as string);
@@ -203,49 +207,28 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
               )}
             </div>
 
-            {/* Features */}
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-center gap-3 text-slate-600">
-                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Instant eSIM delivery via email
-              </li>
-              <li className="flex items-center gap-3 text-slate-600">
-                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                QR code + manual installation guide
-              </li>
-              <li className="flex items-center gap-3 text-slate-600">
-                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Works in {plan?.countryName || country}
-              </li>
-              <li className="flex items-center gap-3 text-slate-600">
-                <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                {plan?.unusedValidTime || 180} days validity
-              </li>
-              {plan?.supportTopUp && (
-                <li className="flex items-center gap-3 text-slate-600">
-                  <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Top-up supported
-                </li>
+            {/* Quick Features */}
+            <div className="mb-6 space-y-2">
+              {[
+                { icon: "✓", text: "Instant QR code delivery", color: "text-green-600" },
+                { icon: "✓", text: "Secure checkout", color: "text-green-600" },
+                { icon: "✓", text: "7-day refund policy", color: "text-green-600" },
+                { icon: "✓", text: "Works on all eSIM devices", color: "text-green-600" },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-sm text-slate-600">
+                  <span className={item.color}>{item.icon}</span>
+                  <span>{item.text}</span>
+                </div>
+              ))}
+
+              {/* Coverage Preview */}
+              {locations.length > 0 && (
+                <div className="flex items-center gap-2 text-sm text-slate-600 mt-2 pt-2 border-t border-slate-100">
+                  <span>🌍</span>
+                  <span>Coverage: {locations.slice(0, 3).join(", ")}{locations.length > 3 ? ` +${locations.length - 3} more` : ""}</span>
+                </div>
               )}
-              {plan?.ipExport && (
-                <li className="flex items-center gap-3 text-slate-600">
-                  <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  IP Export: {plan.ipExport}
-                </li>
-              )}
-            </ul>
+            </div>
 
             {/* Quantity & Buy Button */}
             <div className="bg-slate-50 rounded-2xl p-6">
@@ -279,18 +262,94 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
                 Secure payment • Instant delivery • 24/7 support
               </p>
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Network Info */}
-            {networkList.length > 0 && (
-              <div className="mt-6">
-                <p className="text-sm font-medium text-slate-700 mb-2">Networks</p>
+      {/* Plan Details Section */}
+      <div className="mt-12 sm:mt-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+          {/* Main Info */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Plan Specifications */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
+              <h2 className="text-xl font-bold text-slate-800 mb-4">Plan Specifications</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <p className="text-xs text-slate-500 mb-1">Data</p>
+                  <p className="text-lg font-semibold text-slate-800">
+                    {plan?.fupPolicy ? (
+                      <>Unlimited <span className="text-green-600 text-sm">({plan.fupPolicy} after)</span></>
+                    ) : (
+                      formatData(plan?.dataAmount || 0, plan?.dataVolume)
+                    )}
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <p className="text-xs text-slate-500 mb-1">Validity</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.durationDays} Days</p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <p className="text-xs text-slate-500 mb-1">Network Speed</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.speed || "4G LTE"}</p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <p className="text-xs text-slate-500 mb-1">Plan Type</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.smsStatus === 0 ? "Data Only" : "Data + SMS"}</p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <p className="text-xs text-slate-500 mb-1">Tethering</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.ipExport ? `Supported (${plan.ipExport})` : "Not Supported"}</p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <p className="text-xs text-slate-500 mb-1">Activation</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.activeType === 1 ? "On First Installation" : "On First Connection"}</p>
+                </div>
+                {plan?.unusedValidTime > 0 && (
+                  <div className="bg-slate-50 rounded-xl p-4">
+                    <p className="text-xs text-slate-500 mb-1">Valid After Purchase</p>
+                    <p className="text-lg font-semibold text-slate-800">{plan.unusedValidTime} days</p>
+                  </div>
+                )}
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <p className="text-xs text-slate-500 mb-1">Top Up</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.supportTopUp ? "Supported" : "Not Supported"}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Fair Use Policy */}
+            {plan?.fupPolicy && (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 sm:p-6">
+                <h2 className="text-lg font-bold text-amber-700 mb-2">Fair Use Policy</h2>
+                <p className="text-amber-600 text-sm">After data limit reached, speed reduced to <strong className="text-amber-800">{plan.fupPolicy}</strong></p>
+              </div>
+            )}
+
+            {/* Coverage */}
+            {locations.length > 0 && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-4">Coverage ({locations.length} {locations.length === 1 ? 'country' : 'countries'})</h2>
                 <div className="flex flex-wrap gap-2">
-                  {networkList.map((loc: LocationNetwork, i: number) => (
-                    <div key={i} className="bg-slate-100 rounded-lg p-3">
-                      <p className="text-xs text-slate-500 mb-1">{loc.locationName}</p>
-                      <div className="flex flex-wrap gap-1">
+                  {locations.map((loc, idx) => (
+                    <span key={idx} className="bg-slate-100 text-slate-700 text-sm px-3 py-1.5 rounded-full font-medium">{loc}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Networks */}
+            {networkList.length > 0 && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-4">Networks</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {networkList.map((loc: LocationNetwork, idx: number) => (
+                    <div key={idx} className="bg-slate-50 rounded-xl p-4">
+                      <p className="text-sm font-medium text-slate-700 mb-2">{loc.locationName}</p>
+                      <div className="flex flex-wrap gap-2">
                         {loc.operatorList?.map((op, j) => (
-                          <span key={j} className="bg-white text-slate-600 text-xs px-2 py-1 rounded">
+                          <span key={j} className="bg-white border border-slate-200 text-slate-600 text-sm px-3 py-1 rounded-lg">
                             {op.operatorName} {op.networkType}
                           </span>
                         ))}
@@ -300,14 +359,51 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Speed Info */}
-            {plan?.speed && (
-              <div className="mt-4 text-sm text-slate-500">
-                <strong>Speed:</strong> {plan.speed}
-                {plan?.fupPolicy && <span className="text-orange-500"> ({plan.fupPolicy} after limit)</span>}
-              </div>
-            )}
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* What's Included */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
+              <h3 className="text-lg font-bold text-slate-800 mb-4">What&apos;s Included</h3>
+              <ul className="space-y-3 text-sm text-slate-600">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>eSIM with QR code</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>Installation guide</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>{plan?.durationDays || 30} day validity</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>24/7 customer support</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* How It Works */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
+              <h3 className="text-lg font-bold text-slate-800 mb-4">How It Works</h3>
+              <ol className="space-y-3 text-sm text-slate-600">
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-500 font-bold">1.</span>
+                  <span>Purchase and receive QR code via email</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-500 font-bold">2.</span>
+                  <span>Scan QR code or enter manual code</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-500 font-bold">3.</span>
+                  <span>Data activates on first connection</span>
+                </li>
+              </ol>
+            </div>
           </div>
         </div>
       </div>
