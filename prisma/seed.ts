@@ -7,6 +7,16 @@ if (!connectionString) throw new Error("DATABASE_URL is not set");
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
+// Helper to generate slug from country name
+function toSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 const REGIONS = [
   { id: "global", name: "Global", emoji: "🌍" },
   { id: "europe", name: "Europe", emoji: "🇪🇺" },
@@ -19,25 +29,25 @@ const REGIONS = [
 
 const COUNTRIES = [
   // Europe
-  { id: "FR", name: "France", code: "FR", emoji: "🇫🇷", regionId: "europe" },
-  { id: "DE", name: "Germany", code: "DE", emoji: "🇩🇪", regionId: "europe" },
-  { id: "IT", name: "Italy", code: "IT", emoji: "🇮🇹", regionId: "europe" },
-  { id: "ES", name: "Spain", code: "ES", emoji: "🇪🇸", regionId: "europe" },
-  { id: "GB", name: "United Kingdom", code: "GB", emoji: "🇬🇧", regionId: "europe" },
-  { id: "NL", name: "Netherlands", code: "NL", emoji: "🇳🇱", regionId: "europe" },
-  { id: "BE", name: "Belgium", code: "BE", emoji: "🇧🇪", regionId: "europe" },
-  { id: "AT", name: "Austria", code: "AT", emoji: "🇦🇹", regionId: "europe" },
-  { id: "PT", name: "Portugal", code: "PT", emoji: "🇵🇹", regionId: "europe" },
-  { id: "GR", name: "Greece", code: "GR", emoji: "🇬🇷", regionId: "europe" },
-  { id: "PL", name: "Poland", code: "PL", emoji: "🇵🇱", regionId: "europe" },
-  { id: "CH", name: "Switzerland", code: "CH", emoji: "🇨🇭", regionId: "europe" },
-  { id: "SE", name: "Sweden", code: "SE", emoji: "🇸🇪", regionId: "europe" },
-  { id: "NO", name: "Norway", code: "NO", emoji: "🇳🇴", regionId: "europe" },
-  { id: "DK", name: "Denmark", code: "DK", emoji: "🇩🇰", regionId: "europe" },
-  { id: "FI", name: "Finland", code: "FI", emoji: "🇫🇮", regionId: "europe" },
-  { id: "IE", name: "Ireland", code: "IE", emoji: "🇮🇪", regionId: "europe" },
-  { id: "CZ", name: "Czech Republic", code: "CZ", emoji: "🇨🇿", regionId: "europe" },
-  { id: "HU", name: "Hungary", code: "HU", emoji: "🇭🇺", regionId: "europe" },
+  { id: "FR", name: "France", code: "FR", emoji: "🇫🇷", regionId: "europe", slug: "france" },
+  { id: "DE", name: "Germany", code: "DE", emoji: "🇩🇪", regionId: "europe", slug: "germany" },
+  { id: "IT", name: "Italy", code: "IT", emoji: "🇮🇹", regionId: "europe", slug: "italy" },
+  { id: "ES", name: "Spain", code: "ES", emoji: "🇪🇸", regionId: "europe", slug: "spain" },
+  { id: "GB", name: "United Kingdom", code: "GB", emoji: "🇬🇧", regionId: "europe", slug: "united-kingdom" },
+  { id: "NL", name: "Netherlands", code: "NL", emoji: "🇳🇱", regionId: "europe", slug: "netherlands" },
+  { id: "BE", name: "Belgium", code: "BE", emoji: "🇧🇪", regionId: "europe", slug: "belgium" },
+  { id: "AT", name: "Austria", code: "AT", emoji: "🇦🇹", regionId: "europe", slug: "austria" },
+  { id: "PT", name: "Portugal", code: "PT", emoji: "🇵🇹", regionId: "europe", slug: "portugal" },
+  { id: "GR", name: "Greece", code: "GR", emoji: "🇬🇷", regionId: "europe", slug: "greece" },
+  { id: "PL", name: "Poland", code: "PL", emoji: "🇵🇱", regionId: "europe", slug: "poland" },
+  { id: "CH", name: "Switzerland", code: "CH", emoji: "🇨🇭", regionId: "europe", slug: "switzerland" },
+  { id: "SE", name: "Sweden", code: "SE", emoji: "🇸🇪", regionId: "europe", slug: "sweden" },
+  { id: "NO", name: "Norway", code: "NO", emoji: "🇳🇴", regionId: "europe", slug: "norway" },
+  { id: "DK", name: "Denmark", code: "DK", emoji: "🇩🇰", regionId: "europe", slug: "denmark" },
+  { id: "FI", name: "Finland", code: "FI", emoji: "🇫🇮", regionId: "europe", slug: "finland" },
+  { id: "IE", name: "Ireland", code: "IE", emoji: "🇮🇪", regionId: "europe", slug: "ireland" },
+  { id: "CZ", name: "Czech Republic", code: "CZ", emoji: "🇨🇿", regionId: "europe", slug: "czech-republic" },
+  { id: "HU", name: "Hungary", code: "HU", emoji: "🇭🇺", regionId: "europe", slug: "hungary" },
   { id: "RO", name: "Romania", code: "RO", emoji: "🇷🇴", regionId: "europe" },
   // Asia
   { id: "JP", name: "Japan", code: "JP", emoji: "🇯🇵", regionId: "asia" },

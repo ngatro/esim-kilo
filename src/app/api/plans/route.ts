@@ -115,6 +115,9 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const sync = url.searchParams.get("sync");
 
+    // Helper to generate slug from country name
+    const toSlug = (name: string) => name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-");
+
     if (sync === "true") {
       const startTime = Date.now();
       const res = await getPackageList({ type: "BASE" });
@@ -122,7 +125,7 @@ export async function GET(request: Request) {
       if (packages.length === 0) return NextResponse.json({ success: false, error: "No packages" });
 
       const regionMap: Record<string, { id: string; name: string; emoji: string }> = {};
-      const countryMap: Record<string, { id: string; name: string; code: string; emoji: string }> = {};
+      const countryMap: Record<string, { id: string; name: string; code: string; emoji: string; slug: string }> = {};
 
       const plans = packages.map((pkg) => {
         const dataAmount = bytesToGB(pkg.volume);
@@ -151,7 +154,7 @@ export async function GET(request: Request) {
         if (loc.countryId && loc.countryName && locationCount === 1) {
           const countryKey = loc.countryId.toUpperCase();
           if (!countryMap[countryKey]) {
-            countryMap[countryKey] = { id: loc.countryId.toUpperCase(), name: loc.countryName, code: loc.countryId, emoji: getCountryEmoji(loc.countryId) };
+            countryMap[countryKey] = { id: loc.countryId.toUpperCase(), name: loc.countryName, code: loc.countryId, emoji: getCountryEmoji(loc.countryId), slug: toSlug(loc.countryName) };
           }
         }
 
@@ -208,8 +211,8 @@ export async function GET(request: Request) {
       for (const country of Object.values(countryMap)) {
         await prisma.country.upsert({
           where: { code: country.code },
-          update: { name: country.name, emoji: country.emoji },
-          create: { id: country.id, name: country.name, code: country.code, emoji: country.emoji },
+          update: { name: country.name, emoji: country.emoji, slug: country.slug },
+          create: { id: country.id, name: country.name, code: country.code, emoji: country.emoji, slug: country.slug },
         });
       }
 

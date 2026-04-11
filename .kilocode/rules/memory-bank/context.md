@@ -40,6 +40,10 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - User affiliate dashboard with referral link, stats, and withdrawal
   - Admin affiliate management (withdrawals, commission rates)
   - Middleware for referral cookie handling
+- [x] **SEO-friendly /esim routes** - Removed rewrite rule in next.config.ts, fixed absolute URL fetches:
+  - `/esim/[country]/[slug]/page.tsx` - Plan detail with full UI (image, badges, networks, features)
+  - `/esim/[country]/page.tsx` - Country listing (client-side fetch with PlanCard)
+  - Fixed fetch URLs to use absolute URLs with NEXT_PUBLIC_APP_URL env var
 
 ## Current Structure
 

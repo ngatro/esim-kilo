@@ -15,7 +15,8 @@ export default async function EsimPlanPage({ params }: PageProps) {
   const fullSlug = slug.startsWith('esim-') ? slug : `esim-${country}-${slug}`;
 
   // Fetch plan to include details
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/plans?slug=${fullSlug}`);
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const res = await fetch(`${baseUrl}/api/plans?id=${fullSlug}`);
   if (!res.ok) return notFound();
 
   const data = await res.json();
