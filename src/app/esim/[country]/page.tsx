@@ -232,21 +232,18 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
         </div>
       </div>
 
-      {/* Filter Section with Layering -mt-10 */}
+      {/* Filter Section - Hidden on desktop, show as floating badge */}
       <div className="max-w-7xl mx-auto px-4 -mt-10 relative z-10">
-        {/* Button Chips Filter */}
-        <div className="bg-white rounded-[2rem] shadow-2xl p-6 mb-8">
-          <div className="flex flex-col gap-4">
+        {/* Mobile Filter - Full chips */}
+        <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 md:hidden">
+          <div className="flex flex-col gap-3">
             {/* Duration Chips */}
             <div>
-              <p className="text-sm font-medium text-slate-600 mb-3">📅 {t("countryPage.duration")}:</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => setSelectedDuration("all")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    selectedDuration === "all"
-                      ? "bg-orange-500 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    selectedDuration === "all" ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
                   {t("countryPage.all")}
@@ -255,10 +252,8 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                   <button
                     key={duration}
                     onClick={() => setSelectedDuration(duration.toString())}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      selectedDuration === duration.toString()
-                        ? "bg-orange-500 text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      selectedDuration === duration.toString() ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
                     {duration} {t("countryPage.days")}
@@ -266,17 +261,13 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                 ))}
               </div>
             </div>
-            
-            {/* Data Amount Chips */}
+            {/* Data Chips */}
             <div>
-              <p className="text-sm font-medium text-slate-600 mb-3">💾 {t("countryPage.data")}:</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => setSelectedData("all")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    selectedData === "all"
-                      ? "bg-orange-500 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    selectedData === "all" ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
                   {t("countryPage.all")}
@@ -285,10 +276,8 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                   <button
                     key={data}
                     onClick={() => setSelectedData(data.toString())}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      selectedData === data.toString()
-                        ? "bg-orange-500 text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      selectedData === data.toString() ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
                     {data}GB
@@ -296,15 +285,49 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                 ))}
               </div>
             </div>
-            
-            {/* Clear Filters */}
             {hasActiveFilters && (
-              <button
-                onClick={handleClearFilters}
-                className="text-orange-500 text-sm font-medium hover:text-orange-600 transition-colors"
-              >
+              <button onClick={handleClearFilters} className="text-orange-500 text-sm font-medium hover:text-orange-600">
                 ✕ {t("countryPage.clearFilters")}
               </button>
+            )}
+          </div>
+        </div>
+        {/* Desktop - Floating filter bar - centered and prominent */}
+        <div className="hidden md:flex items-center justify-center gap-2 mb-6">
+          <div className="flex items-center gap-2 bg-white rounded-full shadow-lg border border-slate-200 px-4 py-2">
+            <span className="text-sm text-slate-500 font-medium">📅</span>
+            <select
+              value={selectedDuration}
+              onChange={e => setSelectedDuration(e.target.value)}
+              className="bg-transparent border-0 text-sm font-semibold text-slate-700 focus:outline-none cursor-pointer min-w-[100px]"
+            >
+              <option value="all">{t("countryPage.all")}</option>
+              {durationOptions.map(d => (
+                <option key={d} value={d.toString()}>{d} {t("countryPage.days")}</option>
+              ))}
+            </select>
+            <div className="w-px h-5 bg-slate-300" />
+            <span className="text-sm text-slate-500 font-medium">💾</span>
+            <select
+              value={selectedData}
+              onChange={e => setSelectedData(e.target.value)}
+              className="bg-transparent border-0 text-sm font-semibold text-slate-700 focus:outline-none cursor-pointer min-w-[100px]"
+            >
+              <option value="all">{t("countryPage.all")}</option>
+              {dataOptions.map(d => (
+                <option key={d} value={d.toString()}>{d}GB</option>
+              ))}
+            </select>
+            {hasActiveFilters && (
+              <>
+                <div className="w-px h-5 bg-slate-300" />
+                <button
+                  onClick={handleClearFilters}
+                  className="text-orange-500 hover:text-orange-600 font-medium text-sm"
+                >
+                  ✕ {t("countryPage.clearFilters")}
+                </button>
+              </>
             )}
           </div>
         </div>
