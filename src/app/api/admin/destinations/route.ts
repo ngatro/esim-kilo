@@ -44,6 +44,11 @@ export async function POST(request: NextRequest) {
       const priority = parseInt(formData.get("priority") as string) || 0;
       const image = formData.get("image") as File | null;
 
+      // Validate required fields
+      if (!id || !name || !slug) {
+        return NextResponse.json({ error: "ID, name, and slug are required" }, { status: 400 });
+      }
+
       let imageUrl: string | undefined;
 
       // Handle image upload
@@ -91,6 +96,11 @@ export async function POST(request: NextRequest) {
       const isVisible = formData.get("isVisible") === "true";
       const priority = parseInt(formData.get("priority") as string) || 0;
       const image = formData.get("image") as File | null;
+
+      // Validate required fields
+      if (!id || !name) {
+        return NextResponse.json({ error: "ID and name are required" }, { status: 400 });
+      }
 
       let imageUrl: string | undefined;
 

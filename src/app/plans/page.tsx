@@ -104,7 +104,7 @@ export default function PlansPage() {
       } else {
         setDestinations(DEFAULT_DESTINATIONS.map((d) => ({
           ...d,
-          imageUrl: d.photoId ? getValidUrl(d.photoId, 800, 600) : getDestinationImage(d.slug),
+          imageUrl: d.imageUrl || getDestinationImage(d.slug),
           isVisible: true,
           priority: parseInt(d.id) || 1,
         })) as Destination[]);
@@ -192,7 +192,7 @@ export default function PlansPage() {
               >
                 <div className="relative h-56 overflow-hidden">
                   <Image
-                    src={dest.photoId ? getValidUrl(dest.photoId, 800, 600) : getDestinationImage(dest.slug)}
+                    src={dest.imageUrl || getDestinationImage(dest.slug)}
                     alt={dest.landmark || dest.name}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-700"

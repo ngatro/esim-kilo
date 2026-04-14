@@ -3,6 +3,22 @@ import { prisma } from "@/lib/prisma";
 import { queryOrder, EsimListItem } from "@/lib/esim-access";
 import { sendEmail, getOrderConfirmationHtml, getOrderConfirmationAdminHtml } from "@/lib/email";
 
+// Helper function to log eSIM events to history
+async function logEsimHistory(orderItemId: number, eventType: string, rawData: any, description?: string) {
+  try {
+    await prisma.esimHistory.create({
+      data: {
+        orderItemId,
+        eventType,
+        rawData,
+        description,
+      },
+    });
+  } catch (err) {
+    console.error("[eSIM History] Failed to log:", err);
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -76,8 +92,8 @@ export async function POST(request: Request) {
               const qrImageUrl = esimData.qrCodeUrl || esimData.qrCode || null;
               const lpaStr = esimData.ac || esimData.lpaString || null;
 
-              await Promise.all(items.map((item: any) =>
-                prisma.orderItem.update({
+              await Promise.all(items.map(async (item: any) => {
+                await prisma.orderItem.update({
                   where: { id: item.id },
                   data: {
                     esimIccid: esimData.iccid || item.esimIccid,
@@ -91,8 +107,16 @@ export async function POST(request: Request) {
                     esimStatus: orderStatus === "GOT_RESOURCE" ? "GOT_RESOURCE" : "IN_USE",
                     orderUsage: esimData.orderUsage || 0,
                   },
-                })
-              ));
+                });
+                // Log to history
+                if (orderStatus === "GOT_RESOURCE") {
+                  await logEsimHistory(item.id, "QR_GENERATED", body, "Mã QR đã tạo - Khách có thể quét");
+                } else if (orderStatus === "ACTIVATED") {
+                  await logEsimHistory(item.id, "ACTIVATED", body, "eSIM đã kích hoạt - Đang hoạt động");
+                } else {
+                  await logEsimHistory(item.id, "ORDER_STATUS_UPDATED", body, `Trạng thái: ${orderStatus}`);
+                }
+              }));
 
               await prisma.order.update({
                 where: { id: order.id },
@@ -173,16 +197,24 @@ export async function POST(request: Request) {
 
         console.log("[eSIM Webhook] DATA_USAGE - usage=" + usage + ", totalVolume=" + totalVol);
 
-        await Promise.all(items.map(item =>
-          prisma.orderItem.update({
+        await Promise.all(items.map(async (item: any) => {
+          await prisma.orderItem.update({
             where: { id: item.id },
             data: {
               orderUsage: usage,
               totalVolume: totalVol || item.totalVolume,
               lastUsageSync: new Date(),
+              // Update expiredAt when we have expiry info
+              ...(body.content?.expiredAt ? { expiredAt: new Date(body.content.expiredAt) } : {}),
             },
-          })
-        ));
+          });
+          // Log usage update to history
+          const percent = totalVol > 0 ? Math.round((usage / totalVol) * 100) : 0;
+          let desc = `Đã dùng ${usage} / ${totalVol} (${percent}%)`;
+          if (percent >= 80) desc += " - Cảnh báo sắp hết";
+          if (percent >= 100) desc += " - Đã hết dung lượng";
+          await logEsimHistory(item.id, "USAGE_SYNC", body, desc);
+        }));
 
         if (order.customerEmail && usage >= totalVol * 0.8 && usage < totalVol * 0.9) {
           try {
@@ -204,17 +236,29 @@ export async function POST(request: Request) {
 
         console.log("[eSIM Webhook] ESIM_STATUS - status=" + esimStatus + ", usage=" + esimUsage);
 
-        await Promise.all(items.map(item =>
-          prisma.orderItem.update({
+        await Promise.all(items.map(async (item: any) => {
+          await prisma.orderItem.update({
             where: { id: item.id },
             data: {
               esimStatus: esimStatus || item.esimStatus,
               orderUsage: esimUsage,
               totalVolume: esimTotalVol || item.totalVolume,
               lastUsageSync: new Date(),
+              ...(body.content?.expiredAt ? { expiredAt: new Date(body.content.expiredAt) } : {}),
             },
-          })
-        ));
+          });
+          // Log status change to history
+          let statusDesc = "";
+          switch(esimStatus) {
+            case "USED_UP": statusDesc = "Hết dung lượng - Cần mua thêm"; break;
+            case "USED_EXPIRED": statusDesc = "Đã hết hạn"; break;
+            case "UNUSED_EXPIRED": statusDesc = "Chưa dùng đã hết hạn"; break;
+            case "CANCEL": statusDesc = "eSIM bị hủy"; break;
+            case "IN_USE": statusDesc = "eSIM đang hoạt động"; break;
+            default: statusDesc = `Trạng thái: ${esimStatus}`;
+          }
+          await logEsimHistory(item.id, "STATUS_CHANGED", body, statusDesc);
+        }));
 
         if (esimStatus === "USED_UP" && order.customerEmail) {
           try {

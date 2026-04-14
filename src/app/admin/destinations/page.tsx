@@ -259,8 +259,32 @@ export default function AdminDestinationsPage() {
     const formData = new FormData(e.currentTarget);
 
     if (activeTab === "destination" && editingDest) {
+      // Validate required fields
+      const name = formData.get("name") as string;
+      const slug = formData.get("slug") as string;
+
+      if (!name || !slug) {
+        setMessage({ type: "error", text: "Name and slug are required" });
+        return;
+      }
+
+      // Auto-generate ID from slug if not provided
+      let id = formData.get("id") as string;
+      if (!id && slug) {
+        // Generate a simple ID from the first 2 letters of slug uppercase
+        id = slug.substring(0, 2).toUpperCase().replace(/[^A-Z]/g, "") || 
+               slug.replace(/[^a-zA-Z]/g, "").substring(0, 2).toUpperCase() || 
+               "XX";
+        formData.set("id", id);
+      }
+
       handleSave(formData, "destination");
     } else if (activeTab === "region" && editingRegion) {
+      // Validate required fields
+      if (!editingRegion.id || !editingRegion.name) {
+        setMessage({ type: "error", text: "ID and name are required" });
+        return;
+      }
       handleSave(formData, "region");
     }
   }
@@ -424,16 +448,16 @@ export default function AdminDestinationsPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    ID {isDestTab ? "(Country Code)" : "(Region ID)"}
+                    ID {isDestTab ? "(auto-filled from slug)" : "(Region ID)"}
                   </label>
                   <input
                     type="text"
                     name="id"
                     defaultValue={isDestTab ? editingDest?.id : editingRegion?.id}
                     required
-                    disabled={!!(isDestTab ? editingDest?.id : editingRegion?.id)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg disabled:bg-slate-100"
-                    placeholder={isDestTab ? "JP, KR, VN..." : "asia, europe..."}
+                    readOnly
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50"
+                    placeholder={isDestTab ? "Auto-generated from slug" : "asia, europe..."}
                   />
                 </div>
 

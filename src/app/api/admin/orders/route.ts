@@ -15,7 +15,14 @@ export async function GET(request: Request) {
       where,
       include: {
         user: { select: { id: true, name: true, email: true } },
-        orderItems: true,
+        orderItems: {
+          include: {
+            history: {
+              orderBy: { createdAt: "desc" },
+              take: 10, // Last 10 events
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: limit,

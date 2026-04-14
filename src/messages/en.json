@@ -158,7 +158,16 @@
     "cheaperThanRoaming": "Up to 80% cheaper than roaming",
     "securePayment": "Secure Payment",
     "sslEncrypted": "SSL encrypted checkout",
-    "globalCoverage": "190+ Countries"
+    "globalCoverage": "190+ Countries",
+    "noMatchingPlans": "No matching plans found"
+  },
+  "countryPage": {
+    "esimPlansAvailable": "eSIM plans available",
+    "duration": "Duration",
+    "data": "Data",
+    "all": "All",
+    "days": "days",
+    "clearFilters": "Clear Filters"
   },
   "planDetail": {
     "localEsims": "Local eSIMs",

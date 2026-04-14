@@ -235,6 +235,16 @@ export default function AdminDashboardPage() {
               <p className="text-sm text-slate-500">Manage top destinations</p>
             </div>
           </Link>
+
+          <Link href="/admin/promotions">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">🎉</div>
+                <h3 className="font-semibold text-slate-800">Promotions</h3>
+              </div>
+              <p className="text-sm text-slate-500">Manage promotional popups</p>
+            </div>
+          </Link>
         </div>
 
         {/* Recent Orders */}

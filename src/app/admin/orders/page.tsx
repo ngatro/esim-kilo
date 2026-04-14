@@ -25,6 +25,15 @@ interface User {
   role: string;
 }
 
+interface EsimHistory {
+  id: number;
+  orderItemId: number;
+  eventType: string;
+  rawData: any;
+  description: string | null;
+  createdAt: string;
+}
+
 interface OrderItem {
   id: number;
   planId: string | null;
@@ -43,30 +52,73 @@ interface OrderItem {
   esimStatus: string | null;
   orderUsage: number | null;
   enabledAt: string | null;
+  expiredAt: string | null;
   plan?: { name: string; packageCode: string } | null;
+  history?: EsimHistory[];
 }
 
-function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
-  if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "text-red-400" };
-  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "text-slate-500" };
-
-  if (item.smdpStatus === "ENABLED" || item.esimStatus === "IN_USE") {
-    return { label: "In Use", color: "text-green-400" };
+// Operational status mapping - combines provider statuses into admin-friendly states
+function getOperationalStatus(item: OrderItem): { label: string; icon: string; color: string; description: string } {
+  // Priority 1: Depleted - Out of Data
+  if (item.esimStatus === "USED_UP") {
+    return { label: "Hết dung lượng", icon: "📊", color: "text-red-500", description: "Khách hết data - cần tư vấn upsell" };
   }
-
+  // Priority 2: Expired
+  if (item.esimStatus === "USED_EXPIRED" || item.esimStatus === "UNUSED_EXPIRED") {
+    return { label: "Đã hết hạn", icon: "⏰", color: "text-slate-500", description: "eSIM đã hết thời hạn sử dụng" };
+  }
+  // Priority 3: Cancelled/Revoked
+  if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") {
+    return { label: "Đã hủy", icon: "❌", color: "text-slate-800", description: "eSIM bị vô hiệu hóa" };
+  }
+  // Priority 4: Active - successfully in use (Green)
+  if (item.esimStatus === "IN_USE") {
+    return { label: "Đang hoạt động", icon: "🟢", color: "text-green-500", description: "eSIM đang hoạt động - Thành công 100%" };
+  }
+  // Priority 5: Customer installing (DOWNLOAD/INSTALLATION)
   if (item.smdpStatus === "DOWNLOAD" || item.smdpStatus === "INSTALLATION") {
-    return { label: "Installing...", color: "text-sky-400" };
+    return { label: "Đang cài đặt", icon: "⏳", color: "text-yellow-500", description: "Khách đang quét/cài đặt eSIM" };
   }
+  // Priority 6: New - Ready to install (QR available)
+  if (item.esimStatus === "GOT_RESOURCE" && !item.smdpStatus) {
+    return { label: "Mới - Chờ cài đặt", icon: "🆕", color: "text-blue-500", description: "Sẵn sàng quét mã QR" };
+  }
+  // Priority 7: Issued but not yet activated
+  if (item.esimQrImage || item.esimIccid || item.smdpStatus) {
+    return { label: "Đã phát hành", icon: "🎫", color: "text-yellow-400", description: "Chờ khách kích hoạt" };
+  }
+  // Default: Processing
+  return { label: "Đang xử lý", icon: "⏳", color: "text-slate-400", description: "Đơn hàng đang được xử lý" };
+}
 
-  if (item.esimStatus === "GOT_RESOURCE") {
-    return { label: "Ready to Scan", color: "text-yellow-400" };
-  }
+function getEsimStatusLabel(item: OrderItem): { label: string; icon: string; color: string } {
+  const status = getOperationalStatus(item);
+  return { label: status.label, icon: status.icon, color: status.color };
+}
+
+// Get progress bar color based on usage percentage
+function getProgressColor(percentage: number): string {
+  if (percentage >= 100) return "bg-red-500"; // Depleted
+  if (percentage >= 80) return "bg-orange-500"; // Warning - almost depleted
+  return "bg-green-500"; // Normal usage
+}
+
+// Calculate expiration countdown
+function getExpirationCountdown(expiredAt: string | null): string {
+  if (!expiredAt) return "";
+  const now = new Date();
+  const expired = new Date(expiredAt);
+  const diff = expired.getTime() - now.getTime();
   
-  if (item.esimQrImage || item.esimIccid) {
-    return { label: "Issued", color: "text-yellow-400/80" };
-  }
-
-  return { label: "Processing", color: "text-slate-400" };
+  if (diff <= 0) return "Đã hết hạn";
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (days > 0) return `Còn ${days} ngày ${hours} giờ`;
+  if (hours > 0) return `Còn ${hours} giờ ${minutes} phút`;
+  return `Còn ${minutes} phút`;
 }
 
 function formatBytes(bytes: number | null): string {
@@ -328,9 +380,9 @@ export default function AdminOrdersPage() {
                               <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
                                 order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
                               }`}>{order.orderItems.some(i => i.esimQrCode || i.esimQrImage) ? "✓" : "⏳"}</div>
-                              <div className="flex-1"><p className="text-white">eSIM Access</p><p className="text-slate-500">{order.orderItems[0]?.esimStatus || order.esimaccessOrderStatus || "Pending"}</p></div>
+                              <div className="flex-1"><p className="text-white">eSIM Access</p><p className="text-slate-500">{order.orderItems[0]?.smdpStatus || "-"}</p></div>
                               <span className={order.orderItems[0] ? getEsimStatusLabel(order.orderItems[0]).color : "text-slate-400"}>
-                                {order.orderItems[0] ? getEsimStatusLabel(order.orderItems[0]).label : "Waiting"}
+                                {order.orderItems[0] ? getEsimStatusLabel(order.orderItems[0]).icon + " " + getEsimStatusLabel(order.orderItems[0]).label : "⏳ Chờ xử lý"}
                               </span>
                             </div>
                             <div className="flex items-center gap-3 text-xs">
@@ -386,24 +438,61 @@ export default function AdminOrdersPage() {
                                     <div><p className="text-slate-500 text-xs">EID (Device ID)</p><p className="text-purple-400 text-xs font-mono break-all">{item.esimEid}</p></div>
                                   )}
                                   {item.smdpStatus && (
-                                    <div><p className="text-slate-500 text-xs">SM-DP+</p><p className={"text-xs font-medium " + getEsimStatusLabel(item).color}>{item.smdpStatus}</p></div>
+                                    <div><p className="text-slate-500 text-xs">📡 SM-DP+ Server</p><p className={"text-xs font-medium " + getEsimStatusLabel(item).color}>{item.smdpStatus}</p></div>
                                   )}
-                                  {item.esimStatus && (
-                                    <div><p className="text-slate-500 text-xs">Status</p><p className={"text-xs font-medium " + getEsimStatusLabel(item).color}>{getEsimStatusLabel(item).label}</p></div>
-                                  )}
+                                  <div><p className="text-slate-500 text-xs">📱 eSIM Status</p><p className={"text-xs font-medium " + getEsimStatusLabel(item).color}>{getEsimStatusLabel(item).icon} {getEsimStatusLabel(item).label}</p></div>
                                   {item.totalVolume && item.totalVolume > 0 && (
                                     <div>
-                                      <p className="text-slate-500 text-xs">Data Usage</p>
+                                      <p className="text-slate-500 text-xs">📊 Dữ liệu đã dùng</p>
                                       <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                                          <div className="h-full bg-sky-500 rounded-full" style={{ width: `${Math.min(100, (item.orderUsage || 0) / item.totalVolume * 100)}%` }} />
+                                        <div className="flex-1 h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                                          <div 
+                                            className={`h-full rounded-full transition-all ${getProgressColor(((item.orderUsage || 0) / item.totalVolume) * 100)}`}
+                                            style={{ width: `${Math.min(100, ((item.orderUsage || 0) / item.totalVolume) * 100)}%` }} 
+                                          />
                                         </div>
-                                        <span className="text-xs text-slate-400">{formatBytes(item.orderUsage)} / {formatBytes(item.totalVolume)}</span>
+                                        <span className="text-xs text-slate-400 min-w-fit">{formatBytes(item.orderUsage || 0)} / {formatBytes(item.totalVolume)}</span>
+                                      </div>
+                                      {/* Usage percentage and remaining */}
+                                      <div className="flex justify-between mt-1">
+                                        <span className={`text-xs font-medium ${((item.orderUsage || 0) / item.totalVolume) * 100 >= 80 ? 'text-orange-400' : 'text-green-400'}`}>
+                                          {Math.round(((item.orderUsage || 0) / item.totalVolume) * 100)}% used
+                                        </span>
+                                        <span className="text-xs text-slate-500">
+                                          Còn: {formatBytes((item.totalVolume || 0) - (item.orderUsage || 0))}
+                                        </span>
                                       </div>
                                     </div>
                                   )}
                                   {item.enabledAt && (
-                                    <div><p className="text-green-400/70 text-xs">✓ Enabled: {new Date(item.enabledAt).toLocaleString()}</p></div>
+                                    <div><p className="text-green-400/70 text-xs">✓ Kích hoạt: {new Date(item.enabledAt).toLocaleString()}</p></div>
+                                  )}
+                                  {/* Expiration countdown */}
+                                  {item.expiredAt && (
+                                    <div className={`text-xs ${getExpirationCountdown(item.expiredAt).startsWith('Còn') && getExpirationCountdown(item.expiredAt).includes('phút') ? 'text-red-400' : getExpirationCountdown(item.expiredAt).startsWith('Còn') ? 'text-orange-400' : 'text-slate-500'}`}>
+                                    ⏰ {getExpirationCountdown(item.expiredAt)}
+                                  </div>
+                                  )}
+                                  {/* History Timeline */}
+                                  {item.history && item.history.length > 0 && (
+                                    <div className="mt-3 pt-3 border-t border-slate-700">
+                                      <p className="text-slate-500 text-xs mb-2">📋 Lịch sử hoạt động</p>
+                                      <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                                        {item.history.map((h: EsimHistory, idx: number) => (
+                                          <div key={h.id} className="flex items-start gap-2 text-xs">
+                                            <div className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${idx === 0 ? 'bg-green-400' : 'bg-slate-600'}`} />
+                                            <div className="flex-1 min-w-0">
+                                              <p className={`font-medium ${idx === 0 ? 'text-green-400' : 'text-slate-400'}`}>
+                                                {h.description || h.eventType}
+                                              </p>
+                                              <p className="text-slate-500 text-xs">
+                                                {new Date(h.createdAt).toLocaleString('vi-VN')}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
                                   )}
                                   {item.activationCode && (
                                     <div><p className="text-slate-500 text-xs">Activation Code</p><p className="text-sky-400 text-xs font-mono break-all">{item.activationCode}</p></div>

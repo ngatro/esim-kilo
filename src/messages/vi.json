@@ -158,7 +158,16 @@
     "cheaperThanRoaming": "Tiết kiệm đến 80% so với roaming",
     "securePayment": "Thanh toán an toàn",
     "sslEncrypted": "Thanh toán mã hoá SSL",
-    "globalCoverage": "190+ Quốc gia"
+    "globalCoverage": "190+ Quốc gia",
+    "noMatchingPlans": "Không tìm thấy kế hoạch phù hợp"
+  },
+  "countryPage": {
+    "esimPlansAvailable": "gói eSIM có sẵn",
+    "duration": "Số ngày",
+    "data": "Dung lượng",
+    "all": "Tất cả",
+    "days": "ngày",
+    "clearFilters": "Xóa bộ lọc"
   },
   "planDetail": {
     "localEsims": "Local eSIMs",

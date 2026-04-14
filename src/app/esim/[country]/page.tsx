@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { PlanCard } from "@/app/plans/PlanCard";
 import { getDestinationImage } from "@/lib/unsplash";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 interface Plan {
   id: string;
@@ -134,6 +135,7 @@ async function fetchUnsplashImage(countryName: string): Promise<string> {
 
 export default function EsimCountryPage({ params }: { params: Promise<{ country: string }> }) {
   const resolvedParams = use(params);
+  const { t, formatPrice } = useI18n();
   const [country, setCountry] = useState<string>("");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,7 +227,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
             {displayName}
           </h1>
           <p className="text-white/90 text-lg text-center drop-shadow">
-            {plans.length} eSIM plans available
+            {plans.length} {t("countryPage.esimPlansAvailable")}
           </p>
         </div>
       </div>
@@ -237,7 +239,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
           <div className="flex flex-col gap-4">
             {/* Duration Chips */}
             <div>
-              <p className="text-sm font-medium text-slate-600 mb-3">📅 Số ngày:</p>
+              <p className="text-sm font-medium text-slate-600 mb-3">📅 {t("countryPage.duration")}:</p>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedDuration("all")}
@@ -247,7 +249,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
-                  Tất cả
+                  {t("countryPage.all")}
                 </button>
                 {durationOptions.map(duration => (
                   <button
@@ -259,7 +261,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
-                    {duration} ngày
+                    {duration} {t("countryPage.days")}
                   </button>
                 ))}
               </div>
@@ -267,7 +269,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
             
             {/* Data Amount Chips */}
             <div>
-              <p className="text-sm font-medium text-slate-600 mb-3">💾 Dung lượng:</p>
+              <p className="text-sm font-medium text-slate-600 mb-3">💾 {t("countryPage.data")}:</p>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedData("all")}
@@ -277,7 +279,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
-                  Tất cả
+                  {t("countryPage.all")}
                 </button>
                 {dataOptions.map(data => (
                   <button
@@ -301,7 +303,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                 onClick={handleClearFilters}
                 className="text-orange-500 text-sm font-medium hover:text-orange-600 transition-colors"
               >
-                ✕ Xóa bộ lọc
+                ✕ {t("countryPage.clearFilters")}
               </button>
             )}
           </div>
@@ -316,7 +318,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
         
         {filteredPlans.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-slate-500 text-lg">Không tìm thấy kế hoạch phù hợp</p>
+            <p className="text-slate-500 text-lg">{t("countryPage.noMatchingPlans")}</p>
           </div>
         )}
       </div>
