@@ -344,7 +344,7 @@ export default function AdminOrdersPage() {
                       <span className="text-lg">{order.status === "completed" ? "✅" : "⏳"}</span>
                     </div>
                     <div>
-                      <p className="text-white font-semibold text-sm">Order #{order.id}</p>
+                      <p className="text-white font-semibold text-sm">Order #{10000 + order.id}</p>
                       <p className="text-slate-500 text-xs">
                         {order.customerEmail || order.customerName || "Guest"} · {new Date(order.createdAt).toLocaleDateString()}
                       </p>

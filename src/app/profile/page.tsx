@@ -271,7 +271,7 @@ export default function ProfilePage() {
                         className="block p-3 border border-slate-100 rounded-xl hover:border-orange-200 transition-colors"
                       >
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm font-medium text-slate-700">#{order.id}</span>
+                          <span className="text-sm font-medium text-slate-700">#{10000 + order.id}</span>
                           <span className={`text-xs px-2 py-0.5 rounded-full ${
                             order.status === "completed" ? "bg-green-100 text-green-700" :
                             order.status === "pending" ? "bg-yellow-100 text-yellow-700" :

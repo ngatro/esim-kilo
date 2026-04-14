@@ -7,27 +7,31 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
-  // 1. Final statuses from esimStatus (highest priority)
+  // 1. Final/terminal statuses from esimStatus (highest priority)
   if (item.esimStatus === "IN_USE") return { label: "In Use", color: "bg-green-500/20 text-green-600" };
   if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "bg-red-500/20 text-red-600" };
   if (item.esimStatus === "UNUSED_EXPIRED") return { label: "Expired", color: "bg-slate-500/20 text-slate-600" };
   if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "bg-slate-500/20 text-slate-600" };
 
-  // 2. Real-time from smdpStatus (in progress - yellow/orange)
+  // 2. NEW ORDER - Ready to Scan (GOT_RESOURCE should show before smdpStatus changes)
+  if (item.esimStatus === "GOT_RESOURCE") return { label: "Ready to Scan", color: "bg-blue-500/20 text-blue-600" };
+
+
+
+
+
+  // 3. Real-time from smdpStatus (in progress - when customer is actively using)
   if (item.smdpStatus === "DOWNLOAD") return { label: "Downloading", color: "bg-yellow-500/20 text-yellow-600" };
   if (item.smdpStatus === "INSTALLATION") return { label: "Installing", color: "bg-yellow-500/20 text-yellow-600" };
   if (item.smdpStatus === "ENABLED") return { label: "Activating", color: "bg-yellow-500/20 text-yellow-600" };
   if (item.smdpStatus === "DISABLED") return { label: "Disabled", color: "bg-slate-500/20 text-slate-600" };
   if (item.smdpStatus === "DELETED") return { label: "Deleted", color: "bg-red-500/20 text-red-600" };
-
-  // 3. Order level (GOT_RESOURCE from esimStatus - ready state)
-  if (item.esimStatus === "GOT_RESOURCE") return { label: "Ready to Scan", color: "bg-blue-500/20 text-blue-600" };
-
-  // 4. Fallback
+  
+    // 4. Issued - has QR but not yet activated
   if (item.esimQrImage || item.esimIccid) {
     return { label: "Issued", color: "bg-yellow-500/20 text-yellow-600" };
   }
-
+  // 5. Fallback
   return { label: "Processing", color: "bg-yellow-500/20 text-yellow-600" };
 }
 
@@ -205,7 +209,7 @@ export default function OrdersPage() {
                       <span className="text-lg sm:text-xl">{order.status === "completed" ? "✅" : "⏳"}</span>
                     </div>
                     <div>
-                      <p className="text-slate-800 font-semibold text-sm sm:text-base">Order #{order.id}</p>
+                      <p className="text-slate-800 font-semibold text-sm sm:text-base">Order #{10000 + order.id}</p>
                       <p className="text-slate-500 text-xs sm:text-sm">
                         {new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
@@ -361,10 +365,10 @@ export default function OrdersPage() {
                             <div><p className="text-slate-500">eSIM</p>
                               {(() => {
                                 const labels = order.orderItems.map(i => getEsimStatusLabel(i).label);
-                                // Show worst-case status (prioritized: In Use > Activating > Ready > Issued > Processing)
+                                // Show status with correct priority (new orders should show Ready to Scan first)
                                 const label = labels.includes("In Use") ? "✅ In Use" :
-                                         labels.includes("Activating") ? "⏳ Activating" :
                                          labels.includes("Ready to Scan") ? "📱 Ready to Scan" :
+                                         labels.includes("Activating") ? "⏳ Activating" :
                                          labels.includes("Installing") ? "⏳ Installing" :
                                          labels.includes("Downloading") ? "⏳ Downloading" :
                                          labels.includes("Issued") ? "📨 Issued" :

@@ -266,7 +266,7 @@ export default function AdminDashboardPage() {
               <tbody className="divide-y divide-slate-100">
                 {data?.recentOrders?.slice(0, 5).map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50">
-                    <td className="px-5 py-3 text-sm text-slate-800 font-medium">#{order.id}</td>
+                    <td className="px-5 py-3 text-sm text-slate-800 font-medium">#{10000 + order.id}</td>
                     <td className="px-5 py-3 text-sm text-slate-600">{order.customerEmail || "N/A"}</td>
                     <td className="px-5 py-3 text-sm text-slate-800 font-medium">${order.totalAmount.toFixed(2)}</td>
                     <td className="px-5 py-3">

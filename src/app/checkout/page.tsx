@@ -355,7 +355,7 @@ export default function CheckoutPage() {
             </div>
           </motion.div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">Order Complete!</h1>
-          <p className="text-slate-600 mb-6">Order #{success.orderId}</p>
+          <p className="text-slate-600 mb-6">Order #{10000 + success.orderId}</p>
 
           {success.qrCode && (
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 mb-6 inline-block shadow-sm">
