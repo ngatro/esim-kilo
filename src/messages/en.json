@@ -226,7 +226,11 @@
     "onFirstConnection": "On first connection",
     "validAfterPurchase": "Valid after purchase",
     "bestSeller": "Best Seller",
-    "support": "support"
+    "support": "support",
+    "planNotFound": "Plan not found",
+    "backToPlans": "Back to plans",
+    "after":"after"
+
   },
   "checkout": {
     "title": "Checkout",
@@ -401,10 +405,10 @@
     "checkList": "Check full compatibility list"
   },
   "comparison": {
-    "title": "Why Choose OW SIM?",
-    "subtitle": "Compare OW SIM with traditional roaming and see how much you can save",
+    "title": "Why Choose OpenWorld eSIM?",
+    "subtitle": "Compare OpenWorld eSIM with traditional roaming and see how much you can save",
     "recommended": "Recommended",
-    "ow-sim": "OW SIM eSIM",
+    "ow-sim": "OpenWorld eSIM",
     "roaming": "Traditional Roaming",
     "local": "Local SIM Cards",
     "features": {
@@ -437,7 +441,7 @@
     "savings": "Savings"
   },
   "whyChoose": {
-    "title": "Why Choose OW SIM?",
+    "title": "Why Choose OpenWorld eSIM?",
     "subtitle": "We're revolutionizing how travelers stay connected abroad",
     "features": {
       "instant": {
@@ -490,7 +494,17 @@
   },
   "testimonials": {
     "title": "What Travelers Say",
-    "subtitle": "Join hundreds of thousands of happy travelers who stay connected with OW SIM"
+    "subtitle": "Join hundreds of thousands of happy travelers who stay connected with OW SIM",
+    "says": {
+      "sarah": "OpenWorld eSIM made my Japan trip so much easier! Got a 10GB plan for $14 and had data the whole time. Setup took less than 5 minutes.",
+      "marco": "Best eSIM service I've used. Works perfectly in 15 Asian countries. Customer support was helpful when I had questions.",
+      "james": "Saved over $200 compared to my carrier's roaming. The connection was fast and reliable throughout my Europe trip.",
+      "lisa": "Perfect for digital nomads! I've used OpenWorld eSIM in over 20 countries. The coverage is amazing and prices are unbeatable.",
+      "carlos": "The unlimited Japan plan was a game changer. Streamed Netflix and navigated Google Maps without any issues. Highly recommend!",
+      "minji": "Finally a service that actually works in Korea. Used it for 3 weeks and never had connectivity issues. Will use again!",
+      "ahmed": "Great coverage in Dubai and Abu Dhabi. The 5G speeds are incredible. Much better than my home carrier's roaming.",
+      "emma": "Crossed from US to Canada and the North America plan kept me connected the entire time. Seamless transition!"
+    }
   },
   "partners": {
     "title": "Trusted Networks Worldwide",
@@ -532,5 +546,34 @@
     "orderDate": "Order Date",
     "orderStatus": "Status",
     "orderTotal": "Total"
+  },
+  "support": {
+    "title": "How can we help?",
+    "subtitle": "Choose your preferred way to reach us",
+    "liveChat": "Live Chat",
+    "liveChatDesc": "Chat with us directly",
+    "liveChatStatus": "Online now",
+    "whatsapp": "WhatsApp",
+    "whatsappDesc": "Message us on WhatsApp",
+    "whatsappStatus": "Quick response",
+    "email": "Email",
+    "emailSupport": "Email Support",
+    "emailDesc": "Send us an email",
+    "emailStatus": "24-48 hours",
+    "startLiveChat": "Start a Live Chat",
+    "startLiveChatDesc": "Click the chat button in the bottom right corner to start chatting with our support team.",
+    "startLiveChatStatus": "Typically replies within minutes",
+    "commonQuestions": "Common Questions",
+    "q1": "How do I activate my eSIM?",
+    "q2": "What if my eSIM doesn't work?",
+    "q3": "Can I top up my data?",
+    "ans1": "After purchase, you'll receive an email with activation instructions. Go to your phone's Settings > Cellular/Mobile Data > Add Cellular Plan, then scan the QR code or enter the activation code manually.",
+    "ans2": "Contact our support team immediately. We offer a 7-day refund policy for unused plans. Make sure your device is eSIM-compatible before purchasing.",
+    "ans3": "Yes! Most of our plans support data top-up. Check the plan details or visit our top-up page to add more data to your existing eSIM.",
+    "stillNeedHelp": "Still need help?",
+    "stillNeedHelpDesc": "Our support team is here to assist you.",
+
+    "contactUs": "Contact Us",
+    "faq": "Frequently Asked Questions"
   }
 }

@@ -7,6 +7,9 @@ declare global {
   interface Window {
     Tawk_API?: {
       maximize?: () => void;
+      hideWidget?: () => void; // Thêm dòng này
+      showWidget?: () => void; // Thêm dòng này
+      onLoad?: () => void;     // Thêm dòng này
       [key: string]: unknown;
     };
     Tawk_LoadStart?: number;
@@ -51,12 +54,21 @@ export default function SupportWidget() {
 
     const existing = document.querySelector('script[src*="tawk.to"]');
     if (!existing) {
+      // 1. Cấu hình trước khi nạp script
+    window.Tawk_API = window.Tawk_API || {};
+    
+    // Luôn ẩn widget khi vừa nạp xong
+    window.Tawk_API.onLoad = function() {
+      if (window.Tawk_API?.hideWidget) {
+        window.Tawk_API.hideWidget();
+      }
+    };
       const script = document.createElement("script");
       script.src = "https://embed.tawk.to/" + tawkSettings.tawkPropertyId + "/" + tawkSettings.tawkWidgetId + "?disableCollapsed=true";
       script.async = true;
       script.charset = "utf-8";
       script.setAttribute("crossorigin", "*");
-      script.setAttribute("data-auto-invisible", "true");
+      script.setAttribute("data-auto-invisible", "false");
       document.body.appendChild(script);
     }
   }, [tawkSettings, hasOpened]);

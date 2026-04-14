@@ -410,10 +410,10 @@
     "checkList": "Kiểm tra danh sách tương thích đầy đủ"
   },
   "comparison": {
-    "title": "Tại sao chọn OW SIM?",
-    "subtitle": "So sánh OW SIM với roaming truyền thống và xem bạn có thể tiết kiệm bao nhiêu",
+    "title": "Tại sao chọn OpenWorld eSIM?",
+    "subtitle": "So sánh OpenWorld eSIM với roaming truyền thống và xem bạn có thể tiết kiệm bao nhiêu",
     "recommended": "Được khuyến nghị",
-    "ow-sim": "OW SIM eSIM",
+    "ow-sim": "OpenWorld eSIM",
     "roaming": "Roaming truyền thống",
     "local": "SIM nội địa",
     "features": {
@@ -446,7 +446,7 @@
     "savings": "Tiết kiệm"
   },
   "whyChoose": {
-    "title": "Tại sao chọn OW SIM?",
+    "title": "Tại sao chọn OpenWorld eSIM?",
     "subtitle": "Chúng tôi đang cách mạng hóa cách du khách kết nối khi ở nước ngoài",
     "features": {
       "instant": {
@@ -499,7 +499,17 @@
   },
   "testimonials": {
     "title": "Du khách nói gì",
-    "subtitle": "Tham gia cùng hàng trăm nghìn du khách hài lòng kết nối với OW SIM"
+    "subtitle": "Tham gia cùng hàng trăm nghìn du khách hài lòng kết nối với OW SIM",
+    "says":{
+      "sarah": "OpenWorld eSIM đã giúp chuyến đi Nhật Bản của tôi dễ dàng hơn rất nhiều! Tôi đã có một gói 10GB với giá 14 đô la và có dữ liệu suốt thời gian. Cài đặt mất chưa đầy 5 phút.",
+      "marco": "Dịch vụ eSIM tốt nhất mà tôi đã sử dụng. Hoạt động hoàn hảo ở 15 quốc gia châu Á. Hỗ trợ khách hàng rất hữu ích khi tôi có câu hỏi.",
+      "james": "Tiết kiệm hơn 200 đô la so với phí roaming của nhà mạng. Kết nối nhanh và ổn định trong suốt chuyến đi châu Âu của tôi.",
+      "lisa": "Hoàn hảo cho những người làm việc từ xa! Tôi đã sử dụng OpenWorld eSIM ở hơn 20 quốc gia. Phủ sóng tuyệt vời và giá cả không thể đánh bại.",
+      "carlos": "Gói không giới hạn ở Nhật Bản đã thay đổi cuộc chơi. Tôi đã xem Netflix và điều hướng Google Maps mà không gặp vấn đề gì. Rất đáng để thử!",
+      "minji": "Cuối cùng thì cũng có một dịch vụ thực sự hoạt động ở Hàn Quốc. Tôi đã sử dụng nó trong 3 tuần và không bao giờ gặp vấn đề kết nối. Sẽ sử dụng lại!",
+      "ahmed": "Phủ sóng tuyệt vời ở Dubai và Abu Dhabi. Tốc độ 5G thật đáng kinh ngạc. Tốt hơn nhiều so với phí roaming của nhà mạng ở nhà.",
+      "emma": "Tôi đã vượt biên từ Mỹ sang Canada và gói Bắc Mỹ đã giữ cho tôi kết nối suốt thời gian. Chuyển tiếp liền mạch!"
+    }
   },
   "partners": {
     "title": "Mạng lưới đáng tin cậy trên toàn thế giới",

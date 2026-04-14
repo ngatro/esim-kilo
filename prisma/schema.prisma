@@ -266,3 +266,35 @@ model Withdrawal {
   @@index([userId])
   @@index([status])
 }
+
+// Destination Management for Plans Page
+model Destination {
+  id          String   @id // country code like JP, KR, etc.
+  name        String
+  slug        String  @unique // URL slug like japan, south-korea
+  emoji       String
+  landmark    String? // Famous landmark name like "Tokyo Tower"
+  imageUrl    String? // Image path like "/images/countries/jp.webp"
+  isVisible   Boolean  @default(true)
+  priority    Int      @default(0) // Sort order
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isVisible])
+  @@index([priority])
+}
+
+// Region Management for Plans Page
+model DestinationRegion {
+  id          String   @id // region id like asia, europe, etc.
+  name        String
+  emoji       String
+  imageUrl    String? // Image path for region
+  isVisible   Boolean  @default(true)
+  priority    Int      @default(0) // Sort order
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isVisible])
+  @@index([priority])
+}

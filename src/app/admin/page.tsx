@@ -152,7 +152,7 @@ export default function AdminDashboardPage() {
               { label: "Orders", value: stats.totalOrders, icon: "📦", bg: "bg-green-50" },
               { label: "Active Plans", value: stats.activePlans, icon: "📱", bg: "bg-purple-50" },
               { label: "Revenue", value: `$${(stats.totalRevenue || 0).toFixed(0)}`, icon: "💰", bg: "bg-amber-50" },
-              { label: "Balance", value: `$${(stats.balance || 0).toFixed(0)}`, icon: "🏦", bg: "bg-sky-50" },
+              { label: "Balance", value: `$${((stats.balance || 0) / 10000).toFixed(2)}`, icon: "🏦", bg: "bg-sky-50" },
               { label: "Total Plans", value: stats.totalPlans, icon: "📋", bg: "bg-pink-50" },
             ].map((stat) => (
               <div key={stat.label} className={`${stat.bg} rounded-xl p-4 border border-slate-200`}>
@@ -223,6 +223,16 @@ export default function AdminDashboardPage() {
                 <h3 className="font-semibold text-slate-800">Settings</h3>
               </div>
               <p className="text-sm text-slate-500">Site settings & configuration</p>
+            </div>
+          </Link>
+
+          <Link href="/admin/destinations">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">🌍</div>
+                <h3 className="font-semibold text-slate-800">Destinations</h3>
+              </div>
+              <p className="text-sm text-slate-500">Manage top destinations</p>
             </div>
           </Link>
         </div>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { getCountryImageUrl, getRegionImageUrl, getDefaultImage } from "@/lib/countryImages";
+import { getDestinationImage, getValidUrl } from "@/lib/unsplash";
 
 interface OperatorInfo {
   operatorName: string;
@@ -77,6 +78,12 @@ function getDataTypeLabel(type: number): string {
 }
 
 function getHeroImage(plan: Plan): string {
+  // Try to get image from Unsplash
+  if (plan.countryId) {
+    const unsplashUrl = getDestinationImage(plan.countryId.toLowerCase());
+    if (unsplashUrl) return unsplashUrl;
+  }
+  // Fallback to existing logic
   if (plan.coverageCount >= 2 && plan.regionId) {
     return getRegionImageUrl(plan.regionId);
   }

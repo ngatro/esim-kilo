@@ -100,7 +100,7 @@ export default function PlansSection() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
-              Browse All Plans →
+              {t("browsePlans")} →
             </motion.button>
           </Link>
         </div>

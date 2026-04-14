@@ -8,13 +8,13 @@ import { useI18n } from "@/components/providers/I18nProvider";
 
 export default function Coverage() {
   const { t } = useI18n();
-  const regions = [
-    { name: "Europe", countries: "35+", flag: "🇪🇺", color: "bg-blue-500/20" },
-    { name: "Asia", countries: "40+", flag: "🌏", color: "bg-red-500/20" },
-    { name: "Americas", countries: "30+", flag: "🌎", color: "bg-green-500/20" },
-    { name: "Middle East", countries: "15+", flag: "🕌", color: "bg-purple-500/20" },
-    { name: "Africa", countries: "50+", flag: "🌍", color: "bg-yellow-500/20" },
-    { name: "Oceania", countries: "10+", flag: "🦘", color: "bg-pink-500/20" },
+    const regions = [
+    { name: `${t("coverage.regions.europe")}`, countries: "35+", flag: "🇪🇺", color: "bg-blue-100" },
+    { name: `${t("coverage.regions.asia")}`, countries: "40+", flag: "🌏", color: "bg-red-100" },
+    { name: `${t("coverage.regions.americas")}`, countries: "30+", flag: "🌎", color: "bg-green-100" },
+    { name: `${t("coverage.regions.middleEast")}`, countries: "15+", flag: "🕌", color: "bg-purple-100" },
+    { name: `${t("coverage.regions.africa")}`, countries: "50+", flag: "🌍", color: "bg-yellow-100" },
+    { name: `${t("coverage.regions.oceania")}`, countries: "10+", flag: "🦘", color: "bg-pink-100" },
   ];
 
   const topCountries = [
@@ -24,12 +24,12 @@ export default function Coverage() {
   ];
 
   return (
-    <section className="py-24 bg-slate-800/30">
+    <section className="py-24 bg-orange-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">{t("coverage.title")}</h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold text-slate-800 mb-4">{t("coverage.title")}</h2>
+            <p className="text-slate-600 text-lg max-w-2xl mx-auto">
               {t("coverage.subtitle")}
             </p>
           </div>
@@ -39,23 +39,23 @@ export default function Coverage() {
           {regions.map((region, index) => (
             <FadeIn key={index} delay={index * 0.1}>
               <motion.div 
-                className={`${region.color} border border-slate-700 rounded-xl p-4 text-center hover:border-sky-500/50 transition-all cursor-pointer`}
+                className={`${region.color} border border-slate-200 rounded-xl p-4 text-center hover:border-orange-400 hover:shadow-md transition-all cursor-pointer`}
                 whileHover={{ scale: 1.05 }}
               >
                 <div className="text-3xl mb-2">{region.flag}</div>
-                <h3 className="font-semibold text-white">{region.name}</h3>
-                <p className="text-sm text-slate-400">{region.countries} {t("coverage.countries")}</p>
+                <h3 className="font-semibold text-slate-800">{region.name}</h3>
+                <p className="text-sm text-slate-500">{region.countries} {t("coverage.countries")}</p>
               </motion.div>
             </FadeIn>
           ))}
         </div>
 
         <FadeIn delay={0.3}>
-          <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-8">
-            <h3 className="text-xl font-bold text-white mb-4 text-center">{t("coverage.popular")}</h3>
+          <div className="bg-white border border-slate-200 rounded-2xl p-8">
+            <h3 className="text-xl font-bold text-slate-800 mb-4 text-center">{t("coverage.popular")}</h3>
             <div className="flex flex-wrap justify-center gap-3">
               {topCountries.map((country, index) => (
-                <span key={index} className="bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-sky-500/20 hover:text-sky-300 transition-colors cursor-pointer">
+                <span key={index} className="bg-orange-100 text-slate-700 px-4 py-2 rounded-lg text-sm hover:bg-orange-200 hover:text-orange-800 transition-colors cursor-pointer">
                   {country}
                 </span>
               ))}

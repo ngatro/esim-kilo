@@ -401,10 +401,10 @@
     "checkList": "Vollständige Kompatibilitätsliste anzeigen"
   },
   "comparison": {
-    "title": "Warum OW SIM wählen?",
-    "subtitle": "Vergleichen Sie OW SIM mit traditionellem Roaming und sehen Sie, wie viel Sie sparen können",
+    "title": "Warum OpenWorld eSIM wählen?",
+    "subtitle": "Vergleichen Sie OpenWorld eSIM mit traditionellem Roaming und sehen Sie, wie viel Sie sparen können",
     "recommended": "Empfohlen",
-    "ow-sim": "OW SIM eSIM",
+    "ow-sim": "OpenWorld eSIM",
     "roaming": "Traditionelles Roaming",
     "local": "Lokale SIM-Karten",
     "features": {
@@ -437,7 +437,7 @@
     "savings": "Einsparungen"
   },
   "whyChoose": {
-    "title": "Warum OW SIM wählen?",
+    "title": "Warum OpenWorld eSIM wählen?",
     "subtitle": "Wir revolutionieren, wie Reisende im Ausland verbunden bleiben",
     "features": {
       "instant": {
@@ -468,7 +468,7 @@
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
-    "subtitle": "Alles, was Sie über OW SIM eSIM wissen müssen",
+    "subtitle": "Alles, was Sie über OpenWorld eSIM wissen müssen",
     "questions": {
       "whatIsEsim": "Was ist ein eSIM?",
       "whatIsEsimAns": "Ein eSIM (embedded SIM) ist eine digitale SIM, die es Ihnen ermöglicht, einen Mobilfunktarif zu aktivieren, ohne eine physische SIM-Karte zu verwenden. Sie ist in Ihr Gerät eingebaut und kann fernprogrammiert werden.",
@@ -490,7 +490,17 @@
   },
   "testimonials": {
     "title": "Was Reisende sagen",
-    "subtitle": "Schließen Sie sich Hunderttausenden von zufriedenen Reisenden an, die mit OW SIM verbunden bleiben"
+    "subtitle": "Schließen Sie sich Hunderttausenden von zufriedenen Reisenden an, die mit OW SIM verbunden bleiben",
+    "says": {
+      "sarah": "OpenWorld eSIM hat meinen Aufenthalt in Japan so viel einfacher gemacht! Ich habe ein 10-GB-Paket für 14 $ erhalten und hatte die ganze Zeit über Daten. Die Einrichtung dauerte weniger als 5 Minuten.",
+      "marco": "Der beste eSIM-Service, den ich je genutzt habe. Funktioniert einwandfrei in 15 asiatischen Ländern. Der Kundenservice war sehr hilfreich, als ich Fragen hatte.",
+      "james": "Ich habe über 200 $ im Vergleich zu den Roaming-Gebühren meines Anbieters gespart. Schnelle und stabile Verbindung während meiner Reise in Europa.",
+      "lisa": "Perfekt für digitale Nomaden! Ich habe OpenWorld eSIM in über 20 Ländern genutzt. Hervorragende Abdeckung und unschlagbare Preise.",
+      "carlos": "Das unbegrenzte Paket in Japan war ein Game Changer. Ich habe Netflix geschaut und Google Maps ohne Probleme genutzt. Es lohnt sich wirklich, es auszuprobieren!",
+      "minji": "Endlich ein Service, der wirklich in Südkorea funktioniert. Ich habe es 3 Wochen lang genutzt und hatte nie ein Verbindungsproblem. Ich werde es wieder verwenden!",
+      "ahmed": "Hervorragende Abdeckung in Dubai und Abu Dhabi. Die 5G-Geschwindigkeit ist unglaublich. Viel besser als die Roaming-Gebühren meines Heimatanbieters.",
+      "emma": "Ich bin von den USA nach Kanada gereist und das Nordamerika-Paket hat mich die ganze Zeit über verbunden gehalten. Nahtloser Übergang!"
+    }
   },
   "partners": {
     "title": "Vertrauenswürdige Netzwerke weltweit",

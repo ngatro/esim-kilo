@@ -32,6 +32,7 @@ function formatData(gb: number): string {
 
 export default function PlanCard({ plan }: PlanCardProps) {
   const { formatPrice } = useI18n();
+  const { t } = useI18n();
   const isUnlimited = plan.dataAmount >= 999;
   const displayPrice = (plan.retailPriceUsd && plan.retailPriceUsd > 0) ? plan.retailPriceUsd : plan.priceUsd;
   const hasDiscount = plan.retailPriceUsd > 0 && plan.retailPriceUsd > plan.priceUsd;
@@ -44,7 +45,7 @@ export default function PlanCard({ plan }: PlanCardProps) {
       }`}
     >
       {(plan.isBestSeller || plan.isHot || plan.badge) && (
-        <span className="absolute -top-3 left-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
+        <span className="absolute -top-3 left-5 bg-linear-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
           {plan.isBestSeller ? "BEST SELLER" : plan.isHot ? "HOT" : plan.badge}
         </span>
       )}
@@ -67,15 +68,15 @@ export default function PlanCard({ plan }: PlanCardProps) {
       <div className="grid grid-cols-3 gap-2 mb-4">
         <div className="bg-slate-900/60 rounded-xl p-2 text-center">
           <p className={`font-bold ${isUnlimited ? "text-sm" : "text-lg"} text-sky-400`}>{formatData(plan.dataAmount)}</p>
-          <p className="text-[10px] text-slate-500">Data</p>
+          <p className="text-[10px] text-slate-500">{t("plans.data")}</p>
         </div>
         <div className="bg-slate-900/60 rounded-xl p-2 text-center">
           <p className="text-lg font-bold text-white">{plan.durationDays}</p>
-          <p className="text-[10px] text-slate-500">Days</p>
+          <p className="text-[10px] text-slate-500">{t("plans.days")}</p>
         </div>
         <div className="bg-slate-900/60 rounded-xl p-2 text-center">
           <p className="text-sm font-bold text-emerald-400">{pricePerDay}</p>
-          <p className="text-[10px] text-slate-500">/Day</p>
+          <p className="text-[10px] text-slate-500">/{t("plans.days")}</p>
         </div>
       </div>
 

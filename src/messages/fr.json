@@ -410,10 +410,10 @@
     "checkList": "Voir la liste de compatibilité complète"
   },
   "comparison": {
-    "title": "Pourquoi choisir OW SIM?",
-    "subtitle": "Comparez OW SIM avec l'itinérance traditionnelle et voyez combien vous pouvez économiser",
+    "title": "Pourquoi choisir OpenWorld eSIM?",
+    "subtitle": "Comparez OpenWorld eSIM avec l'itinérance traditionnelle et voyez combien vous pouvez économiser",
     "recommended": "Recommandé",
-    "ow-sim": "OW SIM eSIM",
+    "ow-sim": "OpenWorld eSIM",
     "roaming": "Itinérance traditionnelle",
     "local": "SIM locales",
     "features": {
@@ -446,7 +446,7 @@
     "savings": "Économies"
   },
   "whyChoose": {
-    "title": "Why Choose OW SIM?",
+    "title": "Why Choose OpenWorld eSIM?",
     "subtitle": "We're revolutionizing how travelers stay connected abroad",
     "features": {
       "instant": {
@@ -499,7 +499,17 @@
   },
   "testimonials": {
     "title": "Ce que disent les voyageurs",
-    "subtitle": "Rejoignez des centaines de milliers de voyageurs heureux qui restent connectés avec OW SIM"
+    "subtitle": "Rejoignez des centaines de milliers de voyageurs heureux qui restent connectés avec OW SIM",
+    "says": {
+      "sarah": "OpenWorld eSIM a rendu mon voyage au Japon tellement plus facile ! J'ai obtenu un forfait de 10 Go pour 14 $ et j'ai eu des données tout le temps. La configuration a pris moins de 5 minutes.",
+      "marco": "Le meilleur service eSIM que j'ai utilisé. Fonctionne parfaitement dans 15 pays asiatiques. Le support client a été très utile lorsque j'avais des questions.",
+      "james": "Économisé plus de 200 $ par rapport aux frais d'itinérance de mon opérateur. Connexion rapide et stable tout au long de mon voyage en Europe.",
+      "lisa": "Parfait pour les travailleurs à distance ! J'ai utilisé OpenWorld eSIM dans plus de 20 pays. Excellente couverture et prix imbattables.",
+      "carlos": "Le forfait illimité au Japon a changé la donne. J'ai regardé Netflix et utilisé Google Maps sans aucun problème. Ça vaut vraiment le coup d'essayer !",
+      "minji": "Enfin un service qui fonctionne vraiment en Corée du Sud. Je l'ai utilisé pendant 3 semaines et je n'ai jamais eu de problème de connexion. Je vais l'utiliser à nouveau !",
+      "ahmed": "Excellente couverture à Dubaï et Abu Dhabi. La vitesse 5G est incroyable. Bien mieux que les frais d'itinérance de mon opérateur à domicile.",
+      "emma": "J'ai traversé la frontière des États-Unis vers le Canada et le forfait Amérique du Nord m'a gardé connecté tout le temps. Transition transparente !"
+    }
   },
   "partners": {
     "title": "Réseaux de confiance dans le monde",

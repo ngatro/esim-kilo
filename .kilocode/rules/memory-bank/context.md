@@ -30,7 +30,13 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 - [x] **Checkout** - Order creation flow
 - [x] **User orders** - View order history
 - [x] **Admin dashboard** - Plan management page
-- [x] **Plans page** - Country search with autocomplete (max 20), dynamic data/duration filters based on selected country
+- [x] **Plans Landing Page** - Converted /plans to landing/lobby page:
+  - Removed API fetch for plans (optimize RAM and SEO)
+  - Search dropdown now navigates to /esim/[slug] using router
+  - Region filter bar converted to Link components
+  - Display Top Destinations grid (20 countries) as landing content
+  - Quick links to regions below destinations
+  - Added loading overlay with spinner for navigation feedback
 - [x] **Translation files** - Updated all 4 languages (en.json, vi.json, fr.json, de.json) with complete translations and fixed duplicate keys
 - [x] **Admin Gift eSIM** - Admin can give free eSIM plans to users via "Give Free Plan" button in orders page (input packageCode)
 - [x] **Affiliate System** - Complete affiliate/referral system with:
@@ -44,6 +50,26 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - `/esim/[country]/[slug]/page.tsx` - Plan detail with full UI (image, badges, networks, features)
   - `/esim/[country]/page.tsx` - Country listing (client-side fetch with PlanCard)
   - Fixed fetch URLs to use absolute URLs with NEXT_PUBLIC_APP_URL env var
+- [x] **Client-side Faceted Filters** - Added filters to `/esim/[country]/page.tsx`:
+  - Fetches all data once, filters in-browser (no API calls per filter)
+  - Dynamic dropdown options computed from actual data (only shows available durations/data amounts)
+  - Combined filtering with useMemo (e.g., select 7 days + 10GB)
+  - Clear filter button, results count display
+  - **Dependent Faceted Filters**: options auto-update based on selected filter (no empty results)
+  - Mobile-optimized: stacked filters, full-width selects on small screens
+- [x] **Unsplash Integration** - Added dynamic Unsplash images for destinations and regions:
+  - Added Unsplash API integration in `/api/unsplash` route
+  - Added `getValidUrl()` function in `src/lib/unsplash.ts` for URL building
+  - Updated DEFAULT_DESTINATIONS with photo IDs from Unsplash
+  - Updated DEFAULT_REGIONS with landmark photo IDs (Asia: Tokyo, Europe: Paris, Americas: NYC, Middle East: Dubai, Oceania: Sydney)
+  - Cards now display high-quality landmark images instead of emoji icons
+- [x] **Destination Management System** - Admin can manage top destinations and regions on /plans page:
+  - Database models: `Destination` and `DestinationRegion` in prisma schema
+  - API `/api/destinations` - Public fetch for visible destinations/regions
+  - API `/api/admin/destinations` - Admin CRUD with image upload
+  - Image upload converts JPEG/PNG to WebP automatically using sharp
+  - Admin page `/admin/destinations` with full UI (show/hide, image, landmark, priority)
+  - `/plans` page now fetches from database with fallback to defaults
 
 ## Current Structure
 
@@ -147,3 +173,4 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-05 | Enhanced plans page with search dropdown, dynamic filters, display limit |
 | 2026-04-05 | Added country search with autocomplete + dynamic data/duration filters |
 | 2026-04-10 | Added complete Affiliate system with cookie tracking, commission by rank, dashboard, withdrawals, admin management |
+| 2026-04-13 | Added client-side dependent faceted filters to /esim/[country] + converted /plans to landing page + Unsplash images for destinations and regions |
