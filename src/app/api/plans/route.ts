@@ -36,8 +36,13 @@ async function syncTopupPackages() {
       const results = await Promise.all(
         batch.map(async (pkgCode) => {
           if (!pkgCode) return [];
-          const res = await getPackageList({ type: "TOPUP", packageCode: pkgCode });
-          return res.packageList || [];
+          try {
+            const res = await getPackageList({ type: "TOPUP", packageCode: pkgCode });
+            return res.packageList || [];
+          } catch (e) {
+            console.log(`[Sync Topup] Skipping ${pkgCode}: API error`);
+            return [];
+          }
         })
       );
 
