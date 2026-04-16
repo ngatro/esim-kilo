@@ -7,14 +7,12 @@ import { prisma } from "@/lib/prisma";
 async function syncTopupPackages() {
   try {
     // Get ONLY plans with supportTopUpType = 3 (flexible period)
-    const basePlans = await prisma.plan.findMany({
-      where: { 
-        supportTopUp: true, 
-        supportTopUpType: 3, 
-        packageCode: { not: null as unknown as string }
-      },
+    const allPlansWithTopup = await prisma.plan.findMany({
+      where: { supportTopUp: true, supportTopUpType: 3 },
       select: { id: true, packageCode: true, supportTopUpType: true, locationCode: true },
     });
+    // Filter out null/empty packageCode in JS
+    const basePlans = allPlansWithTopup.filter(p => p.packageCode);
 
     // Group by locationCode
     const locationGroups = new Map<string, typeof basePlans>();
