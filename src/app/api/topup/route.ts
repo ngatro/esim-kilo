@@ -37,17 +37,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Period number is required for this top-up type" }, { status: 400 });
     }
 
-    const packages = await getPackageList({ iccid: orderItem.esimIccid ?? undefined, type: "TOPUP" });
-    const packageList = packages.packageList || [];
-    const topUpPackage = packageList.find((p: { packageCode: string }) => p.packageCode === packageCode);
+    // Get package from our DB first
+    const topupPackage = await prisma.topupPackage.findUnique({
+      where: { packageCode },
+      include: { plan: true },
+    });
 
-    if (!topUpPackage) {
+    if (!topupPackage) {
       return NextResponse.json({ error: "Invalid top-up package" }, { status: 400 });
     }
 
-    const priceUSD = topUpPackage.price / 10000;
+    if (!topupPackage.isActive) {
+      return NextResponse.json({ error: "This top-up package is not available" }, { status: 400 });
+    }
 
-    // Build createTopUp params
+    // If planId is specified, verify it matches the order's plan
+    if (topupPackage.planId && orderItem.planId && topupPackage.planId !== orderItem.planId) {
+      return NextResponse.json({ error: "This top-up package is not compatible with your current plan" }, { status: 400 });
+    }
+
+    const priceUSD = topupPackage.price;
+
+    // Build createTopUp params - use packageCode from DB
     const topUpParams: {
       packageCode: string;
       iccid?: string;
@@ -55,7 +66,7 @@ export async function POST(request: Request) {
       periodNum?: string;
       amount?: string;
     } = {
-      packageCode,
+      packageCode, // Use the code from our DB
     };
 
     if (orderItem.esimIccid) {
@@ -86,7 +97,7 @@ export async function POST(request: Request) {
       data: {
         orderId: orderItem.orderId,
         planId: undefined, // No associated plan for top-up
-        planName: `Top-up: ${topUpPackage.name || packageCode}`,
+        planName: `Top-up: ${topupPackage.name || packageCode}`,
         price: priceUSD,
         quantity: 1,
         esimIccid: topUpResult.iccid,
@@ -141,29 +152,72 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "No order found for this ICCID" }, { status: 404 });
     }
 
-    const packages = await getPackageList({ iccid, type: "TOPUP" });
-    const packageList = packages.packageList || [];
-    
     // Get plan to check supportTopUpType
     let supportTopUpType = 1;
+    let planName = orderItem.planName;
     if (orderItem.planId) {
       const plan = await prisma.plan.findUnique({ where: { id: orderItem.planId } });
       if (plan) {
         supportTopUpType = plan.supportTopUpType || 1;
+        planName = plan.name;
       }
     }
 
-    const topUpPackages = packageList.map((p: { packageCode: string; name: string; price: number; volume: number; duration: number }) => ({
-      packageCode: p.packageCode,
-      name: p.name,
-      priceUSD: p.price / 10000,
-      volume: p.volume,
-      duration: p.duration,
-    }));
+    // Try to get packages from our DB first
+    let topUpPackages: Array<{
+      packageCode: string;
+      name: string | null;
+      priceUSD: number;
+      periodNum: number;
+      type: string;
+      volume: bigint;
+    }> = [];
+
+    const dbPackages = await prisma.topupPackage.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { planId: orderItem.planId }, // Packages specific to this plan
+          { planId: null }, // Global packages
+        ],
+      },
+      orderBy: { priority: "asc" },
+    });
+
+    if (dbPackages.length > 0) {
+      // Use packages from DB
+      topUpPackages = dbPackages.map((p) => ({
+        packageCode: p.packageCode,
+        name: p.name,
+        priceUSD: p.price,
+        periodNum: p.periodNum,
+        type: p.type,
+        volume: p.volume,
+      }));
+    } else {
+      // Fallback: fetch from API if DB is empty
+      console.log("[Top-up GET] No packages in DB, fetching from API");
+      try {
+        const packages = await getPackageList({ iccid, type: "TOPUP" });
+        const packageList = packages.packageList || [];
+        
+        topUpPackages = packageList.map((p: { packageCode: string; name: string; price: number; volume: number; duration: number }) => ({
+          packageCode: p.packageCode,
+          name: p.name,
+          priceUSD: p.price / 10000,
+          periodNum: p.duration,
+          type: "day",
+          volume: BigInt(p.volume),
+        }));
+      } catch (apiError) {
+        console.error("[Top-up GET] API error:", apiError);
+        // Return empty array if API also fails
+      }
+    }
 
     return NextResponse.json({
       currentPlan: {
-        planName: orderItem.planName,
+        planName,
         iccid: orderItem.esimIccid!,
         esimStatus: orderItem.esimStatus,
         smdpStatus: orderItem.smdpStatus,

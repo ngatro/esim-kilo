@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useI18n } from "@/components/providers/I18nProvider";
+import Image from "next/image";
 
 interface Plan {
   id: string;
@@ -31,7 +32,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { formatPrice, currency, rates } = useI18n();
+  const { t, formatPrice, currency, rates } = useI18n();
   const planId = searchParams.get("planId");
 
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -354,35 +355,40 @@ export default function CheckoutPage() {
               </svg>
             </div>
           </motion.div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Order Complete!</h1>
-          <p className="text-slate-600 mb-6">Order #{10000 + success.orderId}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("checkout.orderComplete")}!</h1>
+          <p className="text-slate-600 mb-6">{t("checkout.order")} #{10000 + success.orderId}</p>
 
           {success.qrCode && (
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 mb-6 inline-block shadow-sm">
-              <img src={success.qrCode} alt="eSIM QR Code" className="w-48 h-48 sm:w-64 sm:h-64 mx-auto" />
+              <Image 
+                src={success.qrCode}
+                alt="eSIM QR Code"
+                className="w-48 h-48 sm:w-64 sm:h-64 mx-auto"
+                fill
+              />
             </div>
           )}
 
           {success.activationCode && (
             <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-6">
-              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Activation Code</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t("checkout.activationCode")}</p>
               <code className="text-orange-500 text-xs sm:text-sm break-all">{success.activationCode}</code>
             </div>
           )}
 
           <p className="text-slate-600 text-sm mb-8">
-            Scan this QR code in your phone&apos;s eSIM settings to activate your plan.
+            {t("checkout.scanQrCode")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/orders">
               <button className="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-6 py-3 rounded-xl transition-colors">
-                View Orders
+                {t("checkout.viewOrders")}
               </button>
             </Link>
             <Link href="/plans">
               <button className="w-full sm:w-auto bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
-                Buy Another Plan
+                {t("checkout.buyAnotherPlan")}
               </button>
             </Link>
           </div>
@@ -396,11 +402,11 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-slate-900 text-white py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-5xl sm:text-6xl mb-4">🛒</p>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-3">Select a Plan First</h1>
-          <p className="text-slate-400 mb-6">Browse our plans and choose the one that fits your travel needs</p>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-3">{t("checkout.selectPlanFirst")}</h1>
+          <p className="text-slate-400 mb-6">{t("checkout.browsePlansDesc")}</p>
           <Link href="/plans">
             <button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
-              Browse Plans
+              {t("checkout.browsePlans")}
             </button>
           </Link>
         </div>
@@ -418,20 +424,20 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
     <div className="min-h-screen bg-orange-50 text-slate-800 py-6 sm:py-12">
       <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
         <nav className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mb-6 sm:mb-8">
-          <Link href="/" className="hover:text-orange-600">Home</Link>
+          <Link href="/" className="hover:text-orange-600">{t("common.home")}</Link>
           <span>/</span>
-          <Link href="/plans" className="hover:text-orange-600">Plans</Link>
+          <Link href="/plans" className="hover:text-orange-600">{t("common.plans")}</Link>
           <span>/</span>
-          <span className="text-slate-600">Checkout</span>
+          <span className="text-slate-600">{t("common.checkout")}</span>
         </nav>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-6 sm:mb-8">Checkout</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-6 sm:mb-8">{t("common.checkout")}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
           <div className="lg:col-span-3 space-y-5">
             {/* Plan Summary */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Your eSIM Plan</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">{t("checkout.yourEsimPlan")}</h2>
               <div className="flex items-center gap-3 sm:gap-4">
                 {plan.locationLogo ? (
                   <img src={plan.locationLogo} alt={plan.destination} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
@@ -450,10 +456,10 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
 
             {/* Contact Info */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Contact Information</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">{t("checkout.contactInformation")}</h2>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-600 mb-1.5">Name (optional)</label>
+                  <label className="block text-xs sm:text-sm text-slate-600 mb-1.5">{t("checkout.name")}</label>
                   <input
                     type="text"
                     value={customerName}
@@ -463,7 +469,7 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm text-slate-600 mb-1.5">Email *</label>
+                  <label className="block text-xs sm:text-sm text-slate-600 mb-1.5">{t("checkout.email")}</label>
                   <input
                     type="email"
                     value={customerEmail}
@@ -471,14 +477,14 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                     placeholder="you@example.com"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:border-orange-400 transition-colors"
                   />
-                  <p className="text-slate-400 text-xs mt-1">eSIM QR code will be sent to this email</p>
+                  <p className="text-slate-400 text-xs mt-1">{t("checkout.emailNote")}</p>
                 </div>
               </div>
             </div>
 
             {/* Quantity */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">Quantity</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">{t("checkout.quantity")}</h2>
               <div className="flex items-center gap-4">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-800 font-bold text-lg transition-colors">-</button>
@@ -491,7 +497,7 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
 
             {/* Payment Method */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4">Payment Method</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4">{t("checkout.paymentMethod")}</h2>
               <div className="space-y-3">
                 {/* PayPal */}
                 <button
@@ -521,7 +527,7 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                 </button>
 
                 {/* LemonSqueezy */}
-                <button
+                {/* <button
                   onClick={() => setPaymentMethod("lemonsqueezy")}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     paymentMethod === "lemonsqueezy"
@@ -541,10 +547,10 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                   }`}>
                     {paymentMethod === "lemonsqueezy" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                   </div>
-                </button>
+                </button> */}
 
                 {/* Gumroad */}
-                <button
+                {/* <button
                   onClick={() => setPaymentMethod("gumroad")}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     paymentMethod === "gumroad"
@@ -564,10 +570,10 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                   }`}>
                     {paymentMethod === "gumroad" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                   </div>
-                </button>
+                </button> */}
 
                 {/* Payoneer */}
-                <button
+                {/* <button
                   onClick={() => setPaymentMethod("payoneer")}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                     paymentMethod === "payoneer"
@@ -587,7 +593,7 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                   }`}>
                     {paymentMethod === "payoneer" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                   </div>
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -599,7 +605,7 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4 sm:mb-5">Order Summary</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4 sm:mb-5">{t("checkout.orderSummary")}</h2>
 
               <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 <div className="flex justify-between text-slate-600 text-sm">
@@ -607,14 +613,14 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                   <span>{formatPrice((plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd) * quantity)}</span>
                 </div>
                 <div className="flex justify-between text-slate-600 text-sm">
-                  <span>Activation</span>
-                  <span className="text-green-600">Free</span>
+                  <span>{t("checkout.activation")}</span>
+                  <span className="text-green-600">{t("checkout.free")}</span>
                 </div>
               </div>
 
               <div className="border-t border-slate-200 pt-3 sm:pt-4 mb-4 sm:mb-6">
                 <div className="flex justify-between">
-                  <span className="text-base sm:text-lg font-semibold text-slate-800">Total</span>
+                  <span className="text-base sm:text-lg font-semibold text-slate-800">{t("checkout.total")}</span>
                   <span className="text-xl sm:text-2xl font-bold text-slate-800">{formatPrice(totalPrice)}</span>
                 </div>
                 {!isPayPalSupported && rates[currency] && (
@@ -640,18 +646,18 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
                 {processing ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
-                    Processing...
+                    {t("checkout.processing")}
                   </span>
                 ) : (
-                  `Pay ${formatPrice(totalPrice)}`
+                  `${t("checkout.pay")} - ${formatPrice(totalPrice)}`
                 )}
               </motion.button>
 
               <div className="mt-4 sm:mt-5 space-y-2">
                 {[
-                  "Instant QR code delivery",
-                  "Secure payment",
-                  "7-day money back guarantee",
+                  `${t("checkout.instantQrCodeDelivery")}`,
+                  `${t("checkout.securePayment")}`,
+                  `${t("checkout.moneyBackGuarantee")}`,
                 ].map((text) => (
                   <div key={text} className="flex items-center gap-2 text-xs text-slate-500">
                     <svg className="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -663,13 +669,13 @@ const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPri
               </div>
 
               <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-center gap-3">
-                <div className="flex items-center gap-1 text-slate-400 text-[10px]">
+                <div className="flex items-center gap-1 text-green-500 text-[10px]">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-                  SSL Encrypted
+                  {t("checkout.sslEncrypted")}
                 </div>
-                <div className="flex items-center gap-1 text-slate-400 text-[10px]">
+                <div className="flex items-center gap-1 text-green-500 text-[10px]">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                  Verified
+                  {t("checkout.verified")}
                 </div>
               </div>
             </motion.div>

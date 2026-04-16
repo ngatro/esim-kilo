@@ -7,6 +7,17 @@ import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { getDestinationImage, getValidUrl } from "@/lib/unsplash";
 
+function getCountryEmoji(countryCode: string): string {
+  const code = countryCode.toUpperCase();
+  if (code.length !== 2) return "🏳️";
+  const offset = 127397;
+  try {
+    return String.fromCodePoint(offset + code.charCodeAt(0)) + String.fromCodePoint(offset + code.charCodeAt(1));
+  } catch {
+    return "🏳️";
+  }
+}
+
 interface Destination {
   id: string;
   name: string;
@@ -17,7 +28,7 @@ interface Destination {
   isVisible: boolean;
   priority: number;
   isHot?: boolean;
-  price?: string;
+  minPrice?: number | null;
   photoId?: string;
 }
 
@@ -33,22 +44,22 @@ interface DestinationRegion {
 
 // Default destinations with landmark names (photo IDs for Unsplash)
 const DEFAULT_DESTINATIONS = [
-  { id: "jp", name: "Japan", slug: "japan", emoji: "🇯🇵", landmark: "Mount Fuji", isHot: true, price: "From $4.50", photoId: "1490806843955-31ec4f4f6a60" },
-  { id: "kr", name: "Korea", slug: "south-korea", emoji: "🇰🇷", landmark: "Bukchon Hanok", isHot: true, price: "From $3.90", photoId: "1535568097429-8d6c4c586db4" },
-  { id: "th", name: "Thailand", slug: "thailand", emoji: "🇹🇭", landmark: "Phi Phi Islands", isHot: true, price: "From $2.90", photoId: "1552465011-b4e21bf6e79a" },
-  { id: "sg", name: "Singapore", slug: "singapore", emoji: "🇸🇬", landmark: "Marina Bay", isHot: true, price: "From $5.90", photoId: "1525966160135-9e8d4f15c8d2" },
-  { id: "vn", name: "Vietnam", slug: "vietnam", emoji: "🇻🇳", landmark: "Ha Long Bay", isHot: false, price: "From $2.50", photoId: "1528127269322-539801943592" },
-  { id: "us", name: "USA", slug: "united-states", emoji: "🇺🇸", landmark: "Grand Canyon", isHot: false, price: "From $8.90", photoId: "1474044159687-1ee9fc1e22c2" },
-  { id: "gb", name: "UK", slug: "united-kingdom", emoji: "🇬🇧", landmark: "Tower Bridge", isHot: false, price: "From $6.90", photoId: "1513635269975-59663e0ac1ad" },
-  { id: "fr", name: "France", slug: "france", emoji: "🇫🇷", landmark: "French Alps", isHot: false, price: "From $5.50", photoId: "1502602898657-3e91760cbb34" },
-  { id: "de", name: "Germany", slug: "germany", emoji: "🇩🇪", landmark: "Neuschwanstein", isHot: false, price: "From $5.90", photoId: "1467269204594-9661b134dd2b" },
-  { id: "cn", name: "China", slug: "china", emoji: "🇨🇳", landmark: "Zhangjiajie", isHot: false, price: "From $4.90", photoId: "1537533160920-2a56329a092b" },
-  { id: "hk", name: "Hong Kong", slug: "hong-kong", emoji: "🇭🇰", landmark: "Victoria Peak", isHot: false, price: "From $5.50", photoId: "1536599018102-9f803c140fc1" },
-  { id: "tw", name: "Taiwan", slug: "taiwan", emoji: "🇹🇼", landmark: "Alishan", isHot: false, price: "From $3.50", photoId: "1470005434218-02f92e9f63ac" },
-  { id: "my", name: "Malaysia", slug: "malaysia", emoji: "🇲🇾", landmark: "Langkawi", isHot: false, price: "From $3.90", photoId: "1595399724438-08f1c76b2d0c" },
-  { id: "id", name: "Indonesia", slug: "indonesia", emoji: "🇮🇩", landmark: "Bali", isHot: false, price: "From $2.90", photoId: "1537996194471-e657df975ab4" },
-  { id: "au", name: "Australia", slug: "australia", emoji: "🇦🇺", landmark: "Great Barrier Reef", isHot: false, price: "From $7.90", photoId: "1506973035872-a4ec16b8e28d" },
-  { id: "it", name: "Italy", slug: "italy", emoji: "🇮🇹", landmark: "Amalfi Coast", isHot: false, price: "From $5.50", photoId: "1516483638261-f4dbaf036963" },
+  { id: "jp", name: "Japan", slug: "japan", emoji: "🇯🇵", landmark: "Mount Fuji", isHot: true, imageUrl: getDestinationImage("japan"), photoId: "1490806843955-31ec4f4f6a60" },
+  { id: "kr", name: "Korea", slug: "south-korea", emoji: "🇰🇷", landmark: "Bukchon Hanok", isHot: true, imageUrl: getDestinationImage("south-korea"), photoId: "1535568097429-8d6c4c586db4" },
+  { id: "th", name: "Thailand", slug: "thailand", emoji: "🇹🇭", landmark: "Phi Phi Islands", isHot: true, imageUrl: getDestinationImage("thailand"), photoId: "1552465011-b4e21bf6e79a" },
+  { id: "sg", name: "Singapore", slug: "singapore", emoji: "🇸🇬", landmark: "Marina Bay", isHot: true, imageUrl: getDestinationImage("singapore"), photoId: "1525966160135-9e8d4f15c8d2" },
+  { id: "vn", name: "Vietnam", slug: "vietnam", emoji: "🇻🇳", landmark: "Ha Long Bay", isHot: false, imageUrl: getDestinationImage("vietnam"), photoId: "1528127269322-539801943592" },
+  { id: "us", name: "USA", slug: "united-states", emoji: "🇺🇸", landmark: "Grand Canyon", isHot: false, imageUrl: getDestinationImage("united-states"), photoId: "1474044159687-1ee9fc1e22c2" },
+  { id: "gb", name: "UK", slug: "united-kingdom", emoji: "🇬🇧", landmark: "Tower Bridge", isHot: false, imageUrl: getDestinationImage("united-kingdom"), photoId: "1513635269975-59663e0ac1ad" },
+  { id: "fr", name: "France", slug: "france", emoji: "🇫🇷", landmark: "French Alps", isHot: false, imageUrl: getDestinationImage("france"), photoId: "1502602898657-3e91760cbb34" },
+  { id: "de", name: "Germany", slug: "germany", emoji: "🇩🇪", landmark: "Neuschwanstein", isHot: false, imageUrl: getDestinationImage("germany"), photoId: "1467269204594-9661b134dd2b" },
+  { id: "cn", name: "China", slug: "china", emoji: "🇨🇳", landmark: "Zhangjiajie", isHot: false, imageUrl: getDestinationImage("china"), photoId: "1537533160920-2a56329a092b" },
+  { id: "hk", name: "Hong Kong", slug: "hong-kong", emoji: "🇭🇰", landmark: "Victoria Peak", isHot: false, imageUrl: getDestinationImage("hong-kong"), photoId: "1536599018102-9f803c140fc1" },
+  { id: "tw", name: "Taiwan", slug: "taiwan", emoji: "🇹🇼", landmark: "Alishan", isHot: false, imageUrl: getDestinationImage("taiwan"), photoId: "1470005434218-02f92e9f63ac" },
+  { id: "my", name: "Malaysia", slug: "malaysia", emoji: "🇲🇾", landmark: "Langkawi", isHot: false, imageUrl: getDestinationImage("malaysia"), photoId: "1595399724438-08f1c76b2d0c" },
+  { id: "id", name: "Indonesia", slug: "indonesia", emoji: "🇮🇩", landmark: "Bali", isHot: false, imageUrl: getDestinationImage("indonesia"), photoId: "1537996194471-e657df975ab4" },
+  { id: "au", name: "Australia", slug: "australia", emoji: "🇦🇺", landmark: "Great Barrier Reef", isHot: false, imageUrl: getDestinationImage("australia"), photoId: "1506973035872-a4ec16b8e28d" },
+  { id: "it", name: "Italy", slug: "italy", emoji: "🇮🇹", landmark: "Amalfi Coast", isHot: false, imageUrl: getDestinationImage("italy"), photoId: "1516483638261-f4dbaf036963" },
 ];
 
 const DEFAULT_REGIONS = [
@@ -78,11 +89,28 @@ async function fetchUnsplashImage(countryName: string): Promise<string> {
 // Hero image for main page
 const HERO_IMAGE = getDestinationImage("global");
 
+interface Plan {
+  id: string;
+  name: string;
+  slug: string | null;
+  packageCode: string;
+  destination: string;
+  dataAmount: number;
+  durationDays: number;
+  retailPriceUsd: number;
+  networkType: string | null;
+  isHot: boolean;
+  badge: string | null;
+  countryId: string | null;
+  countryName: string | null;
+}
+
 export default function PlansPage() {
   const { t } = useI18n();
   const router = useRouter();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [regions, setRegions] = useState<DestinationRegion[]>([]);
+  const [hotPlans, setHotPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [heroImage, setHeroImage] = useState<string>(HERO_IMAGE);
 
@@ -98,8 +126,9 @@ export default function PlansPage() {
       if (data.destinations && data.destinations.length > 0) {
         setDestinations(data.destinations.map((d: any) => ({
           ...d,
-          isHot: d.priority <= 3,
-          price: `From $${(3 + d.priority).toFixed(2)}`,
+          imageUrl: d.imageUrl || getDestinationImage(d.slug),
+          isVisible: true,
+          priority: d.priority || 1,
         })) as Destination[]);
       } else {
         setDestinations(DEFAULT_DESTINATIONS.map((d) => ({
@@ -118,6 +147,21 @@ export default function PlansPage() {
           isVisible: true,
           priority: i + 1,
         })) as DestinationRegion[]);
+      }
+      
+      // Fetch hot plans for the hot plans section
+      try {
+        const plansRes = await fetch("/api/plans?isHot=true&limit=20");
+        const plansData = await plansRes.json();
+        if (plansData.plans && plansData.plans.length > 0) {
+          setHotPlans(plansData.plans.map((p: any) => ({
+            ...p,
+            retailPriceUsd: Number(p.retailPriceUsd) || 0,
+            dataAmount: Number(p.dataAmount) || 0,
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to fetch hot plans:", err);
       }
       
       setLoading(false);
@@ -161,7 +205,7 @@ export default function PlansPage() {
             <div className="relative bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-2xl">
               <input
                 type="text"
-                placeholder="Tìm kiếm điểm đến..."
+                placeholder={t("common.searchPlaceholder") || "Search destination... (e.g. Japan, Thailand, Europe)"}
                 className="w-full px-8 py-5 bg-transparent text-slate-800 placeholder:text-slate-500 focus:outline-none text-lg rounded-[2rem]"
                 onChange={(e) => {
                   const query = e.target.value.toLowerCase();
@@ -180,9 +224,50 @@ export default function PlansPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10 pb-16">
         
+        {/* Hot Plans Section - Show plans where isHot = true */}
+        {hotPlans.length > 0 && (
+          <div className="mb-16">
+            <h2 className="text-2xl font-semibold mb-8 text-slate-700">🔥 {t("plans.hotPlans") || "Các gói cước Hot"}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {hotPlans.slice(0, 8).map((plan) => (
+                <Link
+                  key={plan.id}
+                  href={`/esim/${plan.countryName?.toLowerCase().replace(/\s+/g, '-') || 'global'}/${plan.slug || plan.id}`}
+                  className="group relative bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                >
+                  <div className="relative h-56 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-orange-500/80 via-orange-500/20 to-transparent" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center px-4">
+                        <div className="text-3xl font-bold text-white drop-shadow-lg mb-2">{plan.dataAmount}GB</div>
+                        <div className="text-white/80 text-sm font-medium">{plan.durationDays} days</div>
+                      </div>
+                    </div>
+                    <div className="absolute top-4 right-4 bg-white text-orange-600 font-bold px-4 py-1.5 rounded-full text-sm shadow-lg">
+                      ${plan.retailPriceUsd.toFixed(2)}
+                    </div>
+                    {plan.badge && (
+                      <div className="absolute top-4 left-4 bg-green-500 text-white font-bold px-3 py-1 rounded-full text-xs shadow-lg uppercase">
+                        {plan.badge}
+                      </div>
+                    )}
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xl">{plan.countryName ? getCountryEmoji(plan.countryId || '') : '🌐'}</span>
+                        <h3 className="text-lg font-bold text-white drop-shadow-lg truncate">{plan.name}</h3>
+                      </div>
+                      <p className="text-white/70 text-xs truncate">{plan.networkType}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        
         {/* Countries Grid - Cards with Unsplash Images */}
         <div className="mb-16">
-          <h2 className="text-2xl font-semibold mb-8 text-slate-700">🏝️ Top Destinations</h2>
+          <h2 className="text-2xl font-semibold mb-8 text-slate-700">🏝️ {t("coverage.popular")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {destinations.slice(0, 16).map((dest) => (
               <Link
@@ -200,9 +285,9 @@ export default function PlansPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                   
-                  {dest.price && (
+                  {dest.minPrice !== undefined && dest.minPrice !== null && (
                     <div className="absolute top-4 right-4 bg-orange-500 text-white font-bold px-4 py-1.5 rounded-full text-sm shadow-lg">
-                      {dest.price}
+                      {`From ${dest.minPrice.toFixed(2)}`}
                     </div>
                   )}
                   
@@ -210,7 +295,7 @@ export default function PlansPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-2xl">{dest.emoji}</span>
                       <h3 className="text-xl font-bold text-white drop-shadow-lg">
-                        {dest.name}
+                        {t(`countries.${dest.id}`)}
                       </h3>
                     </div>
                     <p className="text-white/80 text-sm font-medium drop-shadow">{dest.landmark}</p>
@@ -223,7 +308,7 @@ export default function PlansPage() {
 
         {/* Regions - Cards with Unsplash Images */}
         <div>
-          <h2 className="text-2xl font-semibold mb-8 text-slate-700">🌍 Browse by Region</h2>
+          <h2 className="text-2xl font-semibold mb-8 text-slate-700">🌍 {t("plans.browseByRegions")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {regions.map((region) => (
               <Link

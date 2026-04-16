@@ -9,6 +9,35 @@ export async function GET() {
       orderBy: { priority: "asc" },
     });
 
+    // Get minPrice and isHot status from Country and Plan tables
+    const countries = await prisma.country.findMany({
+      select: {
+        code: true,
+        minPrice: true,
+      },
+    });
+
+    const countryPriceMap = Object.fromEntries(
+      countries.map(c => [c.code, c.minPrice])
+    );
+
+    // Get hot plans to determine which destinations are hot
+    const hotPlans = await prisma.plan.findMany({
+      where: { isHot: true, isActive: true, countryId: { not: null } },
+      select: { countryId: true },
+    });
+    const hotCountries = new Set(hotPlans.map(p => p.countryId));
+
+    // Add minPrice and isHot to destinations
+    const destinationsWithPrice = destinations.map(d => {
+      const code = d.id.toUpperCase();
+      return {
+        ...d,
+        minPrice: countryPriceMap[code] || null,
+        isHot: hotCountries.has(code),
+      };
+    });
+
     // Get visible regions sorted by priority
     const regions = await prisma.destinationRegion.findMany({
       where: { isVisible: true },
@@ -26,7 +55,7 @@ export async function GET() {
     });
 
     return NextResponse.json({ 
-      destinations, 
+      destinations: destinationsWithPrice, 
       regions,
       originalRegions 
     });

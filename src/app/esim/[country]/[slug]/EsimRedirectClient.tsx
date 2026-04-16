@@ -102,7 +102,7 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
 
   const isUnlimited = !!plan?.fupPolicy;
   const displayPrice = (plan?.retailPriceUsd && plan?.retailPriceUsd > 0) ? plan.retailPriceUsd : plan?.priceUsd;
-  const hasDiscount = plan?.retailPriceUsd > 0 && plan?.retailPriceUsd > plan?.priceUsd;
+  // const hasDiscount = plan?.retailPriceUsd > 0 && plan?.retailPriceUsd > plan?.priceUsd;
   const pricePerDay = displayPrice && plan?.durationDays ? (displayPrice / plan.durationDays).toFixed(2) : "0";
   
   let networkList: LocationNetwork[] = [];
@@ -129,9 +129,9 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
       <div className="border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Link href="/" className="hover:text-orange-500">Home</Link>
+            <Link href="/" className="hover:text-orange-500">{t("common.home")}</Link>
             <span>/</span>
-            <Link href="/plans" className="hover:text-orange-500">Plans</Link>
+            <Link href="/plans" className="hover:text-orange-500">{t("common.plans")}</Link>
             <span>/</span>
             <span className="text-slate-800">{plan?.destination}</span>
           </div>
@@ -157,22 +157,22 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
             <div className="absolute top-4 left-4 flex flex-wrap gap-2">
               {plan?.badge === "unlimited" && (
                 <span className="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                  ∞ Unlimited
+                  ∞ {t("plans.unlimited")}
                 </span>
               )}
               {plan?.isBestSeller && plan?.badge !== "unlimited" && (
                 <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                  ⭐ Best Seller
+                  ⭐ {t("plans.bestSeller")}
                 </span>
               )}
               {plan?.isHot && !plan?.isBestSeller && !plan?.badge && (
                 <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                  🔥 HOT
+                  🔥 {t("plans.hot")}
                 </span>
               )}
               {plan?.isPopular && !plan?.isHot && !plan?.isBestSeller && !plan?.badge && (
                 <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                  popular
+                  {t("plans.popular")}
                 </span>
               )}
             </div>
@@ -199,14 +199,16 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
             {/* Price */}
             <div className="flex items-baseline gap-2 mb-6">
               <span className="text-4xl font-bold text-orange-500">
-                ${displayPrice}
+                {formatPrice(displayPrice || 5)}
+
               </span>
-              {hasDiscount && (
+              {/* {hasDiscount && (
                 <span className="text-lg text-slate-400 line-through">
+                  
                   ${plan?.retailPriceUsd}
                 </span>
-              )}
-              <span className="text-slate-500">one-time</span>
+              )} */}
+              <span className="text-slate-500">{t("planDetail.oneTime")}</span>
               {plan?.durationDays > 1 && (
                 <span className="text-sm text-slate-400">
                   (${pricePerDay}/day)
@@ -217,10 +219,10 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
             {/* Quick Features */}
             <div className="mb-6 space-y-2">
               {[
-                { icon: "✓", text: "Instant QR code delivery", color: "text-green-600" },
-                { icon: "✓", text: "Secure checkout", color: "text-green-600" },
-                { icon: "✓", text: "7-day refund policy", color: "text-green-600" },
-                { icon: "✓", text: "Works on all eSIM devices", color: "text-green-600" },
+                { icon: "✓", text: `${t("planDetail.instantDelivery")}`, color: "text-green-600" },
+                { icon: "✓", text: `${t("planDetail.secureCheckout")}`, color: "text-green-600" },
+                { icon: "✓", text: `${t("planDetail.refundPolicy")}`, color: "text-green-600" },
+                { icon: "✓", text: `${t("planDetail.worksOnAll")}`, color: "text-green-600" },
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-sm text-slate-600">
                   <span className={item.color}>{item.icon}</span>
@@ -232,7 +234,15 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
               {locations.length > 0 && (
                 <div className="flex items-center gap-2 text-sm text-slate-600 mt-2 pt-2 border-t border-slate-100">
                   <span>🌍</span>
-                  <span>Coverage: {locations.slice(0, 3).join(", ")}{locations.length > 3 ? ` +${locations.length - 3} more` : ""}</span>
+                  <span>
+                    {t("planDetail.coverage")}:{" "}
+                    {locations
+                      .slice(0, 3)
+                      .map(code => t(`countries.${code}`))
+                      .join(", ")
+                    }
+                    {locations.length > 3 ? ` +${locations.length - 3} more` : ""}
+                    </span>
                 </div>
               )}
             </div>
@@ -240,7 +250,7 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
             {/* Quantity & Buy Button */}
             <div className="bg-slate-50 rounded-2xl p-6">
               <div className="flex items-center gap-4 mb-4">
-                <span className="text-sm font-medium text-slate-600">Quantity:</span>
+                <span className="text-sm font-medium text-slate-600">{t("common.quantity")}:</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -262,11 +272,11 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
                 href={`/checkout?planId=${plan?.id}&qty=${quantity}`}
                 className="block w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-xl text-lg text-center transition-colors"
               >
-                Buy Now - ${(displayPrice * quantity).toFixed(2)}
+                {t("plans.buyNow")} - {formatPrice(displayPrice * quantity)}
               </Link>
               
               <p className="text-center text-sm text-slate-500 mt-4">
-                Secure payment • Instant delivery • 24/7 support
+                {t("planDetail.securePayment")} • {t("planDetail.instantDelivery")} • {t("planDetail.support247")}
               </p>
             </div>
           </div>
@@ -281,24 +291,24 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
             
             {/* Plan Specifications */}
             <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
-              <h2 className="text-xl font-bold text-slate-800 mb-4">Plan Specifications</h2>
+              <h2 className="text-xl font-bold text-slate-800 mb-4">{t("plans.planSpecifications")}</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-xs text-slate-500 mb-1">Data</p>
+                  <p className="text-xs text-slate-500 mb-1">{t("plans.data")}</p>
                   <p className="text-lg font-semibold text-slate-800">
                     {plan?.fupPolicy ? (
-                      <>Unlimited <span className="text-green-600 text-sm">({plan.fupPolicy} after)</span></>
+                      <>{t("plans.unlimited")} <span className="text-green-600 text-sm">({plan.fupPolicy} {t("planDetail.after")})</span></>
                     ) : (
                       formatData(plan?.dataAmount || 0, plan?.dataVolume)
                     )}
                   </p>
                 </div>
                 <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-xs text-slate-500 mb-1">Validity</p>
-                  <p className="text-lg font-semibold text-slate-800">{plan?.durationDays} Days</p>
+                  <p className="text-xs text-slate-500 mb-1">{t("plans.validity")}</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.durationDays} {t("plans.days")}</p>
                 </div>
                 <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-xs text-slate-500 mb-1">Network Speed</p>
+                  <p className="text-xs text-slate-500 mb-1">{t("plans.networkSpeed")}</p>
                   <p className="text-lg font-semibold text-slate-800">{plan?.speed || "4G LTE"}</p>
                 </div>
                 <div className="bg-slate-50 rounded-xl p-4">
@@ -310,18 +320,18 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
                   <p className="text-lg font-semibold text-slate-800">{plan?.ipExport ? `Supported (${plan.ipExport})` : "Not Supported"}</p>
                 </div>
                 <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-xs text-slate-500 mb-1">Activation</p>
-                  <p className="text-lg font-semibold text-slate-800">{plan?.activeType === 1 ? "On First Installation" : "On First Connection"}</p>
+                  <p className="text-xs text-slate-500 mb-1">{t("plans.activation")}</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.activeType === 1 ? `${t("planDetail.onFirstInstallation")}` : `${t("planDetail.onFirstConnection")}`}</p>
                 </div>
                 {plan?.unusedValidTime > 0 && (
                   <div className="bg-slate-50 rounded-xl p-4">
-                    <p className="text-xs text-slate-500 mb-1">Valid After Purchase</p>
-                    <p className="text-lg font-semibold text-slate-800">{plan.unusedValidTime} days</p>
+                    <p className="text-xs text-slate-500 mb-1">{t("plans.validAfterPurchase")}</p>
+                    <p className="text-lg font-semibold text-slate-800">{plan.unusedValidTime} {t("plans.days")}</p>
                   </div>
                 )}
                 <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-xs text-slate-500 mb-1">Top Up</p>
-                  <p className="text-lg font-semibold text-slate-800">{plan?.supportTopUp ? "Supported" : "Not Supported"}</p>
+                  <p className="text-xs text-slate-500 mb-1">{t("plans.topUp")}</p>
+                  <p className="text-lg font-semibold text-slate-800">{plan?.supportTopUp ? t("plans.topUpSupported") : t("plans.topUpNotSupported")}</p>
                 </div>
               </div>
             </div>
@@ -329,18 +339,18 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
             {/* Fair Use Policy */}
             {plan?.fupPolicy && (
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 sm:p-6">
-                <h2 className="text-lg font-bold text-amber-700 mb-2">Fair Use Policy</h2>
-                <p className="text-amber-600 text-sm">After data limit reached, speed reduced to <strong className="text-amber-800">{plan.fupPolicy}</strong></p>
+                <h2 className="text-lg font-bold text-amber-700 mb-2">{t("plans.fairUsePolicy")}</h2>
+                <p className="text-amber-600 text-sm">{t("plans.fairUsePolicyDesc")} <strong className="text-amber-800">{plan.fupPolicy}</strong></p>
               </div>
             )}
 
             {/* Coverage */}
             {locations.length > 0 && (
               <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">Coverage ({locations.length} {locations.length === 1 ? 'country' : 'countries'})</h2>
+                <h2 className="text-xl font-bold text-slate-800 mb-4">{t("plans.coverage")} ({locations.length} {locations.length === 1 ? t("plans.country") : t("plans.countries")})</h2>
                 <div className="flex flex-wrap gap-2">
                   {locations.map((loc, idx) => (
-                    <span key={idx} className="bg-slate-100 text-slate-700 text-sm px-3 py-1.5 rounded-full font-medium">{loc}</span>
+                    <span key={idx} className="bg-slate-100 text-slate-700 text-sm px-3 py-1.5 rounded-full font-medium">{t(`countries.${loc}`) !== `countries.${loc}` ? t(`countries.${loc}`) : loc}</span>
                   ))}
                 </div>
               </div>
@@ -349,11 +359,16 @@ export default function EsimRedirectClient({ plan, country, slug }: { plan: any;
             {/* Networks */}
             {networkList.length > 0 && (
               <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">Networks</h2>
+                <h2 className="text-xl font-bold text-slate-800 mb-4">{t("plans.network")}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {networkList.map((loc: LocationNetwork, idx: number) => (
                     <div key={idx} className="bg-slate-50 rounded-xl p-4">
-                      <p className="text-sm font-medium text-slate-700 mb-2">{loc.locationName}</p>
+                      <p className="text-sm font-medium text-slate-700 mb-2">{(() => {
+                                                                                        const code = loc.locationCode;
+                                                                                        const key = `countries.${code}`;
+                                                                                        const value = t(key);
+                                                                                        return value === key ? code : value;
+                                                                                      })()}</p>
                       <div className="flex flex-wrap gap-2">
                         {loc.operatorList?.map((op, j) => (
                           <span key={j} className="bg-white border border-slate-200 text-slate-600 text-sm px-3 py-1 rounded-lg">

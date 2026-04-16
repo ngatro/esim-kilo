@@ -70,6 +70,11 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - Image upload converts JPEG/PNG to WebP automatically using sharp
   - Admin page `/admin/destinations` with full UI (show/hide, image, landmark, priority)
   - `/plans` page now fetches from database with fallback to defaults
+- [x] **Hot Plans + minPrice** - Added features for /plans page:
+  - **minPrice column in Country table** - Auto-calculated during plan sync (lowest retailPriceUsd)
+  - **isHot filter in /api/plans** - Added `?isHot=true` parameter to filter hot plans
+  - **Hot Plans section on /plans** - Displays plans where isHot=true from database
+  - **Price display** - Uses minPrice from Country table for "From $X.XX" display on destination cards
 
 ## Current Structure
 

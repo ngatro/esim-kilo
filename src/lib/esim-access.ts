@@ -171,7 +171,7 @@ export async function getBalance(): Promise<BalanceObj> {
 
 export async function getPackageList(params: {
   locationCode?: string;
-  type?: "BASE" | "TOPUP";
+  type?: "TOPUP";
   slug?: string;
   packageCode?: string;
   iccid?: string;

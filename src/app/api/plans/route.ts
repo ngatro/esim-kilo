@@ -226,6 +226,22 @@ export async function GET(request: Request) {
         totalCreated += Math.min(200, plans.length - i);
       }
 
+      // Update minPrice for each country based on lowest retailPriceUsd
+      const countries = await prisma.country.findMany({ select: { code: true } });
+      for (const country of countries) {
+        const cheapestPlan = await prisma.plan.findFirst({
+          where: { countryId: country.code, isActive: true },
+          orderBy: { retailPriceUsd: 'asc' },
+          select: { retailPriceUsd: true }
+        });
+        if (cheapestPlan) {
+          await prisma.country.update({
+            where: { code: country.code },
+            data: { minPrice: Number(cheapestPlan.retailPriceUsd) }
+          });
+        }
+      }
+
       return NextResponse.json({ success: true, synced: totalCreated, total: packages.length, elapsed: `${((Date.now() - startTime) / 1000).toFixed(1)}s` });
     }
 
@@ -246,6 +262,7 @@ export async function GET(request: Request) {
     const id = url.searchParams.get("id");
     const slugParam = url.searchParams.get("slug");
     const planType = url.searchParams.get("planType") || undefined;
+    const isHotParam = url.searchParams.get("isHot");
 
     // Single plan by ID or slug
     if (id) {
@@ -264,6 +281,11 @@ export async function GET(request: Request) {
     }
 
     const where: Record<string, unknown> = { isActive: true };
+    
+    // Filter by isHot flag
+    if (isHotParam === "true") {
+      where.isHot = true;
+    }
     
     // Exact country filter - match countryId exactly or in locations JSON array
     if (countryId) {

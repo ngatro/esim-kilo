@@ -52,6 +52,7 @@ model Country {
   slug      String   @unique  // For SEO URLs: thailand, south-korea, etc.
   emoji     String
   imageUrl  String?
+  minPrice  Float?   // Lowest retailPriceUsd from plans in this country
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
   
@@ -116,6 +117,7 @@ model Plan {
   updatedAt       DateTime @updatedAt
 
   orderItems      OrderItem[]
+  topupPackages   TopupPackage[]
 
   @@index([regionId])
   @@index([countryId])
@@ -313,6 +315,27 @@ model DestinationRegion {
 
   @@index([isVisible])
   @@index([priority])
+}
+
+// Top-up packages stored locally
+model TopupPackage {
+  id          Int      @id @default(autoincrement())
+  planId     String?  // FK to Plan (optional - can be NULL for global top-ups)
+  plan       Plan?    @relation(fields: [planId], references: [id])
+  
+  packageCode String   @unique // e.g., TOPUP_CN_1D, TOPUP_JP_500MB
+  name       String?  // Display name
+  price      Float    // Price in USD
+  periodNum  Int     @default(1) // Days to add (1, 7, 30, etc.)
+  type       String   @default("day") // "day" or "data"
+  volume    BigInt   @default(0) // Data volume in bytes (0 for day-only top-ups)
+  isActive   Boolean  @default(true)
+  priority   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([planId])
+  @@index([isActive])
 }
 
 // Promotional banners/popups model
