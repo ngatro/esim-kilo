@@ -8,7 +8,11 @@ async function syncTopupPackages() {
   try {
     // Get ONLY plans with supportTopUpType = 3 (flexible period)
     const basePlans = await prisma.plan.findMany({
-      where: { supportTopUp: true, supportTopUpType: 3, packageCode: { not: null } },
+      where: { 
+        supportTopUp: true, 
+        supportTopUpType: 3, 
+        packageCode: { not: null as unknown as string }
+      },
       select: { id: true, packageCode: true, supportTopUpType: true, locationCode: true },
     });
 
