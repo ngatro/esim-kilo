@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getBalance } from "@/lib/esim-access";
 
+// In-memory sync progress tracker
+let syncProgress = "";
+export function setSyncProgress(msg: string) {
+  syncProgress = msg;
+}
+export function clearSyncProgress() {
+  syncProgress = "";
+}
+
 export async function GET() {
   try {
     const [totalUsers, totalOrders, totalPlans, activePlans, recentOrders] = await Promise.all([
@@ -47,6 +56,7 @@ export async function GET() {
       },
       recentOrders,
       regions: regionsWithCount,
+      syncProgress,
     });
   } catch (error) {
     console.error("Admin stats error:", error);

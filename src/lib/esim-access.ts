@@ -113,11 +113,11 @@ function getSecretKey(): string {
 
 // Generate HMAC-SHA256 signature
 // signData = Timestamp + RequestID + AccessCode + JSON.stringify(RequestBody)
-// signature = HMAC-SHA256(signData, SecretKey) as HexString
+// signature = HMAC-SHA256(signData, SecretKey) as HexString (lowercase)
 function generateSignature(timestamp: string, requestId: string, accessCode: string, body: string): string {
   const secretKey = getSecretKey();
   const signData = timestamp + requestId + accessCode + body;
-  return HmacSHA256(signData, secretKey).toString(Hex);
+  return HmacSHA256(signData, secretKey).toString(Hex).toLowerCase();
 }
 
 async function esimAccessPost(endpoint: string, body: Record<string, unknown> = {}): Promise<EsimAccessResponse> {
@@ -129,10 +129,6 @@ async function esimAccessPost(endpoint: string, body: Record<string, unknown> = 
 
   // Generate HMAC-SHA256 signature
   const signature = generateSignature(timestamp, requestId, accessCode, bodyStr);
-
-  console.log(`[eSIM API] POST ${url}`);
-  console.log(`[eSIM API] Headers: RT-AccessCode=${accessCode.slice(0, 8)}..., RT-Timestamp=${timestamp}, RT-RequestID=${requestId}`);
-  console.log(`[eSIM API] Body: ${bodyStr}`);
 
   const res = await fetch(url, {
     method: "POST",
@@ -152,14 +148,11 @@ async function esimAccessPost(endpoint: string, body: Record<string, unknown> = 
     throw new Error(`eSIM Access API: ${res.status} ${text}`);
   }
 
-  const data = await res.json();
-  console.log(`[eSIM API] Response: success=${data.success}`);
-  return data as EsimAccessResponse;
+  return res.json() as Promise<EsimAccessResponse>;
 }
 
 export async function getBalance(): Promise<BalanceObj> {
   const res = await esimAccessPost("/balance/query");
-  console.log("[eSIM API] Balance response:", JSON.stringify(res));
   if (!res.success) throw new Error(res.message || "Failed to get balance");
   // Response format: { success: true, obj: { balance: "100.00", currency: "USD" } }
   if (res.obj && typeof res.obj === "object" && "balance" in res.obj) {
@@ -176,24 +169,22 @@ export async function getPackageList(params: {
   packageCode?: string;
   iccid?: string;
 }): Promise<PackageListObj> {
-  const body: Record<string, unknown> = {};
-  if (params.locationCode) body.locationCode = params.locationCode;
-  if (params.type) body.type = params.type;
-  if (params.slug) body.slug = params.slug;
-  if (params.packageCode) body.packageCode = params.packageCode;
-  if (params.iccid) body.iccid = params.iccid;
-  // Add empty strings for TOPUP requests to match Postman format
-  if (params.type === "TOPUP") {
-    body.locationCode = body.locationCode || "";
-    body.slug = body.slug || "";
-    body.iccid = body.iccid || "";
-  }
+  // For TOPUP requests, always include locationCode, slug, iccid as empty strings
+  // This matches the working Postman request format
+  const body: Record<string, unknown> = {
+    locationCode: params.locationCode || (params.type === "TOPUP" ? "" : undefined),
+    type: params.type,
+    slug: params.slug || (params.type === "TOPUP" ? "" : undefined),
+    packageCode: params.packageCode,
+    iccid: params.iccid || (params.type === "TOPUP" ? "" : undefined),
+  };
 
-  console.log("[getPackageList] Full request body:", JSON.stringify(body));
-  
+  // Remove undefined values
+  Object.keys(body).forEach(key => {
+    if (body[key] === undefined) delete body[key];
+  });
+
   const res = await esimAccessPost("/package/list", body);
-  console.log("[getPackageList] Full response:", JSON.stringify(res));
-  
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
 
   const obj = res.obj as PackageListObj;
@@ -229,11 +220,7 @@ export async function createOrder(params: {
     body.periodNum = params.periodNum;
   }
 
-  console.log("[createOrder] Request body:", JSON.stringify(body, null, 2));
-
   const res = await esimAccessPost("/esim/order", body);
-
-  console.log("[createOrder] Response:", JSON.stringify(res, null, 2));
 
   if (!res.success || !res.obj) {
     throw new Error(res.message || "eSIM order creation failed");
@@ -264,26 +251,21 @@ export async function createOrder(params: {
 
   await new Promise(r => setTimeout(r, 2000));
   
-  console.log("[createOrder] No QR in initial response, querying for orderNo:", orderNo);
   return await queryOrder(orderNo);
 }
 
 export async function queryOrder(orderNo: string): Promise<EsimListItem> {
-  console.log("[queryOrder] Calling with orderNo:", orderNo);
   const res = await esimAccessPost("/esim/query", { 
     orderNo,
     pager: { page: 1, pageSize: 10 }
   });
-  console.log("[queryOrder] Response success:", res.success, "obj keys:", Object.keys(res.obj || {}));
   
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
   
   const obj = res.obj as { esimList?: EsimListItem[] };
-  console.log("[queryOrder] esimList:", obj.esimList ? "present (" + obj.esimList.length + " items)" : "missing");
   
   if (obj.esimList && obj.esimList.length > 0) {
     const first = obj.esimList[0];
-    console.log("[queryOrder] First item - iccid:", first.iccid, "qrCodeUrl:", first.qrCodeUrl ? "present" : "missing", "ac:", first.ac ? "present" : "missing");
     return {
       ...first,
       esimTranNo: first.esimTranNo || first.tranNo || orderNo || undefined,
@@ -356,11 +338,7 @@ export async function createTopUp(params: {
     body.amount = params.amount;
   }
 
-  console.log("[createTopUp] Request body:", JSON.stringify(body, null, 2));
-
   const res = await esimAccessPost("/esim/topup", body);
-
-  console.log("[createTopUp] Response:", JSON.stringify(res, null, 2));
 
   if (!res.success || !res.obj) {
     throw new Error(res.message || "eSIM top-up failed");

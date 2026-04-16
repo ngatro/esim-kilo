@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { getPackageList } from "@/lib/esim-access";
 import { prisma } from "@/lib/prisma";
+import { setSyncProgress, clearSyncProgress } from "@/app/api/admin/stats/route";
 
 // Sync top-up packages after base plans are synced
 // Optimized to use locationCode batching for faster sync
 async function syncTopupPackages() {
   try {
-    // Get ONLY plans with supportTopUpType = 3 (flexible period)
+    // Get ALL plans that support topup (both type 2 and type 3)
     const allPlansWithTopup = await prisma.plan.findMany({
-      where: { supportTopUp: true, supportTopUpType: 3 },
+      where: { supportTopUp: true },
       select: { id: true, packageCode: true, supportTopUpType: true, locationCode: true },
     });
     // Filter out null/empty packageCode in JS
@@ -26,36 +27,63 @@ async function syncTopupPackages() {
 
     let created = 0, updated = 0, total = 0;
 
-
     // Fetch by packageCode in parallel batches
     const planCodes = Array.from(new Set(basePlans.map(p => p.packageCode).filter(Boolean)));
-    const batchSize = 5;
+    setSyncProgress(`[TOPUP] Starting sync for ${planCodes.length} base plans...`);
+    const batchSize = 5; // Optimized batch size
     
     for (let i = 0; i < planCodes.length; i += batchSize) {
       const batch = planCodes.slice(i, i + batchSize);
+      setSyncProgress(`[TOPUP] Fetching packages for batch ${i/batchSize + 1}: ${batch.join(", ")}`);
+      
       const results = await Promise.all(
         batch.map(async (pkgCode) => {
           if (!pkgCode) return [];
           try {
+            setSyncProgress(`[TOPUP] Fetching: ${pkgCode}`);
             const res = await getPackageList({ type: "TOPUP", packageCode: pkgCode });
             return res.packageList || [];
-          } catch (e) {
-            console.log(`[Sync Topup] Skipping ${pkgCode}: API error`);
+          } catch {
             return [];
           }
         })
       );
+      
+      setSyncProgress(`[TOPUP] Processing ${results.flat().length} packages to DB...`);
+
+      // Update progress
+      const batchNum = Math.ceil((i + batchSize) / batchSize);
+      const totalBatches = Math.ceil(planCodes.length / batchSize);
+      setSyncProgress(`[TOPUP] Batch ${batchNum}/${totalBatches} done - ${total} packages saved to DB`);
+
+      // Add delay between batches to avoid rate limit (8 requests per second)
+      if (i + batchSize < planCodes.length) {
+        await new Promise(r => setTimeout(r, 130));
+      }
 
       // Process results
       for (const topupPackages of results) {
         for (const topupPkg of topupPackages) {
-          // Find matching plan
-          const codeMatch = topupPkg.packageCode.replace("TOPUP_", "").split("_")[0];
-          const matchingPlan = basePlans.find(p => 
-            p.locationCode && codeMatch && p.locationCode.includes(codeMatch)
+          // Find matching plan by locationCode from the topup package
+          const topupLocationCode = topupPkg.locationCode;
+          
+          // Try exact match first, then partial match
+          let matchingPlan = basePlans.find(p => 
+            p.locationCode && topupLocationCode && 
+            p.locationCode.toUpperCase() === topupLocationCode.toUpperCase()
           );
           
-          if (!matchingPlan) continue;
+          // If no exact match, try partial match (e.g., "CN" matches "China")
+          if (!matchingPlan && topupLocationCode) {
+            matchingPlan = basePlans.find(p => 
+              p.locationCode && p.locationCode.toUpperCase().includes(topupLocationCode.toUpperCase())
+            );
+          }
+          
+          if (!matchingPlan) {
+            setSyncProgress(`[TOPUP] Skipping ${topupPkg.packageCode} - no matching plan`);
+            continue;
+          }
           
           const priceUsd = topupPkg.price / 10000;
           const isFlexible = matchingPlan.supportTopUpType === 3;
@@ -79,8 +107,10 @@ async function syncTopupPackages() {
       }
     }
 
+    clearSyncProgress();
     return { created, updated, total };
   } catch (error) {
+    clearSyncProgress();
     console.error("[Sync Topup] Error:", error);
     return { created: 0, updated: 0, total: 0, error: String(error) };
   }
@@ -327,6 +357,7 @@ export async function GET(request: Request) {
       }
 
       // Sync top-up packages after base plans
+      setSyncProgress("[TOPUP] Starting TOPUP package sync...");
       const topupResult = await syncTopupPackages();
 
       return NextResponse.json({ 

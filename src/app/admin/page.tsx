@@ -47,6 +47,7 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<string>("");
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,9 +70,23 @@ export default function AdminDashboardPage() {
 
   async function syncPlans() {
     setSyncing(true);
-    setSyncResult("Syncing from eSIM Access...");
+    setSyncProgress("Starting sync...");
+    setSyncResult("");
     try {
+      // Poll for progress
+      const progressInterval = setInterval(async () => {
+        try {
+          const progRes = await fetch("/api/admin/stats");
+          const progData = await progRes.json();
+          if (progData.syncProgress) {
+            setSyncProgress(progData.syncProgress);
+          }
+        } catch {}
+      }, 500);
+
       const res = await fetch("/api/plans?sync=true");
+      clearInterval(progressInterval);
+      setSyncProgress("");
       const data = await res.json();
       if (data.success) {
         const topupMsg = data.topupSynced > 0 ? `, ${data.topupSynced} TOPUP` : "";
@@ -127,10 +142,15 @@ export default function AdminDashboardPage() {
             >
               {syncing ? (
                 <>
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  <span className="animate-spin">↻</span>
                   Syncing...
                 </>
-              ) : "🔄 Sync Plans"}
+              ) : (
+                <>
+                  <span>🔄</span>
+                  Sync Plans
+                </>
+              )}
             </button>
             <Link href="/" className="text-slate-500 hover:text-slate-700 text-sm">View Site</Link>
           </div>
@@ -138,6 +158,13 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Sync Progress */}
+        {syncing && syncProgress && (
+          <div className="mb-6 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 animate-pulse">
+            {syncProgress}
+          </div>
+        )}
+
         {/* Sync Result */}
         {syncResult && (
           <div className="mb-6 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
