@@ -63,10 +63,10 @@ export async function POST(request: Request) {
     if (authCheck.error) return authCheck.error;
 
     const body = await request.json();
-    const { planId, packageCode, name, price, periodNum, type, volume, isActive, priority } = body;
+    const { planId, packageCode, name, priceUsd, isFlexible, isActive, priority } = body;
 
-    if (!packageCode || price === undefined) {
-      return NextResponse.json({ error: "packageCode and price are required" }, { status: 400 });
+    if (!packageCode || priceUsd === undefined) {
+      return NextResponse.json({ error: "packageCode and priceUsd are required" }, { status: 400 });
     }
 
     // Check if packageCode already exists
@@ -83,10 +83,8 @@ export async function POST(request: Request) {
         planId: planId || null,
         packageCode,
         name,
-        price,
-        periodNum: periodNum || 1,
-        type: type || "day",
-        volume: volume ? BigInt(volume) : BigInt(0),
+        priceUsd,
+        isFlexible: isFlexible ?? false,
         isActive: isActive ?? true,
         priority: priority || 0,
       },
@@ -106,7 +104,7 @@ export async function PUT(request: Request) {
     if (authCheck.error) return authCheck.error;
 
     const body = await request.json();
-    const { id, packageCode, name, price, periodNum, type, volume, isActive, priority } = body;
+    const { id, packageCode, name, priceUsd, isFlexible, isActive, priority } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -115,10 +113,8 @@ export async function PUT(request: Request) {
     const updateData: Record<string, unknown> = {};
     if (packageCode !== undefined) updateData.packageCode = packageCode;
     if (name !== undefined) updateData.name = name;
-    if (price !== undefined) updateData.price = price;
-    if (periodNum !== undefined) updateData.periodNum = periodNum;
-    if (type !== undefined) updateData.type = type;
-    if (volume !== undefined) updateData.volume = BigInt(volume);
+    if (priceUsd !== undefined) updateData.priceUsd = priceUsd;
+    if (isFlexible !== undefined) updateData.isFlexible = isFlexible;
     if (isActive !== undefined) updateData.isActive = isActive;
     if (priority !== undefined) updateData.priority = priority;
 

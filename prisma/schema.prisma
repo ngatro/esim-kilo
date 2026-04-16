@@ -117,7 +117,7 @@ model Plan {
   updatedAt       DateTime @updatedAt
 
   orderItems      OrderItem[]
-  topupPackages   TopupPackage[]
+  topupPackages   TopupPackage[] @relation("TopupToPlan")
 
   @@index([regionId])
   @@index([countryId])
@@ -320,15 +320,13 @@ model DestinationRegion {
 // Top-up packages stored locally
 model TopupPackage {
   id          Int      @id @default(autoincrement())
-  planId     String?  // FK to Plan (optional - can be NULL for global top-ups)
-  plan       Plan?    @relation(fields: [planId], references: [id])
+  planId     String?  // FK to Plan (the base plan that can be topped up)
+  plan       Plan?    @relation("TopupToPlan", fields: [planId], references: [id], onDelete: Cascade)
   
-  packageCode String   @unique // e.g., TOPUP_CN_1D, TOPUP_JP_500MB
+  packageCode String   @unique // Top-up package code from API
   name       String?  // Display name
-  price      Float    // Price in USD
-  periodNum  Int     @default(1) // Days to add (1, 7, 30, etc.)
-  type       String   @default("day") // "day" or "data"
-  volume    BigInt   @default(0) // Data volume in bytes (0 for day-only top-ups)
+  priceUsd   Float    // Price in USD (retail price for this top-up)
+  isFlexible Boolean @default(false) // If true, supports custom periodNum
   isActive   Boolean  @default(true)
   priority   Int      @default(0)
   createdAt  DateTime @default(now())

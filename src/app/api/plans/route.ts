@@ -2,6 +2,55 @@ import { NextResponse } from "next/server";
 import { getPackageList } from "@/lib/esim-access";
 import { prisma } from "@/lib/prisma";
 
+// Sync top-up packages after base plans are synced
+async function syncTopupPackages() {
+  try {
+    // Get base plans that support top-up
+    const basePlans = await prisma.plan.findMany({
+      where: { supportTopUp: true },
+      select: { id: true, packageCode: true, supportTopUpType: true, locationCode: true },
+    });
+
+    let created = 0, updated = 0, total = 0;
+
+
+    // Fetch TOPUP packages FOR EACH base plan using packageCode
+    for (const basePlan of basePlans) {
+      if (!basePlan.packageCode) continue;
+
+      const topupRes = await getPackageList({ type: "TOPUP", packageCode: basePlan.packageCode });
+      const topupPackages = topupRes.packageList || [];
+
+      for (const topupPkg of topupPackages) {
+        const priceUsd = topupPkg.price / 10000;
+        const isFlexible = basePlan.supportTopUpType === 3;
+
+        const existing = await prisma.topupPackage.findUnique({ where: { packageCode: topupPkg.packageCode } });
+
+        if (existing) {
+          await prisma.topupPackage.update({
+            where: { id: existing.id },
+            data: { planId: basePlan.id, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
+          });
+          updated++;
+        } else {
+          await prisma.topupPackage.create({
+            data: { planId: basePlan.id, packageCode: topupPkg.packageCode, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
+          });
+          created++;
+        }
+      }
+
+      total += topupPackages.length;
+    }
+
+    return { created, updated, total };
+  } catch (error) {
+    console.error("[Sync Topup] Error:", error);
+    return { created: 0, updated: 0, total: 0, error: String(error) };
+  }
+}
+
 function bytesToGB(bytes: number): number {
   if (!bytes || bytes <= 0) return 0;
   // If value is very small (less than 100), assume it's already in GB
@@ -242,7 +291,17 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.json({ success: true, synced: totalCreated, total: packages.length, elapsed: `${((Date.now() - startTime) / 1000).toFixed(1)}s` });
+      // Sync top-up packages after base plans
+      const topupResult = await syncTopupPackages();
+
+      return NextResponse.json({ 
+        success: true, 
+        synced: totalCreated, 
+        total: packages.length, 
+        topupSynced: topupResult.created + topupResult.updated,
+        topupTotal: topupResult.total,
+        elapsed: `${((Date.now() - startTime) / 1000).toFixed(1)}s` 
+      });
     }
 
     // Query

@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "This top-up package is not compatible with your current plan" }, { status: 400 });
     }
 
-    const priceUSD = topupPackage.price;
+    const priceUSD = topupPackage.priceUsd;
 
     // Build createTopUp params - use packageCode from DB
     const topUpParams: {
@@ -186,13 +186,12 @@ export async function GET(request: Request) {
 
     if (dbPackages.length > 0) {
       // Use packages from DB
+      // Map DB packages - use isFlexible instead of periodNum/type/volume
       topUpPackages = dbPackages.map((p) => ({
         packageCode: p.packageCode,
         name: p.name,
-        priceUSD: p.price,
-        periodNum: p.periodNum,
-        type: p.type,
-        volume: p.volume,
+        priceUSD: p.priceUsd,
+        isFlexible: p.isFlexible,
       }));
     } else {
       // Fallback: fetch from API if DB is empty
