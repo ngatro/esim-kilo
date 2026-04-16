@@ -132,7 +132,7 @@ async function esimAccessPost(endpoint: string, body: Record<string, unknown> = 
 
   console.log(`[eSIM API] POST ${url}`);
   console.log(`[eSIM API] Headers: RT-AccessCode=${accessCode.slice(0, 8)}..., RT-Timestamp=${timestamp}, RT-RequestID=${requestId}`);
-  console.log(`[eSIM API] Body: ${bodyStr.slice(0, 200)}`);
+  console.log(`[eSIM API] Body: ${bodyStr}`);
 
   const res = await fetch(url, {
     method: "POST",
@@ -182,8 +182,18 @@ export async function getPackageList(params: {
   if (params.slug) body.slug = params.slug;
   if (params.packageCode) body.packageCode = params.packageCode;
   if (params.iccid) body.iccid = params.iccid;
+  // Add empty strings for TOPUP requests to match Postman format
+  if (params.type === "TOPUP") {
+    body.locationCode = body.locationCode || "";
+    body.slug = body.slug || "";
+    body.iccid = body.iccid || "";
+  }
 
+  console.log("[getPackageList] Full request body:", JSON.stringify(body));
+  
   const res = await esimAccessPost("/package/list", body);
+  console.log("[getPackageList] Full response:", JSON.stringify(res));
+  
   if (!res.success || !res.obj) throw new Error(res.message || "Failed");
 
   const obj = res.obj as PackageListObj;

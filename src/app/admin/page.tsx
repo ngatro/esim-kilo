@@ -74,7 +74,8 @@ export default function AdminDashboardPage() {
       const res = await fetch("/api/plans?sync=true");
       const data = await res.json();
       if (data.success) {
-        setSyncResult(`✓ Synced ${data.synced} plans (${data.elapsed})`);
+        const topupMsg = data.topupSynced > 0 ? `, ${data.topupSynced} TOPUP` : "";
+        setSyncResult(`✓ Synced ${data.synced} plans${topupMsg} (${data.elapsed})`);
       } else {
         setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
       }

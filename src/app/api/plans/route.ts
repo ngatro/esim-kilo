@@ -204,7 +204,7 @@ export async function GET(request: Request) {
 
     if (sync === "true") {
       const startTime = Date.now();
-      const res = await getPackageList({ type: "BASE" });
+      const res = await getPackageList({ type: "BASE" } as any);
       const packages = res.packageList || [];
       if (packages.length === 0) return NextResponse.json({ success: false, error: "No packages" });
 
