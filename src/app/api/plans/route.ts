@@ -6,9 +6,9 @@ import { prisma } from "@/lib/prisma";
 // Optimized to use locationCode batching for faster sync
 async function syncTopupPackages() {
   try {
-    // Get base plans grouped by locationCode
+    // Get ONLY plans with supportTopUpType = 3 (flexible period)
     const basePlans = await prisma.plan.findMany({
-      where: { supportTopUp: true, locationCode: { not: null } },
+      where: { supportTopUp: true, supportTopUpType: 3, packageCode: { not: null } },
       select: { id: true, packageCode: true, supportTopUpType: true, locationCode: true },
     });
 
