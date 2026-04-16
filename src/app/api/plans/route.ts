@@ -3,45 +3,76 @@ import { getPackageList } from "@/lib/esim-access";
 import { prisma } from "@/lib/prisma";
 
 // Sync top-up packages after base plans are synced
+// Optimized to use locationCode batching for faster sync
 async function syncTopupPackages() {
   try {
-    // Get base plans that support top-up
+    // Get base plans grouped by locationCode
     const basePlans = await prisma.plan.findMany({
-      where: { supportTopUp: true },
+      where: { supportTopUp: true, locationCode: { not: null } },
       select: { id: true, packageCode: true, supportTopUpType: true, locationCode: true },
     });
+
+    // Group by locationCode
+    const locationGroups = new Map<string, typeof basePlans>();
+    for (const plan of basePlans) {
+      if (!plan.locationCode) continue;
+      if (!locationGroups.has(plan.locationCode)) {
+        locationGroups.set(plan.locationCode, []);
+      }
+      locationGroups.get(plan.locationCode)!.push(plan);
+    }
 
     let created = 0, updated = 0, total = 0;
 
 
-    // Fetch TOPUP packages FOR EACH base plan using packageCode
-    for (const basePlan of basePlans) {
-      if (!basePlan.packageCode) continue;
+    // Fetch by locationCode in parallel batches
+    const locationCodes = Array.from(locationGroups.keys());
+    const batchSize = 5;
+    
+    for (let i = 0; i < locationCodes.length; i += batchSize) {
+      const batch = locationCodes.slice(i, i + batchSize);
+      const results = await Promise.all(
+        batch.map(async (locCode) => {
+          const plansInLoc = locationGroups.get(locCode) || [];
+          const firstPlan = plansInLoc[0];
+          if (!firstPlan) return [];
+          
+          const res = await getPackageList({ type: "TOPUP", locationCode: locCode });
+          return res.packageList || [];
+        })
+      );
 
-      const topupRes = await getPackageList({ type: "TOPUP", packageCode: basePlan.packageCode });
-      const topupPackages = topupRes.packageList || [];
+      // Process results
+      for (const topupPackages of results) {
+        for (const topupPkg of topupPackages) {
+          // Find matching plan
+          const codeMatch = topupPkg.packageCode.replace("TOPUP_", "").split("_")[0];
+          const matchingPlan = basePlans.find(p => 
+            p.locationCode && codeMatch && p.locationCode.includes(codeMatch)
+          );
+          
+          if (!matchingPlan) continue;
+          
+          const priceUsd = topupPkg.price / 10000;
+          const isFlexible = matchingPlan.supportTopUpType === 3;
 
-      for (const topupPkg of topupPackages) {
-        const priceUsd = topupPkg.price / 10000;
-        const isFlexible = basePlan.supportTopUpType === 3;
+          const existing = await prisma.topupPackage.findUnique({ where: { packageCode: topupPkg.packageCode } });
 
-        const existing = await prisma.topupPackage.findUnique({ where: { packageCode: topupPkg.packageCode } });
-
-        if (existing) {
-          await prisma.topupPackage.update({
-            where: { id: existing.id },
-            data: { planId: basePlan.id, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
-          });
-          updated++;
-        } else {
-          await prisma.topupPackage.create({
-            data: { planId: basePlan.id, packageCode: topupPkg.packageCode, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
-          });
-          created++;
+          if (existing) {
+            await prisma.topupPackage.update({
+              where: { id: existing.id },
+              data: { planId: matchingPlan.id, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
+            });
+            updated++;
+          } else {
+            await prisma.topupPackage.create({
+              data: { planId: matchingPlan.id, packageCode: topupPkg.packageCode, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
+            });
+            created++;
+          }
         }
+        total += topupPackages.length;
       }
-
-      total += topupPackages.length;
     }
 
     return { created, updated, total };
