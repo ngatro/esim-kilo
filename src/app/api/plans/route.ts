@@ -25,19 +25,16 @@ async function syncTopupPackages() {
     let created = 0, updated = 0, total = 0;
 
 
-    // Fetch by locationCode in parallel batches
-    const locationCodes = Array.from(locationGroups.keys());
+    // Fetch by packageCode in parallel batches
+    const planCodes = Array.from(new Set(basePlans.map(p => p.packageCode).filter(Boolean)));
     const batchSize = 5;
     
-    for (let i = 0; i < locationCodes.length; i += batchSize) {
-      const batch = locationCodes.slice(i, i + batchSize);
+    for (let i = 0; i < planCodes.length; i += batchSize) {
+      const batch = planCodes.slice(i, i + batchSize);
       const results = await Promise.all(
-        batch.map(async (locCode) => {
-          const plansInLoc = locationGroups.get(locCode) || [];
-          const firstPlan = plansInLoc[0];
-          if (!firstPlan) return [];
-          
-          const res = await getPackageList({ type: "TOPUP", locationCode: locCode });
+        batch.map(async (pkgCode) => {
+          if (!pkgCode) return [];
+          const res = await getPackageList({ type: "TOPUP", packageCode: pkgCode });
           return res.packageList || [];
         })
       );
