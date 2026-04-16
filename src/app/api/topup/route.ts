@@ -186,12 +186,14 @@ export async function GET(request: Request) {
 
     if (dbPackages.length > 0) {
       // Use packages from DB
-      // Map DB packages - use isFlexible instead of periodNum/type/volume
+      // Map DB packages to frontend format
       topUpPackages = dbPackages.map((p) => ({
         packageCode: p.packageCode,
         name: p.name,
         priceUSD: p.priceUsd,
-        isFlexible: p.isFlexible,
+        periodNum: p.isFlexible ? 1 : 0, // 1 for flexible, 0 for fixed
+        type: p.isFlexible ? "flexible" : "fixed",
+        volume: BigInt(0),
       }));
     } else {
       // Fallback: fetch from API if DB is empty
