@@ -694,39 +694,6 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
     });
   }, [plans, selectedDuration, selectedData]);
 
-  // Group plans by destination + dataType (1=fixed, 2=daily)
-  const groupedPlans = useMemo(() => {
-    const groups: Record<string, GroupedPlan> = {};
-    filteredPlans.forEach(plan => {
-      // Group key: destination_dataType
-      const dataTypeKey = plan.dataType === 1 ? "fixed" : (plan.dataType === 2 ? "daily" : `type${plan.dataType}`);
-      const key = `${plan.destination}_${dataTypeKey}`;
-      if (!groups[key]) {
-        groups[key] = {
-          key,
-          destination: plan.destination,
-          fupPolicy: plan.fupPolicy,
-          plans: [],
-          minPrice: plan.retailPriceUsd || plan.priceUsd,
-          maxPrice: plan.retailPriceUsd || plan.priceUsd,
-          dataType: plan.dataType,
-        };
-      }
-      groups[key].plans.push(plan);
-      const price = plan.retailPriceUsd || plan.priceUsd;
-      if (price < groups[key].minPrice) groups[key].minPrice = price;
-      if (price > groups[key].maxPrice) groups[key].maxPrice = price;
-    });
-    // Sort: Fixed first (dataType=1), then Daily (dataType=2), then others
-    return Object.values(groups).sort((a, b) => {
-      if (a.dataType === 1 && b.dataType !== 1) return -1;
-      if (b.dataType === 1 && a.dataType !== 1) return 1;
-      if (a.dataType === 2 && b.dataType !== 2) return -1;
-      if (b.dataType === 2 && a.dataType !== 2) return 1;
-      return a.minPrice - b.minPrice;
-    });
-  }, [filteredPlans]);
-
   const displayName = country.charAt(0).toUpperCase() + country.slice(1);
 
   if (!loading && plans.length === 0) {
@@ -751,8 +718,37 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
     setSelectedPlan(null);
   };
 
-  // Display grouped plans
-  const displayPlans = groupedPlans;
+  // Filter to only Fixed and Daily plans, then group by destination + dataType
+  const displayPlans = useMemo(() => {
+    // First filter only dataType 1 (Fixed) and 2 (Daily)
+    const relevantPlans = filteredPlans.filter(p => p.dataType === 1 || p.dataType === 2);
+    const groups: Record<string, GroupedPlan> = {};
+    relevantPlans.forEach(plan => {
+      const dataTypeKey = plan.dataType === 1 ? "fixed" : "daily";
+      const key = `${plan.destination}_${dataTypeKey}`;
+      if (!groups[key]) {
+        groups[key] = {
+          key,
+          destination: plan.destination,
+          fupPolicy: plan.fupPolicy,
+          plans: [],
+          minPrice: plan.retailPriceUsd || plan.priceUsd,
+          maxPrice: plan.retailPriceUsd || plan.priceUsd,
+          dataType: plan.dataType,
+        };
+      }
+      groups[key].plans.push(plan);
+      const price = plan.retailPriceUsd || plan.priceUsd;
+      if (price < groups[key].minPrice) groups[key].minPrice = price;
+      if (price > groups[key].maxPrice) groups[key].maxPrice = price;
+    });
+    // Sort: Fixed first (dataType=1), then Daily (dataType=2)
+    return Object.values(groups).sort((a, b) => {
+      if (a.dataType === 1 && b.dataType !== 1) return -1;
+      if (b.dataType === 1 && a.dataType !== 1) return 1;
+      return a.minPrice - b.minPrice;
+    });
+  }, [filteredPlans]);
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
