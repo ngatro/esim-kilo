@@ -604,11 +604,11 @@ function PlanCard({ plan, index, onClick, groupInfo }: { plan: Plan; index: numb
 
       <div className="p-4 flex flex-col flex-grow">
         <h3 className="font-bold text-slate-800 mb-1 line-clamp-1">
-          {plan.destination} {plan.fupPolicy ? `(${plan.fupPolicy})` : ""}
+          {plan.destination} {plan.dataType >= 2 ? "(Unlimited)" : ""}
         </h3>
         <p className="text-sm text-slate-500 mb-3">
-          {groupInfo ? `${groupInfo.count} options from ` : `${formatData(plan.dataAmount, plan.dataVolume)} • `}
-          {groupInfo ? formatPrice(groupInfo.minPrice) : `${plan.durationDays} days`}
+          {groupInfo ? `${groupInfo.count} options from ` : (plan.dataType >= 2 ? "Unlimited" : "Fixed")}
+          {groupInfo ? formatPrice(groupInfo.minPrice) : `${formatPrice(displayPrice)}`}
           {groupInfo && groupInfo.maxPrice > groupInfo.minPrice && ` - ${formatPrice(groupInfo.maxPrice)}`}
         </p>
 
@@ -693,13 +693,13 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
     });
   }, [plans, selectedDuration, selectedData]);
 
-  // Group plans by destination + fupPolicy
+  // Group plans by destination + dataType (1=fixed, 2+=unlimited)
   const groupedPlans = useMemo(() => {
     const groups: Record<string, GroupedPlan> = {};
     filteredPlans.forEach(plan => {
-      // Group key: destination_fupPolicy or destination_noFup
-      const fupKey = plan.fupPolicy || "noFup";
-      const key = `${plan.destination}_${fupKey}`;
+      // Group key: destination_dataType
+      const dataTypeKey = plan.dataType === 1 ? "fixed" : (plan.dataType >= 2 ? "unlimited" : "other");
+      const key = `${plan.destination}_${dataTypeKey}`;
       if (!groups[key]) {
         groups[key] = {
           key,
