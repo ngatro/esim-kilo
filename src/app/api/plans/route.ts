@@ -7,98 +7,81 @@ import { setSyncProgress, clearSyncProgress } from "@/app/api/admin/stats/route"
 // Optimized to use locationCode batching for faster sync
 async function syncTopupPackages() {
   try {
-    // Get ALL plans that support topup (both type 2 and type 3)
+    // Get ONLY plans with supportTopUpType = 3 (flexible period topup)
     const allPlansWithTopup = await prisma.plan.findMany({
-      where: { supportTopUp: true },
+      where: { supportTopUp: true, supportTopUpType: 3 },
       select: { id: true, packageCode: true, supportTopUpType: true, locationCode: true },
     });
     // Filter out null/empty packageCode in JS
     const basePlans = allPlansWithTopup.filter(p => p.packageCode);
 
-    // Group by locationCode
-    const locationGroups = new Map<string, typeof basePlans>();
-    for (const plan of basePlans) {
-      if (!plan.locationCode) continue;
-      if (!locationGroups.has(plan.locationCode)) {
-        locationGroups.set(plan.locationCode, []);
-      }
-      locationGroups.get(plan.locationCode)!.push(plan);
-    }
-
     let created = 0, updated = 0, total = 0;
 
-    // Fetch by packageCode in parallel batches
+    // Fetch by packageCode (works correctly)
     const planCodes = Array.from(new Set(basePlans.map(p => p.packageCode).filter(Boolean)));
     setSyncProgress(`[TOPUP] Starting sync for ${planCodes.length} base plans...`);
-    const batchSize = 5; // Optimized batch size
+    const BATCH_SIZE = 8;
+    const DELAY_MS = 1000;
     
-    for (let i = 0; i < planCodes.length; i += batchSize) {
-      const batch = planCodes.slice(i, i + batchSize);
-      setSyncProgress(`[TOPUP] Fetching packages for batch ${i/batchSize + 1}: ${batch.join(", ")}`);
+    for (let i = 0; i < planCodes.length; i += BATCH_SIZE) {
+      const batch = planCodes.slice(i, i + BATCH_SIZE);
       
-      const results = await Promise.all(
+    // Fetch using Promise.allSettled - continues even if some fail
+      const results = await Promise.allSettled(
         batch.map(async (pkgCode) => {
           if (!pkgCode) return [];
-          try {
-            setSyncProgress(`[TOPUP] Fetching: ${pkgCode}`);
-            const res = await getPackageList({ type: "TOPUP", packageCode: pkgCode });
-            return res.packageList || [];
-          } catch {
-            return [];
-          }
+          const res = await getPackageList({ type: "TOPUP", packageCode: pkgCode });
+          return res.packageList || [];
         })
       );
       
-      setSyncProgress(`[TOPUP] Processing ${results.flat().length} packages to DB...`);
+      // Extract successful results
+      const successfulResults = results
+        .filter((r): r is PromiseFulfilledResult<any[]> => r.status === "fulfilled")
+        .map(r => r.value);
 
       // Update progress
-      const batchNum = Math.ceil((i + batchSize) / batchSize);
-      const totalBatches = Math.ceil(planCodes.length / batchSize);
-      setSyncProgress(`[TOPUP] Batch ${batchNum}/${totalBatches} done - ${total} packages saved to DB`);
+      const batchNum = Math.ceil((i + BATCH_SIZE) / BATCH_SIZE);
+      const totalBatches = Math.ceil(planCodes.length / BATCH_SIZE);
+      const savedCount = created + updated;
+      setSyncProgress(`[TOPUP] Progress: ${batchNum}/${totalBatches} | Saved: ${savedCount}`);
 
-      // Add delay between batches to avoid rate limit (8 requests per second)
-      if (i + batchSize < planCodes.length) {
-        await new Promise(r => setTimeout(r, 130));
-      }
+      // Wait 1 second between batches
+      await new Promise(r => setTimeout(r, DELAY_MS));
 
       // Process results
-      for (const topupPackages of results) {
+      for (const topupPackages of successfulResults) {
         for (const topupPkg of topupPackages) {
-          // Find matching plan by locationCode from the topup package
           const topupLocationCode = topupPkg.locationCode;
           
-          // Try exact match first, then partial match
+          // Find matching plan by locationCode
           let matchingPlan = basePlans.find(p => 
             p.locationCode && topupLocationCode && 
             p.locationCode.toUpperCase() === topupLocationCode.toUpperCase()
           );
           
-          // If no exact match, try partial match (e.g., "CN" matches "China")
+          // If no exact match, try partial
           if (!matchingPlan && topupLocationCode) {
             matchingPlan = basePlans.find(p => 
-              p.locationCode && p.locationCode.toUpperCase().includes(topupLocationCode.toUpperCase())
+              p.locationCode && topupLocationCode &&
+              p.locationCode.toUpperCase().includes(topupLocationCode.toUpperCase())
             );
           }
           
-          if (!matchingPlan) {
-            setSyncProgress(`[TOPUP] Skipping ${topupPkg.packageCode} - no matching plan`);
-            continue;
-          }
-          
           const priceUsd = topupPkg.price / 10000;
-          const isFlexible = matchingPlan.supportTopUpType === 3;
+          const isFlexible = matchingPlan ? matchingPlan.supportTopUpType === 3 : true;
 
           const existing = await prisma.topupPackage.findUnique({ where: { packageCode: topupPkg.packageCode } });
 
           if (existing) {
             await prisma.topupPackage.update({
               where: { id: existing.id },
-              data: { planId: matchingPlan.id, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
+              data: { planId: matchingPlan?.id || null, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
             });
             updated++;
           } else {
             await prisma.topupPackage.create({
-              data: { planId: matchingPlan.id, packageCode: topupPkg.packageCode, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
+              data: { planId: matchingPlan?.id || null, packageCode: topupPkg.packageCode, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
             });
             created++;
           }
@@ -388,6 +371,7 @@ export async function GET(request: Request) {
     const slugParam = url.searchParams.get("slug");
     const planType = url.searchParams.get("planType") || undefined;
     const isHotParam = url.searchParams.get("isHot");
+    const withFupParam = url.searchParams.get("withFup");
 
     // Single plan by ID or slug
     if (id) {
@@ -410,6 +394,12 @@ export async function GET(request: Request) {
     // Filter by isHot flag
     if (isHotParam === "true") {
       where.isHot = true;
+    }
+    
+    // Filter by withFup: plans with fupPolicy (not null) AND supportTopUpType = 3
+    if (withFupParam === "true") {
+      where.fupPolicy = { not: null };
+      where.supportTopUpType = 3;
     }
     
     // Exact country filter - match countryId exactly or in locations JSON array

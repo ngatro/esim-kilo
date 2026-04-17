@@ -123,8 +123,8 @@ async function loadPlans(countrySlug: string): Promise<Plan[]> {
   const countryCode = slugToCodeMap[countrySlug] || countrySlug.toUpperCase();
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const url = isRegion 
-    ? `${baseUrl}/api/plans?regionId=${countrySlug.toLowerCase()}`
-    : `${baseUrl}/api/plans?countryId=${countryCode}`;
+    ? `${baseUrl}/api/plans?regionId=${countrySlug.toLowerCase()}&withFup=true`
+    : `${baseUrl}/api/plans?countryId=${countryCode}&withFup=true`;
   
   const res = await fetch(url);
   if (!res.ok) {

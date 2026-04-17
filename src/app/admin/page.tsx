@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
             setSyncProgress(progData.syncProgress);
           }
         } catch {}
-      }, 500);
+      }, 200); // Poll every 200ms for faster updates
 
       const res = await fetch("/api/plans?sync=true");
       clearInterval(progressInterval);
