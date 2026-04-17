@@ -718,18 +718,19 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
     setSelectedPlan(null);
   };
 
-  // Filter to only Fixed and Daily plans, then group by destination + dataType
+  // Filter to only Fixed and Daily plans, then group by dataType only (for single country page)
   const displayPlans = useMemo(() => {
     // First filter only dataType 1 (Fixed) and 2 (Daily)
     const relevantPlans = filteredPlans.filter(p => p.dataType === 1 || p.dataType === 2);
     const groups: Record<string, GroupedPlan> = {};
     relevantPlans.forEach(plan => {
+      // Group by dataType only: "fixed" or "daily"
       const dataTypeKey = plan.dataType === 1 ? "fixed" : "daily";
-      const key = `${plan.destination}_${dataTypeKey}`;
+      const key = dataTypeKey; // Single key per dataType
       if (!groups[key]) {
         groups[key] = {
           key,
-          destination: plan.destination,
+          destination: country.charAt(0).toUpperCase() + country.slice(1), // Use URL country param
           fupPolicy: plan.fupPolicy,
           plans: [],
           minPrice: plan.retailPriceUsd || plan.priceUsd,
@@ -742,13 +743,13 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
       if (price < groups[key].minPrice) groups[key].minPrice = price;
       if (price > groups[key].maxPrice) groups[key].maxPrice = price;
     });
-    // Sort: Fixed first (dataType=1), then Daily (dataType=2)
+    // Return sorted: Fixed first (dataType=1), then Daily (dataType=2)
     return Object.values(groups).sort((a, b) => {
       if (a.dataType === 1 && b.dataType !== 1) return -1;
       if (b.dataType === 1 && a.dataType !== 1) return 1;
       return a.minPrice - b.minPrice;
     });
-  }, [filteredPlans]);
+  }, [filteredPlans, country]);
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
@@ -888,17 +889,16 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
                 {group.dataType === 1 ? "Fixed" : "Daily"}
               </p>
               <p className="text-slate-500 mt-2">
-                {group.plans.length} options from {formatPrice(group.minPrice)}
+                {group.plans.length} plans from {formatPrice(group.minPrice)}
               </p>
             </div>
           ))}
+          {displayPlans.length === 0 && (
+            <div className="col-span-2 text-center py-16">
+              <p className="text-slate-500 text-lg">No Fixed or Daily plans available</p>
+            </div>
+          )}
         </div>
-        
-        {displayPlans.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-slate-500 text-lg">{t("countryPage.noMatchingPlans")}</p>
-          </div>
-        )}
       </div>
 
       {/* Modal */}
