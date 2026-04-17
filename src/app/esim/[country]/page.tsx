@@ -134,8 +134,8 @@ async function loadPlans(countrySlug: string): Promise<Plan[]> {
   const countryCode = slugToCodeMap[countrySlug] || countrySlug.toUpperCase();
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const url = isRegion 
-    ? `${baseUrl}/api/plans?regionId=${countrySlug.toLowerCase()}&withFup=true`
-    : `${baseUrl}/api/plans?countryId=${countryCode}&withFup=true`;
+    ? `${baseUrl}/api/plans?regionId=${countrySlug.toLowerCase()}`
+    : `${baseUrl}/api/plans?countryId=${countryCode}`;
   
   const res = await fetch(url);
   if (!res.ok) {
@@ -604,12 +604,13 @@ function PlanCard({ plan, index, onClick, groupInfo }: { plan: Plan; index: numb
 
       <div className="p-4 flex flex-col flex-grow">
         <h3 className="font-bold text-slate-800 mb-1 line-clamp-1">
-          {plan.destination} {plan.dataType >= 2 ? "(Unlimited)" : ""}
+          {plan.destination} {plan.dataType === 2 ? "(Daily)" : (plan.dataType > 2 ? "(Unlimited)" : "")}
         </h3>
         <p className="text-sm text-slate-500 mb-3">
-          {groupInfo ? `${groupInfo.count} options from ` : (plan.dataType >= 2 ? "Unlimited" : "Fixed")}
-          {groupInfo ? formatPrice(groupInfo.minPrice) : `${formatPrice(displayPrice)}`}
-          {groupInfo && groupInfo.maxPrice > groupInfo.minPrice && ` - ${formatPrice(groupInfo.maxPrice)}`}
+          {groupInfo 
+            ? `${groupInfo.count} options from ${formatPrice(groupInfo.minPrice)}${groupInfo.maxPrice > groupInfo.minPrice ? ` - ${formatPrice(groupInfo.maxPrice)}` : ""}`
+            : (plan.dataType === 1 ? "Fixed" : (plan.dataType === 2 ? "Daily" : "Unlimited"))
+          }
         </p>
 
         <div className="mt-auto flex items-center justify-between">
@@ -693,12 +694,12 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
     });
   }, [plans, selectedDuration, selectedData]);
 
-  // Group plans by destination + dataType (1=fixed, 2+=unlimited)
+  // Group plans by destination + dataType (1=fixed, 2=daily)
   const groupedPlans = useMemo(() => {
     const groups: Record<string, GroupedPlan> = {};
     filteredPlans.forEach(plan => {
       // Group key: destination_dataType
-      const dataTypeKey = plan.dataType === 1 ? "fixed" : (plan.dataType >= 2 ? "unlimited" : "other");
+      const dataTypeKey = plan.dataType === 1 ? "fixed" : (plan.dataType === 2 ? "daily" : `type${plan.dataType}`);
       const key = `${plan.destination}_${dataTypeKey}`;
       if (!groups[key]) {
         groups[key] = {
@@ -716,7 +717,14 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
       if (price < groups[key].minPrice) groups[key].minPrice = price;
       if (price > groups[key].maxPrice) groups[key].maxPrice = price;
     });
-    return Object.values(groups).sort((a, b) => a.minPrice - b.minPrice);
+    // Sort: Fixed first (dataType=1), then Daily (dataType=2), then others
+    return Object.values(groups).sort((a, b) => {
+      if (a.dataType === 1 && b.dataType !== 1) return -1;
+      if (b.dataType === 1 && a.dataType !== 1) return 1;
+      if (a.dataType === 2 && b.dataType !== 2) return -1;
+      if (b.dataType === 2 && a.dataType !== 2) return 1;
+      return a.minPrice - b.minPrice;
+    });
   }, [filteredPlans]);
 
   const displayName = country.charAt(0).toUpperCase() + country.slice(1);
