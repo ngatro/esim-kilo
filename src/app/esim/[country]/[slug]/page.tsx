@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import EsimRedirectClient from "./EsimRedirectClient";
+import EsimDetailModal from "./EsimDetailModal";
 
 interface PageProps {
   params: Promise<{
@@ -24,5 +24,5 @@ export default async function EsimPlanPage({ params }: PageProps) {
   if (!plan?.id) return notFound();
 
   // Pass full plan to client to render without another fetch or navigation
-  return <EsimRedirectClient plan={plan} country={country} slug={slug} />;
+  return <EsimDetailModal plan={plan} country={country} slug={slug} />;
 }

@@ -93,7 +93,7 @@ function getHeroImage(plan: Plan): string {
   return getDefaultImage(plan.packageCode);
 }
 
-export default function EsimRedirectClient({ plan, country, slug }: { plan: any; country: string; slug: string }) {
+export default function EsimDetailModal({ plan, country, slug }: { plan: any; country: string; slug: string }) {
   const { t, formatPrice } = useI18n();
   const [imgError, setImgError] = useState(false);
   const [quantity, setQuantity] = useState(1);

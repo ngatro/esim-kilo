@@ -53,6 +53,17 @@ interface Plan {
   activeType: number;
 }
 
+// Grouped plan for display
+interface GroupedPlan {
+  key: string;
+  destination: string;
+  fupPolicy: string | null;
+  plans: Plan[];
+  minPrice: number;
+  maxPrice: number;
+  dataType: number;
+}
+
 const regions = ["global", "asia", "europe", "americas", "oceania"];
 
 // Map slug to ISO country code
@@ -541,11 +552,11 @@ function PlanModal({
 }
 
 // Plan Card Component (for the grid)
-function PlanCard({ plan, index, onClick }: { plan: Plan; index: number; onClick: () => void }) {
+function PlanCard({ plan, index, onClick, groupInfo }: { plan: Plan; index: number; onClick: () => void; groupInfo?: { count: number; minPrice: number; maxPrice: number } }) {
   const { formatPrice, t } = useI18n();
   const [imgError, setImgError] = useState(false);
   const isUnlimited = plan.badge === "unlimited";
-  const displayPrice = plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd;
+  const displayPrice = groupInfo ? groupInfo.minPrice : (plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd);
 
   const heroImage = imgError 
     ? "/favicon.ico" 
@@ -593,10 +604,12 @@ function PlanCard({ plan, index, onClick }: { plan: Plan; index: number; onClick
 
       <div className="p-4 flex flex-col flex-grow">
         <h3 className="font-bold text-slate-800 mb-1 line-clamp-1">
-          {plan.destination}
+          {plan.destination} {plan.fupPolicy ? `(${plan.fupPolicy})` : ""}
         </h3>
         <p className="text-sm text-slate-500 mb-3">
-          {formatData(plan.dataAmount, plan.dataVolume)} • {plan.durationDays} days
+          {groupInfo ? `${groupInfo.count} options from ` : `${formatData(plan.dataAmount, plan.dataVolume)} • `}
+          {groupInfo ? formatPrice(groupInfo.minPrice) : `${plan.durationDays} days`}
+          {groupInfo && groupInfo.maxPrice > groupInfo.minPrice && ` - ${formatPrice(groupInfo.maxPrice)}`}
         </p>
 
         <div className="mt-auto flex items-center justify-between">
@@ -680,6 +693,32 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
     });
   }, [plans, selectedDuration, selectedData]);
 
+  // Group plans by destination + fupPolicy
+  const groupedPlans = useMemo(() => {
+    const groups: Record<string, GroupedPlan> = {};
+    filteredPlans.forEach(plan => {
+      // Group key: destination_fupPolicy or destination_noFup
+      const fupKey = plan.fupPolicy || "noFup";
+      const key = `${plan.destination}_${fupKey}`;
+      if (!groups[key]) {
+        groups[key] = {
+          key,
+          destination: plan.destination,
+          fupPolicy: plan.fupPolicy,
+          plans: [],
+          minPrice: plan.retailPriceUsd || plan.priceUsd,
+          maxPrice: plan.retailPriceUsd || plan.priceUsd,
+          dataType: plan.dataType,
+        };
+      }
+      groups[key].plans.push(plan);
+      const price = plan.retailPriceUsd || plan.priceUsd;
+      if (price < groups[key].minPrice) groups[key].minPrice = price;
+      if (price > groups[key].maxPrice) groups[key].maxPrice = price;
+    });
+    return Object.values(groups).sort((a, b) => a.minPrice - b.minPrice);
+  }, [filteredPlans]);
+
   const displayName = country.charAt(0).toUpperCase() + country.slice(1);
 
   if (!loading && plans.length === 0) {
@@ -704,8 +743,8 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
     setSelectedPlan(null);
   };
 
-  // Display all filtered plans
-  const displayPlans = filteredPlans;
+  // Display grouped plans
+  const displayPlans = groupedPlans;
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
@@ -830,14 +869,15 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
           </div>
         </div>
 
-        {/* Plans Grid - Show only first 3 */}
+        {/* Plans Grid - Show grouped plans */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-16">
-          {displayPlans.map((plan, index) => (
+          {displayPlans.map((group, index) => (
             <PlanCard 
-              key={plan.id} 
-              plan={plan} 
+              key={group.key} 
+              plan={group.plans[0]} 
               index={index} 
-              onClick={() => handlePlanClick(plan)}
+              onClick={() => handlePlanClick(group.plans[0])}
+              groupInfo={{ count: group.plans.length, minPrice: group.minPrice, maxPrice: group.maxPrice }}
             />
           ))}
         </div>
