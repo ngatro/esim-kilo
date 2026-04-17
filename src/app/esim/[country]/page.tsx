@@ -704,8 +704,8 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
     setSelectedPlan(null);
   };
 
-  // Display only first 3 plans (or 1 if only 1 available)
-  const displayPlans = filteredPlans.slice(0, 3);
+  // Display all filtered plans
+  const displayPlans = filteredPlans;
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
@@ -841,24 +841,6 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
             />
           ))}
         </div>
-
-        {/* View All Plans Link */}
-        {plans.length > 3 && (
-          <div className="text-center pb-16">
-            <p className="text-slate-500 mb-4">
-              + {plans.length - 3} more plans available
-            </p>
-            <Link
-              href={`/plans?country=${country}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full transition-colors"
-            >
-              View All Plans
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          </div>
-        )}
         
         {displayPlans.length === 0 && (
           <div className="text-center py-16">
