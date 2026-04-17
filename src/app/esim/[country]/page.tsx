@@ -873,16 +873,24 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
           </div>
         </div>
 
-        {/* Plans Grid - Show grouped plans */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-16">
+        {/* Plans Grid - Show 2 simple cards: Fixed and Daily */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-16">
           {displayPlans.map((group, index) => (
-            <PlanCard 
-              key={group.key} 
-              plan={group.plans[0]} 
-              index={index} 
+            <div 
+              key={group.key}
               onClick={() => handlePlanClick(group.plans[0])}
-              groupInfo={{ count: group.plans.length, minPrice: group.minPrice, maxPrice: group.maxPrice }}
-            />
+              className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl cursor-pointer text-center"
+            >
+              <h3 className="font-bold text-2xl text-slate-800 mb-2">
+                {group.destination}
+              </h3>
+              <p className="text-orange-500 font-semibold text-lg">
+                {group.dataType === 1 ? "Fixed" : "Daily"}
+              </p>
+              <p className="text-slate-500 mt-2">
+                {group.plans.length} options from {formatPrice(group.minPrice)}
+              </p>
+            </div>
           ))}
         </div>
         
