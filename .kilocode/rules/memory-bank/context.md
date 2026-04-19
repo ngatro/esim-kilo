@@ -153,6 +153,13 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 - Updated wallet page to show only affiliate earnings
 - Kept withdrawal functionality (PayPal Payouts API pending)
 
+## Changes (2026-04-19)
+
+- **Optimized Sync Process** - Implemented 3 solutions:
+  1. **Background Task**: Backend returns immediately with `{status: "started"}` and runs sync in background fire-and-forget pattern
+  2. **Promise.all**: Used for parallel DB operations (regions + countries upsert in single Promise.all call)
+  3. **Reduced Polling**: Changed from 200ms to 1000ms polling interval in admin dashboard to decrease server load
+
 ## Quick Start Guide
 
 ### Routes use locale:

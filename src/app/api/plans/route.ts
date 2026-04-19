@@ -27,11 +27,13 @@ async function syncTopupPackages() {
       const batch = planCodes.slice(i, i + BATCH_SIZE);
       
     // Fetch using Promise.allSettled - continues even if some fail
+      // Also track which plan each response belongs to
+      const batchPlans = batch.map(pkgCode => basePlans.find(p => p.packageCode === pkgCode));
       const results = await Promise.allSettled(
-        batch.map(async (pkgCode) => {
-          if (!pkgCode) return [];
+        batch.map(async (pkgCode, idx) => {
+          if (!pkgCode) return { topups: [], planId: batchPlans[idx]?.id };
           const res = await getPackageList({ type: "TOPUP", packageCode: pkgCode });
-          return res.packageList || [];
+          return { topups: res.packageList || [], planId: batchPlans[idx]?.id };
         })
       );
       
@@ -252,15 +254,38 @@ export async function GET(request: Request) {
     const toSlug = (name: string) => name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-");
 
     if (sync === "true") {
+      // Solution 1: Return immediately and run sync in background
       const startTime = Date.now();
-      const res = await getPackageList({ type: "BASE" } as any);
-      const packages = res.packageList || [];
-      if (packages.length === 0) return NextResponse.json({ success: false, error: "No packages" });
+      
+      // Return immediately to frontend - don't wait for sync to complete
+      setSyncProgress("[BASE] Starting sync (background)...");
+      
+      // Return first, then run sync in background
+      const backgroundSync = (async () => {
+        try {
+          console.log("[Sync] Starting - fetching package list...");
+          setSyncProgress("[1/5] Fetching package list from API...");
+          
+          const res = await getPackageList({ type: "BASE" } as any);
+          const packages = res.packageList || [];
+          
+          console.log(`[Sync] Received ${packages.length} packages from API`);
+          
+          if (packages.length === 0) {
+            setSyncProgress("[BASE] Error: No packages found");
+            console.error("[Sync] No packages found!");
+            clearSyncProgress();
+            return;
+          }
 
-      const regionMap: Record<string, { id: string; name: string; emoji: string }> = {};
-      const countryMap: Record<string, { id: string; name: string; code: string; emoji: string; slug: string }> = {};
+          const regionMap: Record<string, { id: string; name: string; emoji: string }> = {};
+          const countryMap: Record<string, { id: string; name: string; code: string; emoji: string; slug: string }> = {};
 
-      const plans = packages.map((pkg) => {
+          console.log("[Sync] Processing package data...");
+          setSyncProgress("[2/5] Processing package data...");
+          
+          // Solution 2: Use Promise.all for parallel DB operations (region + country upserts)
+          const plans = packages.map((pkg) => {
         const dataAmount = bytesToGB(pkg.volume);
         const priceUsd = pkg.price / 10000;
         const retailPriceUsd = (pkg.retailPrice || pkg.price) / 10000;
@@ -331,25 +356,34 @@ export async function GET(request: Request) {
         };
       });
 
-      // Sync regions first (needed for FK)
-      for (const region of Object.values(regionMap)) {
-        await prisma.region.upsert({
-          where: { id: region.id },
-          update: { name: region.name, emoji: region.emoji },
-          create: { id: region.id, name: region.name, emoji: region.emoji },
-        });
-      }
-
-      // Sync countries (needed for FK)
-      for (const country of Object.values(countryMap)) {
-        await prisma.country.upsert({
-          where: { code: country.code },
-          update: { name: country.name, emoji: country.emoji, slug: country.slug },
-          create: { id: country.id, name: country.name, code: country.code, emoji: country.emoji, slug: country.slug },
-        });
-      }
+      // Solution 2: Use Promise.all for parallel DB operations (regions + countries)
+      console.log("[Sync] Syncing regions and countries to database...");
+      setSyncProgress("[3/5] Syncing regions & countries...");
+      const regionValues = Object.values(regionMap);
+      const countryValues = Object.values(countryMap);
+      console.log(`[Sync] Regions: ${regionValues.length}, Countries: ${countryValues.length}`);
+      
+      // Batch regions and countries with Promise.all for parallel execution
+      await Promise.all([
+        ...regionValues.map(region => 
+          prisma.region.upsert({
+            where: { id: region.id },
+            update: { name: region.name, emoji: region.emoji },
+            create: { id: region.id, name: region.name, emoji: region.emoji },
+          })
+        ),
+        ...countryValues.map(country => 
+          prisma.country.upsert({
+            where: { code: country.code },
+            update: { name: country.name, emoji: country.emoji, slug: country.slug },
+            create: { id: country.id, name: country.name, code: country.code, emoji: country.emoji, slug: country.slug },
+          })
+        ),
+      ]);
 
       // Delete existing plans
+      console.log("[Sync] Deleting old plans and creating new ones...");
+      setSyncProgress("[4/5] Creating ${plans.length} plans...");
       await prisma.plan.deleteMany({});
 
       // Save plans in batches
@@ -357,10 +391,15 @@ export async function GET(request: Request) {
       for (let i = 0; i < plans.length; i += 200) {
         await prisma.plan.createMany({ data: plans.slice(i, i + 200), skipDuplicates: true });
         totalCreated += Math.min(200, plans.length - i);
+        console.log(`[Sync] Progress: ${Math.min(i + 200, plans.length)}/${plans.length} plans`);
+        setSyncProgress(`[4/5] Creating plans... ${Math.min(i + 200, plans.length)}/${plans.length}`);
       }
 
       // Update minPrice for each country based on lowest retailPriceUsd
+      console.log("[Sync] Updating min prices for countries...");
+      setSyncProgress("[5/5] Updating country min prices...");
       const countries = await prisma.country.findMany({ select: { code: true } });
+      console.log(`[Sync] Updating minPrice for ${countries.length} countries`);
       for (const country of countries) {
         const cheapestPlan = await prisma.plan.findFirst({
           where: { countryId: country.code, isActive: true },
@@ -376,17 +415,21 @@ export async function GET(request: Request) {
       }
 
       // Sync top-up packages after base plans
-      setSyncProgress("[TOPUP] Starting TOPUP package sync...");
+      console.log("[Sync] Starting TOPUP package sync...");
+      setSyncProgress("[TOPUP] Syncing TOPUP packages...");
       const topupResult = await syncTopupPackages();
 
-      return NextResponse.json({ 
-        success: true, 
-        synced: totalCreated, 
-        total: packages.length, 
-        topupSynced: topupResult.created + topupResult.updated,
-        topupTotal: topupResult.total,
-        elapsed: `${((Date.now() - startTime) / 1000).toFixed(1)}s` 
-      });
+      console.log(`[Sync] COMPLETED! Plans: ${totalCreated}, Topups: ${topupResult.created + topupResult.updated}`);
+      clearSyncProgress();
+    } catch (error) {
+      console.error("[Background Sync] Error:", error);
+      setSyncProgress("[BASE] Error: " + String(error));
+      clearSyncProgress();
+    }
+      })();
+      
+      // Return immediately - don't wait for background sync
+      return NextResponse.json({ status: "started", message: "Sync started in background" });
     }
 
     // Query

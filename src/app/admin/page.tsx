@@ -73,28 +73,55 @@ export default function AdminDashboardPage() {
     setSyncProgress("Starting sync...");
     setSyncResult("");
     try {
-      // Poll for progress
-      const progressInterval = setInterval(async () => {
-        try {
-          const progRes = await fetch("/api/admin/stats");
-          const progData = await progRes.json();
-          if (progData.syncProgress) {
-            setSyncProgress(progData.syncProgress);
-          }
-        } catch {}
-      }, 200); // Poll every 200ms for faster updates
-
+      // Start sync request first
       const res = await fetch("/api/plans?sync=true");
-      clearInterval(progressInterval);
-      setSyncProgress("");
       const data = await res.json();
-      if (data.success) {
+      
+      // Handle response
+      if (data.status === "started") {
+        // Background sync - poll until completed
+        setSyncProgress("Sync started, waiting for completion...");
+        const maxWaitTime = 120000; // 2 minutes max
+        const pollStartTime = Date.now();
+        
+        const pollInterval = setInterval(async () => {
+          try {
+            const progRes = await fetch("/api/admin/stats");
+            const progData = await progRes.json();
+            
+            // Check if sync is still in progress
+            if (progData.syncProgress) {
+              setSyncProgress(progData.syncProgress);
+            } else {
+              // Sync completed (progress cleared)
+              clearInterval(pollInterval);
+              setSyncProgress("");
+              setSyncResult("✓ Sync completed!");
+              await fetchStats();
+              setSyncing(false);
+            }
+          } catch {
+            // Continue polling on error
+          }
+          
+          // Timeout after 2 minutes
+          if (Date.now() - pollStartTime > maxWaitTime) {
+            clearInterval(pollInterval);
+            setSyncProgress("");
+            setSyncResult("⚠ Sync timed out, but likely completed in background");
+            setSyncing(false);
+          }
+        }, 1000); // Poll every 1000ms
+        return; // Exit - polling continues in setInterval
+      } else if (data.success) {
+        // Legacy sync (completed synchronously)
+        setSyncProgress("");
         const topupMsg = data.topupSynced > 0 ? `, ${data.topupSynced} TOPUP` : "";
         setSyncResult(`✓ Synced ${data.synced} plans${topupMsg} (${data.elapsed})`);
+        await fetchStats();
       } else {
         setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
       }
-      await fetchStats();
     } catch (error) {
       console.error("Sync failed:", error);
       setSyncResult("✗ Sync failed");
