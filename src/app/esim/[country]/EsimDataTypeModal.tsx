@@ -235,12 +235,12 @@ export default function EsimDataTypeModal({
     }
   }, [dataOptions, fupDataOptions, selectedData, dataCategory]);
 
+  // Initialize first time only - don't update when user selects
   useEffect(() => {
-    const options = dataCategory === 'fup' ? fupDurationOptions : durationOptions;
-    if (options.length > 0 && !selectedDuration) {
-      setSelectedDuration(options[0]);
+    if (!selectedDuration) {
+      setSelectedDuration(1);
     }
-  }, [durationOptions, fupDurationOptions, selectedDuration, dataCategory]);
+  }, []);
 
   // Reset selections when modal opens
   useEffect(() => {
