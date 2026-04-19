@@ -91,10 +91,17 @@ async function syncTopupPackages() {
               },
             });
             updated++;
+            // Link to plan's topupPackageId if flexible
+            if (matchingPlan && isFlexible) {
+              await prisma.plan.update({
+                where: { id: matchingPlan.id },
+                data: { topupPackageId: existing.id }
+              });
+            }
           } else {
-            await prisma.topupPackage.create({
+            const newTopup = await prisma.topupPackage.create({
               data: { 
-                planId: matchingPlan?.id || null, 
+                planId: matchingPlan?.id || null,
                 packageCode: topupPkg.packageCode, 
                 name: topupPkg.name, 
                 priceUsd,
@@ -106,6 +113,13 @@ async function syncTopupPackages() {
               },
             });
             created++;
+            // Link to plan's topupPackageId if flexible
+            if (matchingPlan && isFlexible) {
+              await prisma.plan.update({
+                where: { id: matchingPlan.id },
+                data: { topupPackageId: newTopup.id }
+              });
+            }
           }
         }
         total += topupPackages.length;
