@@ -108,6 +108,8 @@ model Plan {
   isBestSeller    Boolean  @default(false)
   isHot           Boolean  @default(false)
   supportTopUpType Int     @default(1) // 1 = no, 2 = yes, 3 = yes with period
+  topupPackageId  Int?     // Direct link to its TopupPackage (for supportTopUpType = 3)
+  topupPackage    TopupPackage? @relation("PlanTopupPackage", fields: [topupPackageId], references: [id])
   badge           String?
   priority        Int      @default(0)
   
@@ -322,6 +324,9 @@ model TopupPackage {
   id          Int      @id @default(autoincrement())
   planId     String?  // FK to Plan (the base plan that can be topped up)
   plan       Plan?    @relation("TopupToPlan", fields: [planId], references: [id], onDelete: Cascade)
+  
+  // Reverse: Plans that use this as their topup package
+  linkedPlans Plan[]  @relation("PlanTopupPackage")
   
   packageCode String   @unique // Top-up package code from API
   name       String?  // Display name

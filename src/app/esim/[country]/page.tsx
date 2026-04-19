@@ -52,6 +52,8 @@ interface Plan {
   fupPolicy: string | null;
   smsStatus: number;
   activeType: number;
+  supportTopUpType: number;
+  topupPackageId?: number;
 }
 
 // Grouped plan for display

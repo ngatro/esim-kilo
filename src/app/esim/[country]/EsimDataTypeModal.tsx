@@ -22,6 +22,7 @@ interface Plan {
   supportTopUpType: number;
   countryId: string | null;
   fupPolicy: string | null;
+  topupPackageId?: number; // Direct link to its TopupPackage
 }
 
 interface TopupPackage {
@@ -65,10 +66,11 @@ export default function EsimDataTypeModal({
   const [imgError, setImgError] = useState(false);
   const [topupPackages, setTopupPackages] = useState<TopupPackage[]>([]);
   
-  // Fetch topup packages for these plans
+  // Fetch topup packages for ALL plans
   useEffect(() => {
     async function fetchTopups() {
       if (!plans.length) return;
+      // Get ALL plan IDs including both regular and FUP
       const planIds = plans.map(p => p.id).join(',');
       try {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -174,10 +176,20 @@ export default function EsimDataTypeModal({
     return plansToSearch.find(p => p.durationDays === shortestDuration) || plansToSearch[0];
   }, [regularPlans, fupPlans, selectedData, selectedDuration, dataCategory]);
 
-  // Use first available topup package (not filtered by specific plan)
+  // Filter topup packages for the current basePlan
   const topupPackage = useMemo(() => {
+    if (!basePlan) return topupPackages[0];
+    //优先使用 Plan.topupPackageId 直接关联的 topup
+    if (basePlan.topupPackageId) {
+      const linked = topupPackages.find(p => p.id === basePlan.topupPackageId);
+      if (linked) return linked;
+    }
+    // Fallback: 通过 planId 查找
+    const forPlan = topupPackages.find(p => p.planId === basePlan.id);
+    if (forPlan) return forPlan;
+    // Fallback to any
     return topupPackages[0];
-  }, [topupPackages]);
+  }, [topupPackages, basePlan]);
   
   // Can multiply if any topup is available
   const canMultiply = useMemo(() => {
@@ -235,12 +247,20 @@ export default function EsimDataTypeModal({
     }
   }, [dataOptions, fupDataOptions, selectedData, dataCategory]);
 
-  // Initialize first time only - don't update when user selects
+  // Initialize with first available data option
   useEffect(() => {
-    if (!selectedDuration) {
+    const options = dataCategory === 'fup' ? fupDataOptions : dataOptions;
+    if (options.length > 0 && !selectedData) {
+      setSelectedData(options[0]);
+    }
+  }, [dataCategory, dataOptions, fupDataOptions]);
+
+  // Initialize duration - will be overridden by user selection
+  useEffect(() => {
+    if (!selectedDuration && selectedData) {
       setSelectedDuration(1);
     }
-  }, []);
+  }, [selectedData]);
 
   // Reset selections when modal opens
   useEffect(() => {
@@ -390,22 +410,7 @@ export default function EsimDataTypeModal({
                       Duration (Days)
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {(dataCategory === 'fup' ? fupDurationOptions : durationOptions).map((duration) => (
-                        <button
-                          key={duration}
-                          onClick={() => setSelectedDuration(duration)}
-                          disabled={isDurationDisabled(duration)}
-                          className={`px-4 py-2.5 rounded-full font-medium text-sm transition-all ${
-                            selectedDuration === duration
-                              ? "bg-orange-500 text-white border-2 border-orange-500"
-                              : "bg-white text-slate-600 border-2 border-slate-200 hover:border-orange-300"
-                          } disabled:opacity-50 disabled:cursor-not-allowed disabled:line-through`}
-                        >
-                          {duration} days
-                        </button>
-                      ))}
-                      {/* Show ALL extra duration options */}
-                      {ALL_DURATIONS.filter(d => d !== selectedDuration && !(dataCategory === 'fup' ? fupDurationOptions : durationOptions).includes(d)).map((duration) => (
+                      {ALL_DURATIONS.map((duration) => (
                         <button
                           key={duration}
                           onClick={() => setSelectedDuration(duration)}

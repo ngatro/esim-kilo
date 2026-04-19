@@ -57,6 +57,8 @@ interface Plan {
   isHot: boolean;
   badge: string | null;
   locationNetworkList: unknown;
+  supportTopUpType: number;
+  topupPackageId?: number;
 }
 
 function formatData(gb: number, volume?: number): string {
