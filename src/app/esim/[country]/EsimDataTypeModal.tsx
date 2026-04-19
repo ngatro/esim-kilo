@@ -176,18 +176,26 @@ export default function EsimDataTypeModal({
     return plansToSearch.find(p => p.durationDays === shortestDuration) || plansToSearch[0];
   }, [regularPlans, fupPlans, selectedData, selectedDuration, dataCategory]);
 
-  // Filter topup packages for the current basePlan
+  // Find the correct topup package for the currently selected data amount
   const topupPackage = useMemo(() => {
+    // First, we need a valid basePlan that matches selected data
     if (!basePlan) return topupPackages[0];
-    //优先使用 Plan.topupPackageId 直接关联的 topup
+    
+    // Case 1: Use directly linked topupPackageId
     if (basePlan.topupPackageId) {
       const linked = topupPackages.find(p => p.id === basePlan.topupPackageId);
       if (linked) return linked;
     }
-    // Fallback: 通过 planId 查找
+    
+    // Case 2: Find topup by matching planId (the plan's ID that matches current data amount)
     const forPlan = topupPackages.find(p => p.planId === basePlan.id);
     if (forPlan) return forPlan;
-    // Fallback to any
+    
+    // Case 3: Fallback - find any topup that supports flexible (for stacking)
+    const flexible = topupPackages.find(p => p.isFlexible);
+    if (flexible) return flexible;
+    
+    // Last fallback
     return topupPackages[0];
   }, [topupPackages, basePlan]);
   
