@@ -159,17 +159,31 @@ export default function EsimDataTypeModal({
   }, [topupPackages]);
 
   // Find base plan for top-up calculation
-  // Priority: durationDays === 1, then shortest
+  // Must match the selected data AND have shortest duration
   const basePlan = useMemo(() => {
-    const allPlans = [...regularPlans, ...fupPlans];
-    if (!allPlans.length) return null;
-    // Try to find 1-day plan first
-    const oneDayPlan = allPlans.find(p => p.durationDays === 1);
+    const plansToSearch = dataCategory === 'fup' ? fupPlans : regularPlans;
+    if (!plansToSearch.length) return null;
+    
+    // Find plan that matches selected data amount
+    const matchingData = plansToSearch.find(p => p.dataAmount === selectedData);
+    if (matchingData) {
+      // Try to find 1-day plan with same data
+      const oneDayPlan = plansToSearch.find(p => p.dataAmount === selectedData && p.durationDays === 1);
+      if (oneDayPlan) return oneDayPlan;
+      // Fallback to shortest duration with same data
+      const sameDataPlans = plansToSearch.filter(p => p.dataAmount === selectedData);
+      const shortestDuration = Math.min(...sameDataPlans.map(p => p.durationDays));
+      return sameDataPlans.find(p => p.durationDays === shortestDuration) || matchingData;
+    }
+    
+    // Fallback: find 1-day plan
+    const oneDayPlan = plansToSearch.find(p => p.durationDays === 1);
     if (oneDayPlan) return oneDayPlan;
+    
     // Fallback to shortest
-    const shortestDuration = Math.min(...allPlans.map(p => p.durationDays));
-    return allPlans.find(p => p.durationDays === shortestDuration) || allPlans[0];
-  }, [regularPlans, fupPlans]);
+    const shortestDuration = Math.min(...plansToSearch.map(p => p.durationDays));
+    return plansToSearch.find(p => p.durationDays === shortestDuration) || plansToSearch[0];
+  }, [regularPlans, fupPlans, selectedData, dataCategory]);
 
   // Find exact matching plan based on selection (search in correct group)
   const exactPlan = useMemo(() => {
