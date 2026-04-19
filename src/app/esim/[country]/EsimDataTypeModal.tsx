@@ -142,22 +142,6 @@ export default function EsimDataTypeModal({
     return Array.from(durations).sort((a, b) => a - b);
   }, [fupPlans]);
 
-  // Check if top-up is flexible based on TopupPackages
-  // If ANY TopupPackage has isFlexible = true, we can multiply
-  const canMultiply = useMemo(() => {
-    return topupPackages.some(p => p.isFlexible);
-  }, [topupPackages]);
-
-  // Check if any top-up is available
-  const hasTopupPackages = useMemo(() => {
-    return topupPackages.length > 0;
-  }, [topupPackages]);
-
-  // Find first topup package for pricing
-  const topupPackage = useMemo(() => {
-    return topupPackages[0];
-  }, [topupPackages]);
-
   // Find base plan for top-up calculation
   // Must match the selected data AND have shortest duration
   const basePlan = useMemo(() => {
@@ -184,6 +168,27 @@ export default function EsimDataTypeModal({
     const shortestDuration = Math.min(...plansToSearch.map(p => p.durationDays));
     return plansToSearch.find(p => p.durationDays === shortestDuration) || plansToSearch[0];
   }, [regularPlans, fupPlans, selectedData, dataCategory]);
+
+  // Filter topup packages for the current basePlan
+  const relevantTopupPackages = useMemo(() => {
+    if (!basePlan) return [];
+    return topupPackages.filter(p => p.planId === basePlan.id);
+  }, [topupPackages, basePlan]);
+
+  // Check if top-up is flexible based on TopupPackages for this plan
+  const canMultiply = useMemo(() => {
+    return relevantTopupPackages.some(p => p.isFlexible);
+  }, [relevantTopupPackages]);
+
+  // Check if any top-up is available for this plan
+  const hasTopupPackages = useMemo(() => {
+    return relevantTopupPackages.length > 0;
+  }, [relevantTopupPackages]);
+
+  // Find first topup package for the correct plan
+  const topupPackage = useMemo(() => {
+    return relevantTopupPackages[0];
+  }, [relevantTopupPackages]);
 
   // Find exact matching plan based on selection (search in correct group)
   const exactPlan = useMemo(() => {
