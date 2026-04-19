@@ -137,7 +137,7 @@ export default function EsimDataTypeModal({
     return Array.from(durations).sort((a, b) => a - b);
   }, [regularPlans]);
 
-  // Get unique duration options from FUP plans
+  // Get duration options from FUP plans
   const fupDurationOptions = useMemo(() => {
     const durations = new Set<number>();
     fupPlans.forEach(plan => {
