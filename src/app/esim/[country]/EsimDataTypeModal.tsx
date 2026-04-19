@@ -474,11 +474,14 @@ export default function EsimDataTypeModal({
                         ✓ Exact plan available
                       </p>
                     )}
-                    {isUsingTopUp && topupPackage && (
+                    {isUsingTopUp && basePlan && topupPackage && (
                       <div className="text-xs text-amber-600 mt-1">
-                        <p>⚠️ Top-up × {selectedDuration} days</p>
+                        <p>⚠️ Top-up × {selectedDuration} days (stacked)</p>
                         <p>📦 Topup packageCode: <code className="bg-amber-100 px-1 rounded">{topupPackage.packageCode}</code></p>
-                        <p>💰 Topup price: {formatPrice(topupPackage.priceUsd)} × {selectedDuration} = {formatPrice(topupPackage.priceUsd * selectedDuration)}</p>
+                        <p>💰 Base price: {formatPrice(basePlan.retailPriceUsd > 0 ? basePlan.retailPriceUsd : basePlan.priceUsd)}</p>
+                        <p>💰 Topup retail: {formatPrice(topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd)}/day</p>
+                        <p>💰 Extra days: {selectedDuration} - {basePlan.durationDays} = {selectedDuration - basePlan.durationDays}</p>
+                        <p>💰 Total: {formatPrice(basePlan.retailPriceUsd > 0 ? basePlan.retailPriceUsd : basePlan.priceUsd)} + ({selectedDuration - basePlan.durationDays} × {formatPrice(topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd)}) = {formatPrice(pricePreview)}</p>
                       </div>
                     )}
                   </div>
