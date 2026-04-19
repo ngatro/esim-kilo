@@ -217,30 +217,21 @@ export default function EsimDataTypeModal({
   }, [exactPlan, supportTopUpType, canMultiply, basePlan, topupPackage]);
 
   // Calculate price based on selection
-  // Price formula: Base price + (SelectedDays - BasePlanDays) * TopupRetailPrice
+  // Price formula: Base price + (SelectedDays - BaseDays) * TopupPrice
   const pricePreview = useMemo(() => {
-    // 1. If exact match plan exists (e.g., user selects 7 days and there's a 7-day plan)
-    if (exactPlan) {
-      return exactPlan.retailPriceUsd > 0 ? exactPlan.retailPriceUsd : exactPlan.priceUsd;
-    }
-
-    // 2. If using top-up (stacking multiple 1-day packages)
-    if (isUsingTopUp && basePlan && topupPackage) {
-      // Base price from the 1-day plan
+    // Use basePlan + topup formula
+    if (basePlan && topupPackage && selectedDuration > basePlan.durationDays) {
       const basePrice = basePlan.retailPriceUsd > 0 ? basePlan.retailPriceUsd : basePlan.priceUsd;
-      // Use retailPriceUsd from topup package (fallback to priceUsd)
       const topupRetail = topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd;
-      
-      // Extra days = Selected duration - Base plan's default duration (usually 1)
       const extraDays = selectedDuration - basePlan.durationDays;
-      
-      // Price = Base price + (Extra days × Topup retail price per day)
-      return extraDays > 0 ? basePrice + (extraDays * topupRetail) : basePrice;
+      return basePrice + (extraDays * topupRetail);
     }
-
-    // 3. Default: just show base plan price
-    return basePlan ? (basePlan.retailPriceUsd > 0 ? basePlan.retailPriceUsd : basePlan.priceUsd) : 0;
-  }, [exactPlan, isUsingTopUp, basePlan, topupPackage, selectedDuration]);
+    // Exact match - just use base plan price
+    if (basePlan) {
+      return basePlan.retailPriceUsd > 0 ? basePlan.retailPriceUsd : basePlan.priceUsd;
+    }
+    return 0;
+  }, [basePlan, topupPackage, selectedDuration]);
 
   // Initialize with first available options
   useEffect(() => {
