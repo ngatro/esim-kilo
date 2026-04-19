@@ -253,24 +253,8 @@ export default function EsimDataTypeModal({
     }
   }, [isOpen, dataOptions, durationOptions, regularPlans]);
 
-  // Disable duration options based on supportTopUpType
-  const isDurationDisabled = (duration: number) => {
-    const plansToCheck = dataCategory === 'fup' ? fupPlans : regularPlans;
-    
-    // If there's an exact plan for this duration, it's available
-    const hasExactPlan = plansToCheck.some(p => p.dataAmount === selectedData && p.durationDays === duration);
-    if (hasExactPlan) return false;
-
-    // Check if top-up is available at all
-    if (!hasTopupPackages && !exactPlan) return true;
-    
-    // If exact plan exists, it's always available
-    // If no exact plan but top-up exists and can multiply, it's available
-    if (!exactPlan && canMultiply) return false;
-    
-    // If top-up exists but cannot multiply (isFlexible=false), only show exact durations
-    return false;
-  };
+  // All durations are enabled - topup allows any duration
+  const isDurationDisabled = (_duration: number) => false;
 
   if (!isOpen) return null;
 
