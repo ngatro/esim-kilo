@@ -39,7 +39,7 @@ async function syncTopupPackages() {
       
       // Extract successful results
       const successfulResults = results
-        .filter((r): r is PromiseFulfilledResult<any[]> => r.status === "fulfilled")
+        .filter((r): r is PromiseFulfilledResult<{ topups: any[]; planId: string | undefined }> => r.status === "fulfilled")
         .map(r => r.value);
 
       // Update progress
@@ -52,17 +52,25 @@ async function syncTopupPackages() {
       await new Promise(r => setTimeout(r, DELAY_MS));
 
       // Process results
-      for (const topupPackages of successfulResults) {
+      for (const result of successfulResults) {
+        const topupPackages = result.topups;
+        const sourcePlanId = result.planId;
         for (const topupPkg of topupPackages) {
           const topupLocationCode = topupPkg.locationCode;
           
-          // Find matching plan by locationCode
-          let matchingPlan = basePlans.find(p => 
-            p.locationCode && topupLocationCode && 
-            p.locationCode.toUpperCase() === topupLocationCode.toUpperCase()
-          );
-          
-          // If no exact match, try partial
+          // Find matching plan - PRIORITY: use sourcePlanId (the plan that called this API)
+          let matchingPlan = null;
+          if (sourcePlanId) {
+            matchingPlan = basePlans.find(p => p.id === sourcePlanId);
+          }
+          // Fallback: find by locationCode
+          if (!matchingPlan && topupLocationCode) {
+            matchingPlan = basePlans.find(p => 
+              p.locationCode && topupLocationCode && 
+              p.locationCode.toUpperCase() === topupLocationCode.toUpperCase()
+            );
+          }
+          // If still no match, try partial
           if (!matchingPlan && topupLocationCode) {
             matchingPlan = basePlans.find(p => 
               p.locationCode && topupLocationCode &&
@@ -94,10 +102,10 @@ async function syncTopupPackages() {
             });
             updated++;
             // Link to plan's topupPackageId if flexible
-            if (matchingPlan && isFlexible) {
+            if (matchingPlan && isFlexible && existing.id) {
               await prisma.plan.update({
                 where: { id: matchingPlan.id },
-                data: { topupPackageId: existing.id }
+                data: { topupPackageId: existing.id } as any
               });
             }
           } else {
@@ -116,10 +124,10 @@ async function syncTopupPackages() {
             });
             created++;
             // Link to plan's topupPackageId if flexible
-            if (matchingPlan && isFlexible) {
+            if (matchingPlan && isFlexible && newTopup.id) {
               await prisma.plan.update({
                 where: { id: matchingPlan.id },
-                data: { topupPackageId: newTopup.id }
+                data: { topupPackageId: newTopup.id } as any
               });
             }
           }
