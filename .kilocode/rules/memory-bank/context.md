@@ -75,6 +75,12 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - **isHot filter in /api/plans** - Added `?isHot=true` parameter to filter hot plans
   - **Hot Plans section on /plans** - Displays plans where isHot=true from database
   - **Price display** - Uses minPrice from Country table for "From $X.XX" display on destination cards
+- [x] **Retail Price for TopupPackages** - Updated pricing system:
+  - Added `retailPriceRaw` and `retailPriceUsd` columns to TopupPackage in schema
+  - Updated sync logic to save retailPrice from Esimaccess API
+  - **Updated price formula**: Price = BasePlan + (SelectedDays - BaseDays) × TopupRetailPrice
+  - Updated frontend (EsimDataTypeModal.tsx) and checkout with new formula
+  - Updated order API to calculate correct price on server-side
 
 ## Current Structure
 

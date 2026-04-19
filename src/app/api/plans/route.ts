@@ -68,7 +68,10 @@ async function syncTopupPackages() {
             );
           }
           
-          const priceUsd = topupPkg.price / 10000;
+          const priceRaw = topupPkg.price || 0;
+          const retailPriceRaw = topupPkg.retailPrice || topupPkg.price || 0;
+          const priceUsd = priceRaw / 10000;
+          const retailPriceUsd = retailPriceRaw / 10000;
           const isFlexible = matchingPlan ? matchingPlan.supportTopUpType === 3 : true;
 
           const existing = await prisma.topupPackage.findUnique({ where: { packageCode: topupPkg.packageCode } });
@@ -76,12 +79,31 @@ async function syncTopupPackages() {
           if (existing) {
             await prisma.topupPackage.update({
               where: { id: existing.id },
-              data: { planId: matchingPlan?.id || null, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
+              data: { 
+                planId: matchingPlan?.id || null, 
+                name: topupPkg.name, 
+                priceUsd,
+                priceRaw,
+                retailPriceRaw,
+                retailPriceUsd,
+                isFlexible, 
+                isActive: true 
+              },
             });
             updated++;
           } else {
             await prisma.topupPackage.create({
-              data: { planId: matchingPlan?.id || null, packageCode: topupPkg.packageCode, name: topupPkg.name, priceUsd, isFlexible, isActive: true },
+              data: { 
+                planId: matchingPlan?.id || null, 
+                packageCode: topupPkg.packageCode, 
+                name: topupPkg.name, 
+                priceUsd,
+                priceRaw,
+                retailPriceRaw,
+                retailPriceUsd,
+                isFlexible, 
+                isActive: true 
+              },
             });
             created++;
           }

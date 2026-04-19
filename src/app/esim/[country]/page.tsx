@@ -7,6 +7,7 @@ import { getDestinationImage } from "@/lib/unsplash";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import EsimDataTypeModal from "./EsimDataTypeModal";
 
 interface OperatorInfo {
   operatorName: string;
@@ -643,6 +644,11 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
+  // New DataType Modal state
+  const [isDataTypeModalOpen, setIsDataTypeModalOpen] = useState(false);
+  const [selectedDataType, setSelectedDataType] = useState<number>(0);
+  const [plansForDataType, setPlansForDataType] = useState<Plan[]>([]);
+
   useEffect(() => {
     async function load() {
       const c = resolvedParams.country;
@@ -716,6 +722,19 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedPlan(null);
+  };
+
+  // Handle dataType group click - open new modal with all plans for that dataType
+  const handleDataTypeClick = (dataType: number, groupPlans: Plan[]) => {
+    setSelectedDataType(dataType);
+    setPlansForDataType(groupPlans);
+    setIsDataTypeModalOpen(true);
+  };
+
+  const handleCloseDataTypeModal = () => {
+    setIsDataTypeModalOpen(false);
+    setSelectedDataType(0);
+    setPlansForDataType([]);
   };
 
   // Filter to only Fixed and Daily plans, then group by dataType only (for single country page)
@@ -879,7 +898,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
           {displayPlans.map((group, index) => (
             <div 
               key={group.key}
-              onClick={() => handlePlanClick(group.plans[0])}
+              onClick={() => handleDataTypeClick(group.dataType, group.plans)}
               className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl cursor-pointer text-center"
             >
               <h3 className="font-bold text-2xl text-slate-800 mb-2">
@@ -901,11 +920,21 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal - Legacy single plan modal */}
       <PlanModal 
         plan={selectedPlan} 
         onClose={handleCloseModal} 
         isOpen={isModalOpen}
+      />
+
+      {/* New DataType Selection Modal */}
+      <EsimDataTypeModal
+        plans={plansForDataType}
+        dataType={selectedDataType}
+        countryName={country}
+        countryCode={country}
+        isOpen={isDataTypeModalOpen}
+        onClose={handleCloseDataTypeModal}
       />
     </div>
   );

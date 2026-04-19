@@ -36,13 +36,33 @@ export async function POST(request: Request) {
         );
       }
 
-      const itemTotal = plan.priceUsd * item.quantity;
+
+      // Calculate price: Base price + (days - baseDays) * topupPrice for topup mode
+      let itemPrice = plan.priceUsd;
+      if (plan.retailPriceUsd > 0) {
+        itemPrice = plan.retailPriceUsd;
+      }
+      if (item.topupMode && item.days && item.days > 0) {
+        // Fetch topup package for this plan
+        const topupPkg = await prisma.topupPackage.findFirst({
+          where: { planId: plan.id, isActive: true, isFlexible: true },
+        });
+        if (topupPkg) {
+          const topupRetail = topupPkg.retailPriceUsd > 0 ? topupPkg.retailPriceUsd : topupPkg.priceUsd;
+          const extraDays = item.days - plan.durationDays;
+          if (extraDays > 0) {
+            itemPrice = itemPrice + (extraDays * topupRetail);
+          }
+        }
+      }
+
+      const itemTotal = itemPrice * item.quantity;
       totalAmount += itemTotal;
 
       orderItemsData.push({
         planId: plan.id,
         planName: plan.name,
-        price: plan.priceUsd,
+        price: itemPrice,
         quantity: item.quantity || 1,
       });
     }

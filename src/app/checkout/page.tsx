@@ -24,6 +24,16 @@ interface Plan {
   country: { id: string; name: string; emoji: string } | null;
 }
 
+interface TopupPackage {
+  id: number;
+  planId: string;
+  packageCode: string;
+  name: string | null;
+  priceUsd: number;
+  retailPriceUsd: number;
+  isFlexible: boolean;
+}
+
 type PaymentMethod = "paypal" | "lemonsqueezy" | "gumroad" | "payoneer";
 
 import { convertFromUSD } from "@/lib/currency";
@@ -36,11 +46,16 @@ export default function CheckoutPage() {
   const planId = searchParams.get("planId");
 
   const [plan, setPlan] = useState<Plan | null>(null);
+  const [topupPackage, setTopupPackage] = useState<TopupPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  
+  // Topup mode params from URL
+  const topupMode = searchParams.get("mode") === "topup";
+  const topupDays = parseInt(searchParams.get("days") || "0");
   const [error, setError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paypal");
   const [success, setSuccess] = useState<{ orderId: number; qrCode?: string; activationCode?: string } | null>(null);
@@ -62,7 +77,7 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: [{ planId, quantity: qty }],
+          items: [{ planId, quantity: qty, topupMode, days: topupDays }],
           customerName,
           customerEmail,
           status: "pending",
@@ -147,13 +162,27 @@ export default function CheckoutPage() {
         .then((data) => {
           const found = (data.plans || []).find((p: Plan) => p.id === planId);
           setPlan(found || null);
+          
+          // If topup mode, fetch the topup package
+          if (found && topupMode) {
+            fetch(`/api/topup-packages?planIds=${planId}`)
+              .then((r) => r.json())
+              .then((pkgData) => {
+                if (pkgData.packages && pkgData.packages.length > 0) {
+                  // Get the first flexible topup package or first available
+                  const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
+                  setTopupPackage(flexiblePkg || pkgData.packages[0]);
+                }
+              })
+              .catch(() => setTopupPackage(null));
+          }
         })
         .catch(() => setPlan(null))
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
-  }, [planId]);
+  }, [planId, topupMode]);
 
   useEffect(() => {
     if (user) {
@@ -163,8 +192,18 @@ export default function CheckoutPage() {
   }, [user]);
 
   async function handlePayPal() {
+    // Calculate unit price (with topup formula if applicable)
+    let unitUsd = plan!.retailPriceUsd > 0 ? plan!.retailPriceUsd : plan!.priceUsd;
+    if (topupMode && topupDays > 0 && topupPackage) {
+      const topupRetail = topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd;
+      const extraDays = topupDays - plan!.durationDays;
+      if (extraDays > 0) {
+        unitUsd = unitUsd + (extraDays * topupRetail);
+      }
+    }
+    
     // Get price in display currency - always convert from USD to display currency
-    const displayPrice = convertFromUSD(plan!.retailPriceUsd || 0, currency, rates);
+    const displayPrice = convertFromUSD(unitUsd || 0, currency, rates);
     const priceDisplay = displayPrice * quantity;
     
     if (!priceDisplay || priceDisplay <= 0) {
@@ -277,7 +316,7 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: [{ planId: plan.id, quantity }],
+          items: [{ planId: plan.id, quantity, topupMode, days: topupDays }],
           customerName,
           customerEmail,
         }),
@@ -417,8 +456,17 @@ export default function CheckoutPage() {
   const PAYPAL_SUPPORTED_CURRENCIES = ["AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "SEK", "SGD", "USD", "MXN", "BRL", "INR", "KRW"];
 const isPayPalSupported = PAYPAL_SUPPORTED_CURRENCIES.includes(currency);
 
-const totalPrice = (plan.retailPriceUsd || plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd) * quantity;
-  const isUnlimited = plan.dataAmount >= 999;
+// Calculate price: Base price + (SelectedDays - BaseDays) * TopupPrice for topup mode
+let unitPrice = plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd;
+if (topupMode && topupDays > 0 && topupPackage && plan) {
+  const topupRetail = topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd;
+  const extraDays = topupDays - plan.durationDays;
+  if (extraDays > 0) {
+    unitPrice = unitPrice + (extraDays * topupRetail);
+  }
+}
+const totalPrice = unitPrice * quantity;
+const isUnlimited = plan.dataAmount >= 999;
 
   return (
     <div className="min-h-screen bg-orange-50 text-slate-800 py-6 sm:py-12">

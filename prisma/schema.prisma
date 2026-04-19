@@ -325,7 +325,10 @@ model TopupPackage {
   
   packageCode String   @unique // Top-up package code from API
   name       String?  // Display name
-  priceUsd   Float    // Price in USD (retail price for this top-up)
+  priceUsd   Float    // Price in USD (cost/wholesale price for this top-up)
+  priceRaw   Float    @default(0) // price * 10000 (original from API)
+  retailPriceRaw Float   @default(0) // suggested retail price * 10000
+  retailPriceUsd Float  @default(0) // retailPriceRaw / 10000 (display price)
   isFlexible Boolean @default(false) // If true, supports custom periodNum
   isActive   Boolean  @default(true)
   priority   Int      @default(0)
