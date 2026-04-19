@@ -124,7 +124,11 @@ export default function EsimDataTypeModal({
     return Array.from(dataAmounts).sort((a, b) => a - b);
   }, [fupPlans]);
 
-  // Get unique duration options from regular plans (REAL durations from DB)
+  // All duration options user can select
+  // All duration options user can select
+  const ALL_DURATIONS = [1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 180];
+  
+  // Duration options from DB plans
   const durationOptions = useMemo(() => {
     const durations = new Set<number>();
     regularPlans.forEach(plan => {
@@ -143,21 +147,22 @@ export default function EsimDataTypeModal({
   }, [fupPlans]);
 
   // Find base plan for top-up calculation
-  // Must match the selected data AND have shortest duration
+  // Use plan with closest duration to the selected duration (for stacking)
   const basePlan = useMemo(() => {
     const plansToSearch = dataCategory === 'fup' ? fupPlans : regularPlans;
     if (!plansToSearch.length) return null;
     
     // Find plan that matches selected data amount
-    const matchingData = plansToSearch.find(p => p.dataAmount === selectedData);
-    if (matchingData) {
-      // Try to find 1-day plan with same data
-      const oneDayPlan = plansToSearch.find(p => p.dataAmount === selectedData && p.durationDays === 1);
-      if (oneDayPlan) return oneDayPlan;
-      // Fallback to shortest duration with same data
-      const sameDataPlans = plansToSearch.filter(p => p.dataAmount === selectedData);
-      const shortestDuration = Math.min(...sameDataPlans.map(p => p.durationDays));
-      return sameDataPlans.find(p => p.durationDays === shortestDuration) || matchingData;
+    const sameDataPlans = plansToSearch.filter(p => p.dataAmount === selectedData);
+    if (sameDataPlans.length > 0) {
+      // Find exact duration if exists
+      const exactDuration = sameDataPlans.find(p => p.durationDays === selectedDuration);
+      if (exactDuration) return exactDuration;
+      
+      // Find closest shorter duration for stacking
+      const availableDurations = sameDataPlans.map(p => p.durationDays).sort((a, b) => a - b);
+      const closestDuration = availableDurations.find(d => d <= selectedDuration) || availableDurations[0];
+      return sameDataPlans.find(p => p.durationDays === closestDuration) || sameDataPlans[0];
     }
     
     // Fallback: find 1-day plan
@@ -167,7 +172,7 @@ export default function EsimDataTypeModal({
     // Fallback to shortest
     const shortestDuration = Math.min(...plansToSearch.map(p => p.durationDays));
     return plansToSearch.find(p => p.durationDays === shortestDuration) || plansToSearch[0];
-  }, [regularPlans, fupPlans, selectedData, dataCategory]);
+  }, [regularPlans, fupPlans, selectedData, selectedDuration, dataCategory]);
 
   // Filter topup packages for the current basePlan
   const relevantTopupPackages = useMemo(() => {
@@ -430,9 +435,8 @@ export default function EsimDataTypeModal({
                           {duration} days
                         </button>
                       ))}
-                      {/* Additional duration options if top-up is supported */}
-                      {/* Only show additional durations if canMultiply (TopupPackage.isFlexible) */}
-                      {canMultiply && [1, 3, 5, 7, 10, 15, 30].filter(d => !(dataCategory === 'fup' ? fupDurationOptions : durationOptions).includes(d)).map((duration) => (
+                      {/* Show ALL duration options if canMultiply (topup is available) */}
+                      {canMultiply && ALL_DURATIONS.filter(d => !(dataCategory === 'fup' ? fupDurationOptions : durationOptions).includes(d)).map((duration) => (
                         <button
                           key={duration}
                           onClick={() => setSelectedDuration(duration)}
