@@ -435,8 +435,8 @@ export default function EsimDataTypeModal({
                           {duration} days
                         </button>
                       ))}
-                      {/* Show ALL duration options if canMultiply (topup is available) */}
-                      {canMultiply && ALL_DURATIONS.filter(d => !(dataCategory === 'fup' ? fupDurationOptions : durationOptions).includes(d)).map((duration) => (
+                      {/* Show ALL extra duration options */}
+                      {ALL_DURATIONS.filter(d => d !== selectedDuration && !(dataCategory === 'fup' ? fupDurationOptions : durationOptions).includes(d)).map((duration) => (
                         <button
                           key={duration}
                           onClick={() => setSelectedDuration(duration)}
