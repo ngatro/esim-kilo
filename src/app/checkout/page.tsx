@@ -189,6 +189,10 @@ export default function CheckoutPage() {
                     const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
                     selectedPkg = flexiblePkg || selectedPkg;
                   }
+                  // Fallback: if retailPriceUsd is 0, use priceUsd
+                  if (!selectedPkg.retailPriceUsd && selectedPkg.priceUsd) {
+                    selectedPkg.retailPriceUsd = selectedPkg.priceUsd;
+                  }
                   console.log("[Checkout] Using topup package:", selectedPkg);
                   setTopupPackage(selectedPkg);
                 }
@@ -624,7 +628,7 @@ const isUnlimited = plan.dataAmount >= 999;
                     </div>
                     <div className="flex justify-between text-orange-600 text-xs font-medium">
                       <span>• +{Math.max(0, topupDays - plan.durationDays)} days extension</span>
-                      <span>+{formatPrice((topupPackage ? (topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd) * Math.max(0, topupDays - plan.durationDays) : 0) * quantity)}</span>
+                      <span>+{formatPrice((topupPackage?.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : (topupPackage?.priceUsd || 0)) * Math.max(0, topupDays - plan.durationDays) * quantity)}</span>
                     </div>
                   </>
                 ) : (
