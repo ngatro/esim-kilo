@@ -19,8 +19,8 @@ async function syncTopupPackages() {
     // Fetch by packageCode
     const planCodes = Array.from(new Set(basePlans.map(p => p.packageCode).filter(Boolean)));
     console.log(`[TOPUP] Starting sync for ${planCodes.length} base plans...`);
-    const BATCH_SIZE = 8;
-    const DELAY_MS = 1000;
+    const BATCH_SIZE = 10;
+    const DELAY_MS = 500;
     
     for (let i = 0; i < planCodes.length; i += BATCH_SIZE) {
       const batch = planCodes.slice(i, i + BATCH_SIZE);
@@ -399,7 +399,7 @@ export async function GET(request: Request) {
       console.log("[Sync] Creating plans...");
       await prisma.plan.deleteMany({});
       let totalCreated = 0;
-      for (let i = 0; i < plans.length; i += 200) {
+      for (let i = 0; i < plans.length; i += 500) {
         await prisma.plan.createMany({ data: plans.slice(i, i + 200), skipDuplicates: true });
         totalCreated += Math.min(200, plans.length - i);
       }

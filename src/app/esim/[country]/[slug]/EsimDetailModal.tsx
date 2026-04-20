@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -99,6 +99,33 @@ export default function EsimDetailModal({ plan, country, slug }: { plan: any; co
   const { t, formatPrice } = useI18n();
   const [imgError, setImgError] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [topupPackages, setTopupPackages] = useState<any[]>([]);
+
+  // Fetch topup packages for this plan
+  useEffect(() => {
+    if (plan?.topupPackageId) {
+      fetch(`/api/topup-packages?planIds=${plan.id}`)
+        .then(r => r.json())
+        .then(data => {
+          console.log("[EsimDetailModal] Topup packages:", data.packages);
+          setTopupPackages(data.packages || []);
+        })
+        .catch(console.error);
+    }
+  }, [plan?.topupPackageId, plan?.id]);
+
+  // Debug: log plan data to console
+  if (plan) {
+    console.log("[EsimDetailModal] Plan data:", {
+      id: plan.id,
+      packageCode: plan.packageCode,
+      priceUsd: plan.priceUsd,
+      retailPriceUsd: plan.retailPriceUsd,
+      supportTopUp: plan.supportTopUp,
+      supportTopUpType: plan.supportTopUpType,
+      topupPackageId: plan.topupPackageId,
+    });
+  }
 
   const heroImage = plan ? (imgError ? getDefaultImage(plan.packageCode) : getHeroImage(plan)) : "";
 
@@ -245,6 +272,22 @@ export default function EsimDetailModal({ plan, country, slug }: { plan: any; co
                     }
                     {locations.length > 3 ? ` +${locations.length - 3} more` : ""}
                     </span>
+                </div>
+              )}
+            </div>
+
+            {/* DEBUG: Base Package & Topup Info */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-4 font-mono text-xs">
+              <p className="font-bold text-yellow-800 mb-2">🔧 Debug Info:</p>
+              <p>Base: {plan?.packageCode} | price=${plan?.priceUsd} | retail=${plan?.retailPriceUsd}</p>
+              <p>displayPrice = ${displayPrice?.toFixed(2)} × {quantity} = ${(displayPrice * quantity).toFixed(2)}</p>
+              <p>topupPackageId: {plan?.topupPackageId || "None"}</p>
+              {topupPackages.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-yellow-200">
+                  <p className="font-semibold">Topup Packages ({topupPackages.length}):</p>
+                  {topupPackages.map((pkg: any) => (
+                    <p key={pkg.id}>{pkg.packageCode} | ${pkg.priceUsd?.toFixed(2)} | {pkg.isFlexible ? "flex" : "fixed"}</p>
+                  ))}
                 </div>
               )}
             </div>
