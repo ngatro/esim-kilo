@@ -253,6 +253,37 @@ function resolveLocation(pkg: Record<string, unknown>) {
   return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || locationCode };
 }
 
+// Export standalone topup sync API
+export async function POST(request: Request) {
+  try {
+    const { type } = await request.json().catch(() => ({}));
+    
+    if (type === "topup") {
+      // Standalone topup sync - run in background and return immediately
+      setSyncProgress("[TOPUP] Starting sync (background)...");
+      
+      const backgroundTopupSync = (async () => {
+        try {
+          const result = await syncTopupPackages();
+          console.log(`[TOPUP Sync] Completed: created=${result.created}, updated=${result.updated}, total=${result.total}`);
+        } catch (error) {
+          console.error("[TOPUP Sync] Error:", error);
+          setSyncProgress("[TOPUP] Error: " + String(error));
+        } finally {
+          clearSyncProgress();
+        }
+      })();
+      
+      return NextResponse.json({ status: "started", message: "Topup sync started in background" });
+    }
+    
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (error) {
+    console.error("[Topup Sync] Error:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -422,12 +453,8 @@ export async function GET(request: Request) {
         }
       }
 
-      // Sync top-up packages after base plans
-      console.log("[Sync] Starting TOPUP package sync...");
-      setSyncProgress("[TOPUP] Syncing TOPUP packages...");
-      const topupResult = await syncTopupPackages();
-
-      console.log(`[Sync] COMPLETED! Plans: ${totalCreated}, Topups: ${topupResult.created + topupResult.updated}`);
+      // NOTE: Topup sync is now separate - use POST /api/plans with { type: "topup" }
+      console.log(`[Sync] COMPLETED! Plans: ${totalCreated}`);
       clearSyncProgress();
     } catch (error) {
       console.error("[Background Sync] Error:", error);

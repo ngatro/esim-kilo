@@ -46,7 +46,8 @@ export default function AdminDashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
+  const [syncingPlans, setSyncingPlans] = useState(false);
+  const [syncingTopup, setSyncingTopup] = useState(false);
   const [syncProgress, setSyncProgress] = useState<string>("");
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
@@ -69,8 +70,8 @@ export default function AdminDashboardPage() {
   }
 
   async function syncPlans() {
-    setSyncing(true);
-    setSyncProgress("Starting sync...");
+    setSyncingPlans(true);
+    setSyncProgress("Starting plans sync...");
     setSyncResult("");
     try {
       // Start sync request first
@@ -96,9 +97,9 @@ export default function AdminDashboardPage() {
               // Sync completed (progress cleared)
               clearInterval(pollInterval);
               setSyncProgress("");
-              setSyncResult("✓ Sync completed!");
+              setSyncResult("✓ Plans sync completed!");
               await fetchStats();
-              setSyncing(false);
+              setSyncingPlans(false);
             }
           } catch {
             // Continue polling on error
@@ -109,15 +110,14 @@ export default function AdminDashboardPage() {
             clearInterval(pollInterval);
             setSyncProgress("");
             setSyncResult("⚠ Sync timed out, but likely completed in background");
-            setSyncing(false);
+            setSyncingPlans(false);
           }
         }, 1000); // Poll every 1000ms
         return; // Exit - polling continues in setInterval
       } else if (data.success) {
         // Legacy sync (completed synchronously)
         setSyncProgress("");
-        const topupMsg = data.topupSynced > 0 ? `, ${data.topupSynced} TOPUP` : "";
-        setSyncResult(`✓ Synced ${data.synced} plans${topupMsg} (${data.elapsed})`);
+        setSyncResult(`✓ Synced ${data.synced} plans (${data.elapsed})`);
         await fetchStats();
       } else {
         setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
@@ -126,7 +126,66 @@ export default function AdminDashboardPage() {
       console.error("Sync failed:", error);
       setSyncResult("✗ Sync failed");
     } finally {
-      setSyncing(false);
+      setSyncingPlans(false);
+    }
+  }
+
+  async function syncTopup() {
+    setSyncingTopup(true);
+    setSyncProgress("Starting topup sync...");
+    setSyncResult("");
+    try {
+      // Use POST to /api/plans with type=topup
+      const res = await fetch("/api/plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "topup" })
+      });
+      const data = await res.json();
+      
+      // Handle response
+      if (data.status === "started") {
+        // Background sync - poll until completed
+        setSyncProgress("Topup sync started, waiting for completion...");
+        const maxWaitTime = 120000; // 2 minutes max
+        const pollStartTime = Date.now();
+        
+        const pollInterval = setInterval(async () => {
+          try {
+            const progRes = await fetch("/api/admin/stats");
+            const progData = await progRes.json();
+            
+            // Check if sync is still in progress
+            if (progData.syncProgress) {
+              setSyncProgress(progData.syncProgress);
+            } else {
+              // Sync completed (progress cleared)
+              clearInterval(pollInterval);
+              setSyncProgress("");
+              setSyncResult("✓ Topup packages sync completed!");
+              setSyncingTopup(false);
+            }
+          } catch {
+            // Continue polling on error
+          }
+          
+          // Timeout after 2 minutes
+          if (Date.now() - pollStartTime > maxWaitTime) {
+            clearInterval(pollInterval);
+            setSyncProgress("");
+            setSyncResult("⚠ Sync timed out, but likely completed in background");
+            setSyncingTopup(false);
+          }
+        }, 1000); // Poll every 1000ms
+        return; // Exit - polling continues in setInterval
+      } else {
+        setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
+      }
+    } catch (error) {
+      console.error("Topup sync failed:", error);
+      setSyncResult("✗ Topup sync failed");
+    } finally {
+      setSyncingTopup(false);
     }
   }
 
@@ -164,18 +223,35 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={syncPlans}
-              disabled={syncing}
+              disabled={syncingPlans || syncingTopup}
               className="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
             >
-              {syncing ? (
+              {syncingPlans ? (
                 <>
                   <span className="animate-spin">↻</span>
-                  Syncing...
+                  Syncing Plans...
                 </>
               ) : (
                 <>
                   <span>🔄</span>
                   Sync Plans
+                </>
+              )}
+            </button>
+            <button
+              onClick={syncTopup}
+              disabled={syncingPlans || syncingTopup}
+              className="bg-green-500 hover:bg-green-600 disabled:bg-slate-300 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
+            >
+              {syncingTopup ? (
+                <>
+                  <span className="animate-spin">↻</span>
+                  Syncing Topup...
+                </>
+              ) : (
+                <>
+                  <span>📦</span>
+                  Sync Topup
                 </>
               )}
             </button>
@@ -186,7 +262,7 @@ export default function AdminDashboardPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Sync Progress */}
-        {syncing && syncProgress && (
+        {(syncingPlans || syncingTopup) && syncProgress && (
           <div className="mb-6 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 animate-pulse">
             {syncProgress}
           </div>
