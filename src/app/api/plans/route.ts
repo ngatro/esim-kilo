@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPackageList } from "@/lib/esim-access";
 import { prisma } from "@/lib/prisma";
-import { setSyncProgress, clearSyncProgress } from "@/app/api/admin/stats/route";
 
 // Sync top-up packages after base plans are synced
 // Optimized to use locationCode batching for faster sync
@@ -17,9 +16,9 @@ async function syncTopupPackages() {
 
     let created = 0, updated = 0, total = 0;
 
-    // Fetch by packageCode (works correctly)
+    // Fetch by packageCode
     const planCodes = Array.from(new Set(basePlans.map(p => p.packageCode).filter(Boolean)));
-    setSyncProgress(`[TOPUP] Starting sync for ${planCodes.length} base plans...`);
+    console.log(`[TOPUP] Starting sync for ${planCodes.length} base plans...`);
     const BATCH_SIZE = 8;
     const DELAY_MS = 1000;
     
@@ -42,11 +41,10 @@ async function syncTopupPackages() {
         .filter((r): r is PromiseFulfilledResult<{ topups: any[]; planId: string | undefined }> => r.status === "fulfilled")
         .map(r => r.value);
 
-      // Update progress
+      // Just log batch progress
       const batchNum = Math.ceil((i + BATCH_SIZE) / BATCH_SIZE);
       const totalBatches = Math.ceil(planCodes.length / BATCH_SIZE);
-      const savedCount = created + updated;
-      setSyncProgress(`[TOPUP] Progress: ${batchNum}/${totalBatches} | Saved: ${savedCount}`);
+      console.log(`[TOPUP] Batch ${batchNum}/${totalBatches}`);
 
       // Wait 1 second between batches
       await new Promise(r => setTimeout(r, DELAY_MS));
@@ -136,11 +134,10 @@ async function syncTopupPackages() {
       }
     }
 
-    clearSyncProgress();
+    console.log(`[TOPUP] ✓ Done: created=${created}, updated=${updated}, total=${total}`);
     return { created, updated, total };
   } catch (error) {
-    clearSyncProgress();
-    console.error("[Sync Topup] Error:", error);
+    console.error("[TOPUP] ✗ Error:", error);
     return { created: 0, updated: 0, total: 0, error: String(error) };
   }
 }
@@ -253,28 +250,20 @@ function resolveLocation(pkg: Record<string, unknown>) {
   return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || locationCode };
 }
 
-// Export standalone topup sync API
+// Export standalone topup sync API - runs completely in background, returns immediately
 export async function POST(request: Request) {
   try {
     const { type } = await request.json().catch(() => ({}));
     
     if (type === "topup") {
-      // Standalone topup sync - run in background and return immediately
-      setSyncProgress("[TOPUP] Starting sync (background)...");
+      // Run completely in background - fire and forget
+      syncTopupPackages().then(result => {
+        console.log(`[TOPUP Sync] ✓ Done: created=${result.created}, updated=${result.updated}, total=${result.total}`);
+      }).catch(err => {
+        console.error(`[TOPUP Sync] ✗ Error:`, err);
+      });
       
-      const backgroundTopupSync = (async () => {
-        try {
-          const result = await syncTopupPackages();
-          console.log(`[TOPUP Sync] Completed: created=${result.created}, updated=${result.updated}, total=${result.total}`);
-        } catch (error) {
-          console.error("[TOPUP Sync] Error:", error);
-          setSyncProgress("[TOPUP] Error: " + String(error));
-        } finally {
-          clearSyncProgress();
-        }
-      })();
-      
-      return NextResponse.json({ status: "started", message: "Topup sync started in background" });
+      return NextResponse.json({ status: "started", message: "Topup sync started" });
     }
     
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
@@ -293,37 +282,24 @@ export async function GET(request: Request) {
     const toSlug = (name: string) => name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-");
 
     if (sync === "true") {
-      // Solution 1: Return immediately and run sync in background
-      const startTime = Date.now();
-      
-      // Return immediately to frontend - don't wait for sync to complete
-      setSyncProgress("[BASE] Starting sync (background)...");
-      
-      // Return first, then run sync in background
-      const backgroundSync = (async () => {
+      // Run sync in background - return immediately
+      (async () => {
         try {
-          console.log("[Sync] Starting - fetching package list...");
-          setSyncProgress("[1/5] Fetching package list from API...");
+          console.log("[Sync] Starting...");
           
           const res = await getPackageList({ type: "BASE" } as any);
           const packages = res.packageList || [];
           
-          console.log(`[Sync] Received ${packages.length} packages from API`);
-          
           if (packages.length === 0) {
-            setSyncProgress("[BASE] Error: No packages found");
-            console.error("[Sync] No packages found!");
-            clearSyncProgress();
+            console.error("[Sync] ✗ No packages found!");
             return;
           }
+
+          console.log(`[Sync] Fetched ${packages.length} packages, processing...`);
 
           const regionMap: Record<string, { id: string; name: string; emoji: string }> = {};
           const countryMap: Record<string, { id: string; name: string; code: string; emoji: string; slug: string }> = {};
 
-          console.log("[Sync] Processing package data...");
-          setSyncProgress("[2/5] Processing package data...");
-          
-          // Solution 2: Use Promise.all for parallel DB operations (region + country upserts)
           const plans = packages.map((pkg) => {
         const dataAmount = bytesToGB(pkg.volume);
         const priceUsd = pkg.price / 10000;
@@ -395,9 +371,8 @@ export async function GET(request: Request) {
         };
       });
 
-      // Solution 2: Use Promise.all for parallel DB operations (regions + countries)
-      console.log("[Sync] Syncing regions and countries to database...");
-      setSyncProgress("[3/5] Syncing regions & countries...");
+      // Sync regions and countries to database
+      console.log("[Sync] Syncing regions & countries...");
       const regionValues = Object.values(regionMap);
       const countryValues = Object.values(countryMap);
       console.log(`[Sync] Regions: ${regionValues.length}, Countries: ${countryValues.length}`);
@@ -420,23 +395,17 @@ export async function GET(request: Request) {
         ),
       ]);
 
-      // Delete existing plans
-      console.log("[Sync] Deleting old plans and creating new ones...");
-      setSyncProgress("[4/5] Creating ${plans.length} plans...");
+      // Delete and create plans
+      console.log("[Sync] Creating plans...");
       await prisma.plan.deleteMany({});
-
-      // Save plans in batches
       let totalCreated = 0;
       for (let i = 0; i < plans.length; i += 200) {
         await prisma.plan.createMany({ data: plans.slice(i, i + 200), skipDuplicates: true });
         totalCreated += Math.min(200, plans.length - i);
-        console.log(`[Sync] Progress: ${Math.min(i + 200, plans.length)}/${plans.length} plans`);
-        setSyncProgress(`[4/5] Creating plans... ${Math.min(i + 200, plans.length)}/${plans.length}`);
       }
 
-      // Update minPrice for each country based on lowest retailPriceUsd
-      console.log("[Sync] Updating min prices for countries...");
-      setSyncProgress("[5/5] Updating country min prices...");
+      // Update minPrice for countries
+      console.log("[Sync] Updating country prices...");
       const countries = await prisma.country.findMany({ select: { code: true } });
       console.log(`[Sync] Updating minPrice for ${countries.length} countries`);
       for (const country of countries) {
@@ -454,17 +423,14 @@ export async function GET(request: Request) {
       }
 
       // NOTE: Topup sync is now separate - use POST /api/plans with { type: "topup" }
-      console.log(`[Sync] COMPLETED! Plans: ${totalCreated}`);
-      clearSyncProgress();
+      console.log(`[Sync] ✓ Done: ${totalCreated} plans synced`);
     } catch (error) {
-      console.error("[Background Sync] Error:", error);
-      setSyncProgress("[BASE] Error: " + String(error));
-      clearSyncProgress();
+      console.error("[Sync] ✗ Error:", error);
     }
       })();
       
-      // Return immediately - don't wait for background sync
-      return NextResponse.json({ status: "started", message: "Sync started in background" });
+      // Return immediately - run in background
+      return NextResponse.json({ status: "started", message: "Sync started" });
     }
 
     // Query

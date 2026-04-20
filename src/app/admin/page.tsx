@@ -48,7 +48,6 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [syncingPlans, setSyncingPlans] = useState(false);
   const [syncingTopup, setSyncingTopup] = useState(false);
-  const [syncProgress, setSyncProgress] = useState<string>("");
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,120 +70,32 @@ export default function AdminDashboardPage() {
 
   async function syncPlans() {
     setSyncingPlans(true);
-    setSyncProgress("Starting plans sync...");
     setSyncResult("");
     try {
-      // Start sync request first
-      const res = await fetch("/api/plans?sync=true");
-      const data = await res.json();
-      
-      // Handle response
-      if (data.status === "started") {
-        // Background sync - poll until completed
-        setSyncProgress("Sync started, waiting for completion...");
-        const maxWaitTime = 120000; // 2 minutes max
-        const pollStartTime = Date.now();
-        
-        const pollInterval = setInterval(async () => {
-          try {
-            const progRes = await fetch("/api/admin/stats");
-            const progData = await progRes.json();
-            
-            // Check if sync is still in progress
-            if (progData.syncProgress) {
-              setSyncProgress(progData.syncProgress);
-            } else {
-              // Sync completed (progress cleared)
-              clearInterval(pollInterval);
-              setSyncProgress("");
-              setSyncResult("✓ Plans sync completed!");
-              await fetchStats();
-              setSyncingPlans(false);
-            }
-          } catch {
-            // Continue polling on error
-          }
-          
-          // Timeout after 2 minutes
-          if (Date.now() - pollStartTime > maxWaitTime) {
-            clearInterval(pollInterval);
-            setSyncProgress("");
-            setSyncResult("⚠ Sync timed out, but likely completed in background");
-            setSyncingPlans(false);
-          }
-        }, 1000); // Poll every 1000ms
-        return; // Exit - polling continues in setInterval
-      } else if (data.success) {
-        // Legacy sync (completed synchronously)
-        setSyncProgress("");
-        setSyncResult(`✓ Synced ${data.synced} plans (${data.elapsed})`);
-        await fetchStats();
-      } else {
-        setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
-      }
+      await fetch("/api/plans?sync=true");
+      setSyncResult("🔄 Syncing plans... (check terminal)");
+      // Keep button disabled - user can refresh page to reset
     } catch (error) {
       console.error("Sync failed:", error);
       setSyncResult("✗ Sync failed");
-    } finally {
       setSyncingPlans(false);
     }
   }
 
   async function syncTopup() {
     setSyncingTopup(true);
-    setSyncProgress("Starting topup sync...");
     setSyncResult("");
     try {
-      // Use POST to /api/plans with type=topup
-      const res = await fetch("/api/plans", {
+      await fetch("/api/plans", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "topup" })
       });
-      const data = await res.json();
-      
-      // Handle response
-      if (data.status === "started") {
-        // Background sync - poll until completed
-        setSyncProgress("Topup sync started, waiting for completion...");
-        const maxWaitTime = 120000; // 2 minutes max
-        const pollStartTime = Date.now();
-        
-        const pollInterval = setInterval(async () => {
-          try {
-            const progRes = await fetch("/api/admin/stats");
-            const progData = await progRes.json();
-            
-            // Check if sync is still in progress
-            if (progData.syncProgress) {
-              setSyncProgress(progData.syncProgress);
-            } else {
-              // Sync completed (progress cleared)
-              clearInterval(pollInterval);
-              setSyncProgress("");
-              setSyncResult("✓ Topup packages sync completed!");
-              setSyncingTopup(false);
-            }
-          } catch {
-            // Continue polling on error
-          }
-          
-          // Timeout after 2 minutes
-          if (Date.now() - pollStartTime > maxWaitTime) {
-            clearInterval(pollInterval);
-            setSyncProgress("");
-            setSyncResult("⚠ Sync timed out, but likely completed in background");
-            setSyncingTopup(false);
-          }
-        }, 1000); // Poll every 1000ms
-        return; // Exit - polling continues in setInterval
-      } else {
-        setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
-      }
+      setSyncResult("📦 Syncing topup... (check terminal)");
+      // Keep button disabled - user can refresh page to reset
     } catch (error) {
       console.error("Topup sync failed:", error);
       setSyncResult("✗ Topup sync failed");
-    } finally {
       setSyncingTopup(false);
     }
   }
@@ -261,13 +172,6 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Sync Progress */}
-        {(syncingPlans || syncingTopup) && syncProgress && (
-          <div className="mb-6 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 animate-pulse">
-            {syncProgress}
-          </div>
-        )}
-
         {/* Sync Result */}
         {syncResult && (
           <div className="mb-6 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
