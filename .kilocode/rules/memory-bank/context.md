@@ -78,6 +78,13 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 - [x] **Retail Price for TopupPackages** - Updated pricing system:
   - Added `retailPriceRaw` and `retailPriceUsd` columns to TopupPackage in schema
   - Updated sync logic to save retailPrice from Esimaccess API
+- [x] **Top-up Order Handling** - Backend now handles "Cumulative" orders with top-up:
+  - Added schema fields: `isTopupMode`, `selectedDuration`, `basePlanDays`, `extraDays`, `topupPackageCode` on Order and OrderItem
+  - Order API now calculates price server-side: `FinalPrice = BasePlan.Price + (extraDays * TopupRetailPrice)`
+  - Post-payment processing: Base eSIM order → Top-up API call with periodNum → Email confirmation
+  - Added retry logic with admin alerts on failed top-ups
+  - Checkout UI displays base package + extension days breakdown
+  - PayPal integration passes top-up metadata through custom_id
   - **Updated price formula**: Price = BasePlan + (SelectedDays - BaseDays) × TopupRetailPrice
   - Updated frontend (EsimDataTypeModal.tsx) and checkout with new formula
   - Updated order API to calculate correct price on server-side

@@ -115,6 +115,9 @@ export default function CheckoutPage() {
       // Get planId from localStorage (saved before redirect) or URL
       const savedPlanId = localStorage.getItem("paypal_planId") || planId;
       const savedQty = parseInt(localStorage.getItem("paypal_qty") || "1");
+      // Get top-up data from localStorage
+      const savedTopupMode = localStorage.getItem("paypal_topupMode") === "true";
+      const savedTopupDays = parseInt(localStorage.getItem("paypal_topupDays") || "0");
 
       if (!savedPlanId) {
         setError("Plan ID not found");
@@ -122,11 +125,17 @@ export default function CheckoutPage() {
       }
 
       setProcessing(true);
-      // Confirm payment and create order
+      // Confirm payment and create order - include top-up data
       fetch("/api/payment/paypal/webhook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: paypalOrderId, planId: savedPlanId, quantity: savedQty }),
+        body: JSON.stringify({ 
+          orderId: paypalOrderId, 
+          planId: savedPlanId, 
+          quantity: savedQty,
+          isTopupMode: savedTopupMode,
+          selectedDuration: savedTopupDays > 0 ? savedTopupDays : undefined,
+        }),
       })
         .then((r) => r.json())
         .then((data) => {
@@ -219,6 +228,11 @@ export default function CheckoutPage() {
         price: priceDisplay,
         currency: currency,
         customerEmail,
+        // Pass top-up metadata
+        customData: {
+          isTopupMode: topupMode,
+          selectedDuration: topupDays > 0 ? topupDays : undefined,
+        },
       }),
     });
 
@@ -226,9 +240,11 @@ export default function CheckoutPage() {
     if (!res.ok) throw new Error(data.error || "PayPal failed");
 
     if (data.approveUrl) {
-      // Save planId and quantity before redirecting to PayPal
+      // Save planId, quantity, and top-up data before redirecting to PayPal
       localStorage.setItem("paypal_planId", plan!.id);
       localStorage.setItem("paypal_qty", quantity.toString());
+      localStorage.setItem("paypal_topupMode", topupMode ? "true" : "false");
+      localStorage.setItem("paypal_topupDays", topupDays > 0 ? String(topupDays) : "");
       window.location.href = data.approveUrl;
       return;
     }
@@ -656,10 +672,28 @@ const isUnlimited = plan.dataAmount >= 999;
               <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4 sm:mb-5">{t("checkout.orderSummary")}</h2>
 
               <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                <div className="flex justify-between text-slate-600 text-sm">
-                  <span>{plan.destination} eSIM × {quantity}</span>
-                  <span>{formatPrice((plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd) * quantity)}</span>
-                </div>
+                {/* Regular: show base plan price */}
+                {/* Top-up mode: show breakdown */}
+                {topupMode && topupDays > 0 ? (
+                  <>
+                    {/* Extension breakdown for top-up mode */}
+                    <div className="flex justify-between text-slate-500 text-xs">
+                      <span>• Base: {plan.durationDays} days</span>
+                      <span className="text-slate-400">{formatPrice(plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd)}</span>
+                    </div>
+                    <div className="flex justify-between text-orange-600 text-xs font-medium">
+                      <span>• +{topupDays - plan.durationDays} days extension</span>
+                      <span>+{formatPrice((topupPackage ? (topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd) * (topupDays - plan.durationDays) : 0) * quantity)}</span>
+                    </div>
+                  </>
+                ) : (
+                  /* Regular: show plain base plan */
+                  <div className="flex justify-between text-slate-600 text-sm">
+                    <span>{plan.destination} eSIM × {quantity}</span>
+                    <span>{formatPrice((plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd) * quantity)}</span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between text-slate-600 text-sm">
                   <span>{t("checkout.activation")}</span>
                   <span className="text-green-600">{t("checkout.free")}</span>

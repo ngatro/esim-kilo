@@ -67,7 +67,7 @@ async function getAccessToken(): Promise<string> {
 
 export async function POST(request: Request) {
   try {
-    const { planId, planName, price, currency = "USD", customerEmail, isTopUp, orderItemId, packageCode, periodNum } = await request.json();
+    const { planId, planName, price, currency = "USD", customerEmail, isTopUp, orderItemId, packageCode, periodNum, customData } = await request.json();
 
     if (!price || price <= 0) {
       return NextResponse.json({ error: "Invalid price" }, { status: 400 });
@@ -96,6 +96,12 @@ export async function POST(request: Request) {
       returnUrl = `${appUrl}/topup?success=true&orderItemId=${orderItemId}&packageCode=${packageCode || ""}`;
     }
 
+    // Build custom_id with top-up metadata if provided
+    let customIdData: Record<string, unknown> = { planId, planName, email: customerEmail, isTopUp, orderItemId, packageCode, periodNum };
+    if (customData) {
+      customIdData = { ...customIdData, ...customData };
+    }
+
     const res = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
       method: "POST",
       headers: {
@@ -112,7 +118,7 @@ export async function POST(request: Request) {
               currency_code: paypalCurrency,
               value: paypalAmount.toFixed(2),
             },
-            custom_id: JSON.stringify({ planId, planName, email: customerEmail, isTopUp, orderItemId, packageCode, periodNum }),
+            custom_id: JSON.stringify(customIdData),
           },
         ],
         application_context: {

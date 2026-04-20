@@ -1,8 +1,76 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createOrder, queryOrder } from "@/lib/esim-access";
-import { sendEmail, getOrderConfirmationHtml } from "@/lib/email";
+import { createOrder, queryOrder, createTopUp } from "@/lib/esim-access";
+import { sendEmail, getOrderConfirmationHtml, getOrderConfirmationAdminHtml } from "@/lib/email";
 import { createCommission } from "@/lib/affiliate";
+
+// Backend-only price calculation to prevent price manipulation
+function calculateOrderPrice(
+  plan: { id: string; priceUsd: number; retailPriceUsd: number; durationDays: number; supportTopUpType: number },
+  topupMode: boolean,
+  selectedDuration: number | undefined,
+  quantity: number
+): { price: number; extraDays: number; basePlanDays: number; topupPackageCode: string | null } {
+  let itemPrice = plan.priceUsd;
+  let extraDays = 0;
+  let basePlanDays = plan.durationDays;
+  let topupPackageCode: string | null = null;
+
+  // Use retail price if available (customer-facing price)
+  if (plan.retailPriceUsd > 0) {
+    itemPrice = plan.retailPriceUsd;
+  }
+
+  // Handle top-up mode: Calculate extra days and fetch top-up package
+  if (topupMode && selectedDuration && selectedDuration > 0) {
+    extraDays = selectedDuration - plan.durationDays;
+    
+    if (extraDays > 0 && plan.supportTopUpType === 3) {
+      // Fetch the flexible top-up package for this plan
+      // We'll fetch it in the main function to avoid multiple DB calls
+      topupPackageCode = "FLEXIBLE_TOPUP"; // Placeholder - we'll resolve this
+    }
+  }
+
+  const totalPrice = itemPrice * quantity;
+  
+  return { price: totalPrice, extraDays, basePlanDays, topupPackageCode };
+}
+
+// Process top-up after base order is created
+async function processTopUp(
+  orderItemId: number,
+  iccid: string,
+  extraDays: number,
+  topupPackageCode: string
+): Promise<{ success: boolean; error?: string; topupResult?: unknown }> {
+  try {
+    console.log(`[TopUp] Starting for orderItem=${orderItemId}, extraDays=${extraDays}, packageCode=${topupPackageCode}`);
+    
+    // Call the top-up API
+    const topupResult = await createTopUp({
+      packageCode: topupPackageCode,
+      iccid: iccid,
+      periodNum: String(extraDays), // The number of extra days
+    });
+
+    console.log(`[TopUp] Success for orderItem=${orderItemId}:`, topupResult);
+
+    // Update order item with top-up info
+    await prisma.orderItem.update({
+      where: { id: orderItemId },
+      data: {
+        extraDays: extraDays,
+        topupPackageCode: topupPackageCode,
+      },
+    });
+
+    return { success: true, topupResult };
+  } catch (error) {
+    console.error(`[TopUp] Failed for orderItem=${orderItemId}:`, error);
+    return { success: false, error: String(error) };
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -10,18 +78,31 @@ export async function POST(request: Request) {
     const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
     
     const userId = token ? parseInt(token) : null;
-    const { items, customerName, customerEmail, status } = await request.json();
+    const { 
+      items, 
+      customerName, 
+      customerEmail, 
+      status,
+      // Top-up mode fields
+      isTopupMode = false,
+      selectedDuration,
+    } = await request.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items" }, { status: 400 });
     }
 
     let totalAmount = 0;
+    let totalExtraDays = 0;
+    let hasTopupMode = false;
     const orderItemsData: {
       planId: string | null;
       planName: string;
       price: number;
       quantity: number;
+      extraDays?: number;
+      basePlanDays?: number;
+      topupPackageCode?: string | null;
     }[] = [];
 
     for (const item of items) {
@@ -36,27 +117,46 @@ export async function POST(request: Request) {
         );
       }
 
+      // Get top-up package if in top-up mode
+      let extraDays = 0;
+      let topupPackageCode: string | null = null;
+      let topupRetailPrice = 0;
 
-      // Calculate price: Base price + (days - baseDays) * topupPrice for topup mode
-      let itemPrice = plan.priceUsd;
-      if (plan.retailPriceUsd > 0) {
-        itemPrice = plan.retailPriceUsd;
-      }
-      if (item.topupMode && item.days && item.days > 0) {
-        // Fetch topup package for this plan
-        const topupPkg = await prisma.topupPackage.findFirst({
-          where: { planId: plan.id, isActive: true, isFlexible: true },
-        });
-        if (topupPkg) {
-          const topupRetail = topupPkg.retailPriceUsd > 0 ? topupPkg.retailPriceUsd : topupPkg.priceUsd;
-          const extraDays = item.days - plan.durationDays;
-          if (extraDays > 0) {
-            itemPrice = itemPrice + (extraDays * topupRetail);
+      // Check if this item is in top-up mode
+      const itemIsTopupMode = item.isTopupMode || (isTopupMode && item.days && item.days > 0);
+      const itemSelectedDuration = item.selectedDuration || item.days || selectedDuration;
+
+      if (itemIsTopupMode && itemSelectedDuration) {
+        extraDays = itemSelectedDuration - plan.durationDays;
+        
+        if (extraDays > 0) {
+          hasTopupMode = true;
+          totalExtraDays = Math.max(totalExtraDays, extraDays);
+          
+          // Fetch the flexible top-up package for this plan
+          const topupPkg = await prisma.topupPackage.findFirst({
+            where: { planId: plan.id, isActive: true, isFlexible: true },
+          });
+          
+          if (topupPkg) {
+            topupPackageCode = topupPkg.packageCode;
+            topupRetailPrice = topupPkg.retailPriceUsd > 0 ? topupPkg.retailPriceUsd : topupPkg.priceUsd;
           }
         }
       }
 
-      const itemTotal = itemPrice * item.quantity;
+      // Calculate price: Base price + (extraDays * topupPrice) - Backend-only calculation
+      let itemPrice = plan.priceUsd;
+      if (plan.retailPriceUsd > 0) {
+        itemPrice = plan.retailPriceUsd;
+      }
+      
+      // Add top-up cost if applicable
+      if (extraDays > 0 && topupRetailPrice > 0) {
+        itemPrice = itemPrice + (extraDays * topupRetailPrice);
+      }
+
+      const itemTotal = itemPrice * (item.quantity || 1);
       totalAmount += itemTotal;
 
       orderItemsData.push({
@@ -64,6 +164,9 @@ export async function POST(request: Request) {
         planName: plan.name,
         price: itemPrice,
         quantity: item.quantity || 1,
+        extraDays: extraDays > 0 ? extraDays : undefined,
+        basePlanDays: plan.durationDays,
+        topupPackageCode,
       });
     }
 
@@ -77,6 +180,12 @@ export async function POST(request: Request) {
         status: orderStatus,
         customerName: customerName || null,
         customerEmail: customerEmail || null,
+        // Top-up metadata
+        isTopupMode: hasTopupMode,
+        selectedDuration: selectedDuration || null,
+        basePlanDays: hasTopupMode ? orderItemsData[0]?.basePlanDays : null,
+        extraDays: hasTopupMode ? totalExtraDays : null,
+        topupPackageCode: hasTopupMode ? orderItemsData[0]?.topupPackageCode : null,
         orderItems: {
           create: orderItemsData,
         },
@@ -91,8 +200,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, order, message: "Pending order created" });
     }
 
-    const esimResults: { orderItem: number; status: string; orderNo: string }[] = [];
-
+    // Process orders - Create eSIM and handle top-up if needed
+    const esimResults: { 
+      orderItem: number; 
+      status: string; 
+      orderNo: string;
+      topupStatus?: string;
+      topupError?: string;
+    }[] = [];
 
     for (const orderItem of order.orderItems) {
       const plan = await prisma.plan.findUnique({
@@ -101,6 +216,7 @@ export async function POST(request: Request) {
 
       if (plan?.packageCode) {
         try {
+          // Step 1: Create base eSIM order
           const esimOrder = await createOrder({
             packageCode: plan.packageCode,
             count: orderItem.quantity,
@@ -124,10 +240,38 @@ export async function POST(request: Request) {
             },
           });
 
-          esimResults.push({
+          const baseOrderResult = {
             orderItem: orderItem.id,
             status: esimOrder.esimStatus || "created",
             orderNo: esimOrder.orderNo || "",
+          };
+
+          // Step 2: Process top-up if needed (after getting ICCID)
+          let topupStatus = "not_needed";
+          let topupError: string | undefined;
+          
+          if (orderItem.extraDays && orderItem.extraDays > 0 && orderItem.topupPackageCode && esimOrder.iccid) {
+            const topupResult = await processTopUp(
+              orderItem.id,
+              esimOrder.iccid,
+              orderItem.extraDays,
+              orderItem.topupPackageCode
+            );
+            
+            if (topupResult.success) {
+              topupStatus = "success";
+            } else {
+              topupStatus = "failed";
+              topupError = topupResult.error;
+              // Log for admin attention - don't fail the whole order
+              console.error(`[Order ${order.id}] Top-up failed for orderItem ${orderItem.id}: ${topupResult.error}`);
+            }
+          }
+
+          esimResults.push({
+            ...baseOrderResult,
+            topupStatus,
+            topupError,
           });
 
           if (esimOrder.orderNo) {
@@ -141,6 +285,13 @@ export async function POST(request: Request) {
           }
         } catch (esimError) {
           console.error("eSIM Access order error:", esimError);
+          esimResults.push({
+            orderItem: orderItem.id,
+            status: "error",
+            orderNo: "",
+            topupStatus: "not_needed",
+            topupError: String(esimError),
+          });
         }
       }
     }
@@ -169,6 +320,25 @@ export async function POST(request: Request) {
           })),
         }),
       });
+
+      // Send admin notification
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (adminEmail) {
+        await sendEmail({
+          to: adminEmail,
+          subject: `New Order #${updatedOrder.id} - ${updatedOrder.totalAmount.toFixed(2)}`,
+          html: getOrderConfirmationAdminHtml({
+            id: updatedOrder.id,
+            totalAmount: updatedOrder.totalAmount,
+            customerName: updatedOrder.customerName,
+            customerEmail: updatedOrder.customerEmail,
+            items: updatedOrder.orderItems.map((item) => ({
+              planName: item.planName,
+              price: item.price,
+            })),
+          }),
+        });
+      }
     }
 
     // Create commission for referrer if user was referred (after order confirmation)
