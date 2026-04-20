@@ -34,7 +34,7 @@ interface TopupPackage {
   isFlexible: boolean;
 }
 
-type PaymentMethod = "paypal" | "lemonsqueezy" | "gumroad" | "payoneer";
+type PaymentMethod = "paypal" ;
 
 import { convertFromUSD } from "@/lib/currency";
 
@@ -56,6 +56,9 @@ export default function CheckoutPage() {
   // Topup mode params from URL
   const topupMode = searchParams.get("mode") === "topup";
   const topupDays = parseInt(searchParams.get("days") || "0");
+  const topupId = searchParams.get("topupId") || "";
+  
+  console.log("[Checkout] Params:", { planId, topupMode, topupDays, topupId });
   const [error, setError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paypal");
   const [success, setSuccess] = useState<{ orderId: number; qrCode?: string; activationCode?: string } | null>(null);
@@ -172,15 +175,22 @@ export default function CheckoutPage() {
           const found = (data.plans || []).find((p: Plan) => p.id === planId);
           setPlan(found || null);
           
-          // If topup mode, fetch the topup package
+          // If topup mode, fetch the topup package - use topupId if provided
           if (found && topupMode) {
             fetch(`/api/topup-packages?planIds=${planId}`)
               .then((r) => r.json())
               .then((pkgData) => {
                 if (pkgData.packages && pkgData.packages.length > 0) {
-                  // Get the first flexible topup package or first available
-                  const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
-                  setTopupPackage(flexiblePkg || pkgData.packages[0]);
+                  // Use topupId if provided, otherwise find flexible or first
+                  let selectedPkg = pkgData.packages[0];
+                  if (topupId) {
+                    selectedPkg = pkgData.packages.find((p: TopupPackage) => p.id === parseInt(topupId)) || selectedPkg;
+                  } else {
+                    const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
+                    selectedPkg = flexiblePkg || selectedPkg;
+                  }
+                  console.log("[Checkout] Using topup package:", selectedPkg);
+                  setTopupPackage(selectedPkg);
                 }
               })
               .catch(() => setTopupPackage(null));
@@ -205,7 +215,7 @@ export default function CheckoutPage() {
     let unitUsd = plan!.retailPriceUsd > 0 ? plan!.retailPriceUsd : plan!.priceUsd;
     if (topupMode && topupDays > 0 && topupPackage) {
       const topupRetail = topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd;
-      const extraDays = topupDays - plan!.durationDays;
+      const extraDays = Math.max(0, topupDays - plan!.durationDays);
       if (extraDays > 0) {
         unitUsd = unitUsd + (extraDays * topupRetail);
       }
@@ -251,71 +261,71 @@ export default function CheckoutPage() {
     throw new Error("No approval URL");
   }
 
-  async function handleLemonSqueezy() {
-    const res = await fetch("/api/payment/lemonsqueezy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        planId: plan!.id,
-        planName: `${plan!.destination} eSIM`,
-        price: plan!.priceUsd * quantity,
-        customerEmail,
-      }),
-    });
+  // async function handleLemonSqueezy() {
+  //   const res = await fetch("/api/payment/lemonsqueezy", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       planId: plan!.id,
+  //       planName: `${plan!.destination} eSIM`,
+  //       price: plan!.priceUsd * quantity,
+  //       customerEmail,
+  //     }),
+  //   });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "LemonSqueezy failed");
+  //   const data = await res.json();
+  //   if (!res.ok) throw new Error(data.error || "LemonSqueezy failed");
 
-    if (data.checkoutUrl) {
-      window.location.href = data.checkoutUrl;
-      return;
-    }
-    throw new Error("No checkout URL");
-  }
+  //   if (data.checkoutUrl) {
+  //     window.location.href = data.checkoutUrl;
+  //     return;
+  //   }
+  //   throw new Error("No checkout URL");
+  // }
 
-  async function handleGumroad() {
-    const res = await fetch("/api/payment/gumroad", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        planId: plan!.id,
-        planName: `${plan!.destination} eSIM`,
-        price: plan!.priceUsd * quantity,
-        customerEmail,
-      }),
-    });
+  // async function handleGumroad() {
+  //   const res = await fetch("/api/payment/gumroad", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       planId: plan!.id,
+  //       planName: `${plan!.destination} eSIM`,
+  //       price: plan!.priceUsd * quantity,
+  //       customerEmail,
+  //     }),
+  //   });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Gumroad failed");
+  //   const data = await res.json();
+  //   if (!res.ok) throw new Error(data.error || "Gumroad failed");
 
-    if (data.checkoutUrl) {
-      window.open(data.checkoutUrl, "_blank");
-      return;
-    }
-    throw new Error("No checkout URL");
-  }
+  //   if (data.checkoutUrl) {
+  //     window.open(data.checkoutUrl, "_blank");
+  //     return;
+  //   }
+  //   throw new Error("No checkout URL");
+  // }
 
-  async function handlePayoneer() {
-    const res = await fetch("/api/payment/payoneer", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        planId: plan!.id,
-        planName: `${plan!.destination} eSIM`,
-        price: plan!.priceUsd * quantity,
-        customerEmail,
-      }),
-    });
+  // async function handlePayoneer() {
+  //   const res = await fetch("/api/payment/payoneer", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       planId: plan!.id,
+  //       planName: `${plan!.destination} eSIM`,
+  //       price: plan!.priceUsd * quantity,
+  //       customerEmail,
+  //     }),
+  //   });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Payoneer failed");
+  //   const data = await res.json();
+  //   if (!res.ok) throw new Error(data.error || "Payoneer failed");
 
-    if (data.checkoutUrl) {
-      window.location.href = data.checkoutUrl;
-      return;
-    }
-    throw new Error("No checkout URL");
-  }
+  //   if (data.checkoutUrl) {
+  //     window.location.href = data.checkoutUrl;
+  //     return;
+  //   }
+  //   throw new Error("No checkout URL");
+  // }
 
   async function handleDirectCheckout() {
     if (!plan) return;
@@ -372,15 +382,15 @@ export default function CheckoutPage() {
         case "paypal":
           await handlePayPal();
           break;
-        case "lemonsqueezy":
-          await handleLemonSqueezy();
-          break;
-        case "gumroad":
-          await handleGumroad();
-          break;
-        case "payoneer":
-          await handlePayoneer();
-          break;
+        // case "lemonsqueezy":
+        //   await handleLemonSqueezy();
+        //   break;
+        // case "gumroad":
+        //   await handleGumroad();
+        //   break;
+        // case "payoneer":
+        //   await handlePayoneer();
+        //   break;
         default:
           await handleDirectCheckout();
       }
@@ -476,7 +486,7 @@ const isPayPalSupported = PAYPAL_SUPPORTED_CURRENCIES.includes(currency);
 let unitPrice = plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd;
 if (topupMode && topupDays > 0 && topupPackage && plan) {
   const topupRetail = topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd;
-  const extraDays = topupDays - plan.durationDays;
+  const extraDays = Math.max(0, topupDays - plan.durationDays); // Ensure non-negative
   if (extraDays > 0) {
     unitPrice = unitPrice + (extraDays * topupRetail);
   }
@@ -589,75 +599,6 @@ const isUnlimited = plan.dataAmount >= 999;
                     {paymentMethod === "paypal" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
                   </div>
                 </button>
-
-                {/* LemonSqueezy */}
-                {/* <button
-                  onClick={() => setPaymentMethod("lemonsqueezy")}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                    paymentMethod === "lemonsqueezy"
-                      ? "bg-orange-50 border-orange-400 ring-1 ring-orange-200"
-                      : "bg-white border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="w-12 h-8 bg-yellow-400 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-slate-900 text-xs font-bold">LS</span>
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="text-slate-800 font-medium text-sm">LemonSqueezy</p>
-                    <p className="text-slate-500 text-xs">Credit Card, Apple Pay, Google Pay, Crypto</p>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "lemonsqueezy" ? "border-orange-500" : "border-slate-300"
-                  }`}>
-                    {paymentMethod === "lemonsqueezy" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
-                  </div>
-                </button> */}
-
-                {/* Gumroad */}
-                {/* <button
-                  onClick={() => setPaymentMethod("gumroad")}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                    paymentMethod === "gumroad"
-                      ? "bg-orange-50 border-orange-400 ring-1 ring-orange-200"
-                      : "bg-white border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="w-12 h-8 bg-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">G</span>
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="text-slate-800 font-medium text-sm">Gumroad</p>
-                    <p className="text-slate-500 text-xs">Credit Card, PayPal</p>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "gumroad" ? "border-orange-500" : "border-slate-300"
-                  }`}>
-                    {paymentMethod === "gumroad" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
-                  </div>
-                </button> */}
-
-                {/* Payoneer */}
-                {/* <button
-                  onClick={() => setPaymentMethod("payoneer")}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                    paymentMethod === "payoneer"
-                      ? "bg-orange-50 border-orange-400 ring-1 ring-orange-200"
-                      : "bg-white border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="w-12 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">P</span>
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="text-slate-800 font-medium text-sm">Payoneer</p>
-                    <p className="text-slate-500 text-xs">Bank Transfer, Credit Card</p>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === "payoneer" ? "border-orange-500" : "border-slate-300"
-                  }`}>
-                    {paymentMethod === "payoneer" && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
-                  </div>
-                </button> */}
               </div>
             </div>
           </div>
@@ -682,8 +623,8 @@ const isUnlimited = plan.dataAmount >= 999;
                       <span className="text-slate-400">{formatPrice(plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd)}</span>
                     </div>
                     <div className="flex justify-between text-orange-600 text-xs font-medium">
-                      <span>• +{topupDays - plan.durationDays} days extension</span>
-                      <span>+{formatPrice((topupPackage ? (topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd) * (topupDays - plan.durationDays) : 0) * quantity)}</span>
+                      <span>• +{Math.max(0, topupDays - plan.durationDays)} days extension</span>
+                      <span>+{formatPrice((topupPackage ? (topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd) * Math.max(0, topupDays - plan.durationDays) : 0) * quantity)}</span>
                     </div>
                   </>
                 ) : (

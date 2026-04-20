@@ -245,7 +245,7 @@ export default function EsimDataTypeModal({
       return basePlan.retailPriceUsd > 0 ? basePlan.retailPriceUsd : basePlan.priceUsd;
     }
     return 0;
-  }, [basePlan, topupPackage, selectedDuration]);
+  }, [basePlan, topupPackage, selectedDuration, ]);
 
   // Initialize with first available options
   useEffect(() => {
@@ -310,7 +310,7 @@ export default function EsimDataTypeModal({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden"
           >
             {/* Close Button */}
             <button
@@ -472,6 +472,8 @@ export default function EsimDataTypeModal({
                     {exactPlan && (
                       <div className="text-xs text-slate-500 mt-2 p-2 bg-slate-100 rounded">
                         <p>📦 Plan packageCode: <code className="bg-slate-200 px-1 rounded">{exactPlan.packageCode}</code></p>
+                        <p>💰 Price: {formatPrice(exactPlan.retailPriceUsd > 0 ? exactPlan.retailPriceUsd : exactPlan.priceUsd)} USD</p>
+                        <p>📅 Duration: {exactPlan.durationDays} days</p>
                       </div>
                     )}
                     {exactPlan && (
@@ -482,6 +484,9 @@ export default function EsimDataTypeModal({
                     {isUsingTopUp && topupPackage && (
                       <div className="text-xs text-amber-600 mt-1">
                         <p>⚠️ Stacked from {topupPackage.packageCode}</p>
+                        <p>💰 Price topup: {formatPrice(topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd)} USD</p>
+                        <p>price preview: ${basePlan?.retailPriceUsd} + ${topupPackage.retailPriceUsd} x ({selectedDuration} - {basePlan?.durationDays})</p>
+
                       </div>
                     )}
                   </div>
@@ -543,7 +548,7 @@ export default function EsimDataTypeModal({
                     ) : isUsingTopUp && basePlan ? (
                       // Using top-up - buy the base plan with quantity = selected duration
                       <Link
-                        href={`/checkout?planId=${basePlan.id}&qty=${quantity}&days=${selectedDuration}&mode=topup`}
+                        href={`/checkout?planId=${basePlan.id}&qty=${quantity}&days=${selectedDuration}&mode=topup&topupId=${topupPackage?.id || ''}`}
                         className="block w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-4 rounded-full text-lg text-center transition-colors"
                       >
                         {t("plans.buyNow") || "Buy Now"}
