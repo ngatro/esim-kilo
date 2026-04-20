@@ -18,8 +18,7 @@ async function syncTopupPackages() {
 
     // Fetch by packageCode
     const planCodes = Array.from(new Set(basePlans.map(p => p.packageCode).filter(Boolean)));
-    console.log(`[TOPUP] Starting sync for ${planCodes.length} base plans...`);
-    const BATCH_SIZE = 10;
+    // 
     const DELAY_MS = 500;
     
     for (let i = 0; i < planCodes.length; i += BATCH_SIZE) {
@@ -43,8 +42,8 @@ async function syncTopupPackages() {
 
       // Just log batch progress
       const batchNum = Math.ceil((i + BATCH_SIZE) / BATCH_SIZE);
-      const totalBatches = Math.ceil(planCodes.length / BATCH_SIZE);
-      console.log(`[TOPUP] Batch ${batchNum}/${totalBatches}`);
+      // const totalBatches = Math.ceil(planCodes.length / BATCH_SIZE);
+      // 
 
       // Wait 1 second between batches
       await new Promise(r => setTimeout(r, DELAY_MS));
@@ -134,7 +133,7 @@ async function syncTopupPackages() {
       }
     }
 
-    console.log(`[TOPUP] ✓ Done: created=${created}, updated=${updated}, total=${total}`);
+    // console.log(`[TOPUP] ✓ Done: created=${created}, updated=${updated}, total=${total}`);
     return { created, updated, total };
   } catch (error) {
     console.error("[TOPUP] ✗ Error:", error);
@@ -258,7 +257,7 @@ export async function POST(request: Request) {
     if (type === "topup") {
       // Run completely in background - fire and forget
       syncTopupPackages().then(result => {
-        console.log(`[TOPUP Sync] ✓ Done: created=${result.created}, updated=${result.updated}, total=${result.total}`);
+        // console.log(`[TOPUP Sync] ✓ Done`);
       }).catch(err => {
         console.error(`[TOPUP Sync] ✗ Error:`, err);
       });
@@ -285,7 +284,7 @@ export async function GET(request: Request) {
       // Run sync in background - return immediately
       (async () => {
         try {
-          console.log("[Sync] Starting...");
+          // console.log("[Sync] Starting...");
           
           const res = await getPackageList({ type: "BASE" } as any);
           const packages = res.packageList || [];
@@ -372,10 +371,10 @@ export async function GET(request: Request) {
       });
 
       // Sync regions and countries to database
-      console.log("[Sync] Syncing regions & countries...");
+      // console.log("[Sync] Syncing regions & countries...");
       const regionValues = Object.values(regionMap);
       const countryValues = Object.values(countryMap);
-      console.log(`[Sync] Regions: ${regionValues.length}, Countries: ${countryValues.length}`);
+      // console.log(`[Sync] Regions: ${regionValues.length}, Countries: ${countryValues.length}`);
       
       // Batch regions and countries with Promise.all for parallel execution
       await Promise.all([
@@ -396,7 +395,7 @@ export async function GET(request: Request) {
       ]);
 
       // Delete and create plans
-      console.log("[Sync] Creating plans...");
+      // console.log("[Sync] Creating plans...");
       await prisma.plan.deleteMany({});
       let totalCreated = 0;
       for (let i = 0; i < plans.length; i += 500) {
@@ -405,9 +404,9 @@ export async function GET(request: Request) {
       }
 
       // Update minPrice for countries
-      console.log("[Sync] Updating country prices...");
+      // console.log("[Sync] Updating country prices...");
       const countries = await prisma.country.findMany({ select: { code: true } });
-      console.log(`[Sync] Updating minPrice for ${countries.length} countries`);
+      // console.log(`[Sync] Updating minPrice for ${countries.length} countries`);
       for (const country of countries) {
         const cheapestPlan = await prisma.plan.findFirst({
           where: { countryId: country.code, isActive: true },
@@ -423,9 +422,9 @@ export async function GET(request: Request) {
       }
 
       // NOTE: Topup sync is now separate - use POST /api/plans with { type: "topup" }
-      console.log(`[Sync] ✓ Done: ${totalCreated} plans synced`);
+      // console.log(`[Sync] ✓ Done: ${totalCreated} plans synced`);
     } catch (error) {
-      console.error("[Sync] ✗ Error:", error);
+      // console.error("[Sync] ✗ Error:", error);
     }
       })();
       
