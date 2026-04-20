@@ -107,25 +107,11 @@ export default function EsimDetailModal({ plan, country, slug }: { plan: any; co
       fetch(`/api/topup-packages?planIds=${plan.id}`)
         .then(r => r.json())
         .then(data => {
-          console.log("[EsimDetailModal] Topup packages:", data.packages);
           setTopupPackages(data.packages || []);
         })
-        .catch(console.error);
+        .catch(() => {});
     }
   }, [plan?.topupPackageId, plan?.id]);
-
-  // Debug: log plan data to console
-  if (plan) {
-    console.log("[EsimDetailModal] Plan data:", {
-      id: plan.id,
-      packageCode: plan.packageCode,
-      priceUsd: plan.priceUsd,
-      retailPriceUsd: plan.retailPriceUsd,
-      supportTopUp: plan.supportTopUp,
-      supportTopUpType: plan.supportTopUpType,
-      topupPackageId: plan.topupPackageId,
-    });
-  }
 
   const heroImage = plan ? (imgError ? getDefaultImage(plan.packageCode) : getHeroImage(plan)) : "";
 
@@ -277,16 +263,17 @@ export default function EsimDetailModal({ plan, country, slug }: { plan: any; co
             </div>
 
             {/* DEBUG: Base Package & Topup Info */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-4 font-mono text-xs">
-              <p className="font-bold text-yellow-800 mb-2">🔧 Debug Info:</p>
-              <p>Base: {plan?.packageCode} | price=${plan?.priceUsd} | retail=${plan?.retailPriceUsd}</p>
-              <p>displayPrice = ${displayPrice?.toFixed(2)} × {quantity} = ${(displayPrice * quantity).toFixed(2)}</p>
-              <p>topupPackageId: {plan?.topupPackageId || "None"}</p>
+            <div className="bg-red-50 border-2 border-red-400 rounded-2xl p-6 mb-4 font-mono text-sm">
+              <p className="font-bold text-red-800 text-lg mb-3">🔧 DEBUG - Price Info:</p>
+              <p><span className="text-red-700">Base Package:</span> <span className="font-semibold">{plan?.packageCode}</span></p>
+              <p><span className="text-red-700">Price:</span> ${plan?.priceUsd} | <span className="text-red-700">Retail:</span> ${plan?.retailPriceUsd}</p>
+              <p className="text-lg font-bold text-red-600 mt-2">displayPrice = ${displayPrice?.toFixed(2)} × {quantity} = ${(displayPrice * quantity).toFixed(2)}</p>
+              <p><span className="text-red-700">topupPackageId:</span> {plan?.topupPackageId || "None"}</p>
               {topupPackages.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-yellow-200">
-                  <p className="font-semibold">Topup Packages ({topupPackages.length}):</p>
+                <div className="mt-3 pt-3 border-t-2 border-red-300">
+                  <p className="font-bold text-red-800">TOPUP Packages ({topupPackages.length}):</p>
                   {topupPackages.map((pkg: any) => (
-                    <p key={pkg.id}>{pkg.packageCode} | ${pkg.priceUsd?.toFixed(2)} | {pkg.isFlexible ? "flex" : "fixed"}</p>
+                    <p key={pkg.id} className="text-red-700">{pkg.packageCode} | ${pkg.priceUsd?.toFixed(2)} | {pkg.isFlexible ? "flex" : "fixed"}</p>
                   ))}
                 </div>
               )}
