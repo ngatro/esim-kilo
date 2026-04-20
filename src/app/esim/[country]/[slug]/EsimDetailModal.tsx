@@ -103,7 +103,8 @@ export default function EsimDetailModal({ plan, country, slug }: { plan: any; co
 
   // Fetch topup packages for this plan
   useEffect(() => {
-    if (plan?.topupPackageId) {
+    if (plan?.id) {
+      // Fetch all topup packages for this plan (not just by topupPackageId)
       fetch(`/api/topup-packages?planIds=${plan.id}`)
         .then(r => r.json())
         .then(data => {
@@ -111,7 +112,7 @@ export default function EsimDetailModal({ plan, country, slug }: { plan: any; co
         })
         .catch(() => {});
     }
-  }, [plan?.topupPackageId, plan?.id]);
+  }, [plan?.id]);
 
   const heroImage = plan ? (imgError ? getDefaultImage(plan.packageCode) : getHeroImage(plan)) : "";
 
