@@ -18,7 +18,7 @@ async function syncTopupPackages() {
 
     // Fetch by packageCode
     const planCodes = Array.from(new Set(basePlans.map(p => p.packageCode).filter(Boolean)));
-    // 
+    const BATCH_SIZE = 10;
     const DELAY_MS = 500;
     
     for (let i = 0; i < planCodes.length; i += BATCH_SIZE) {
