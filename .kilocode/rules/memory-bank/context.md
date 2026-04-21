@@ -94,9 +94,12 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
    - POST /api/admin/plans handler with action 'sync_topup'
    - Deletes all existing TopupPackage records before sync
    - Filters plans with supportTopUpType === 3 (flexible day-based top-up)
-   - Fetches topup packages in batches of 10 with 500ms delay to avoid rate limiting
+   - Fetches topup packages in batches of 7 with 1s delay (safe for 8 req/s API limit)
+   - Uses Promise.allSettled for concurrent processing within each batch
+   - Individual try-catch per plan ensures one failure doesn't stop entire sync
+   - Error messages collected and displayed in admin UI (up to 5 shown)
    - Saves each topup package with planId reference and updates Plan.topupPackageId
-   - Shows success popup with count of synced packages
+   - Returns synced count, total plans, elapsed time, and any errors
 ## Current Structure
 
 | File/Directory | Purpose | Status |
