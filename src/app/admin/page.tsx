@@ -46,7 +46,7 @@ export default function AdminDashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [syncingPlans, setSyncingPlans] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [syncingTopup, setSyncingTopup] = useState(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
@@ -68,37 +68,49 @@ export default function AdminDashboardPage() {
     }
   }
 
-  async function syncPlans() {
-    setSyncingPlans(true);
-    setSyncResult("");
+async function syncPlans() {
+    setSyncing(true);
+    setSyncResult("Syncing from eSIM Access...");
     try {
-      await fetch("/api/plans?sync=true");
-      setSyncResult("🔄 Syncing plans... (check terminal)");
-      // Keep button disabled - user can refresh page to reset
+      const res = await fetch("/api/admin/plans?sync=true");
+      const data = await res.json();
+      if (data.success) {
+        setSyncResult(`✓ Synced ${data.synced} plans (${data.elapsed})`);
+      } else {
+        setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
+      }
+      await fetchStats();
     } catch (error) {
       console.error("Sync failed:", error);
       setSyncResult("✗ Sync failed");
-      setSyncingPlans(false);
+    } finally {
+      setSyncing(false);
     }
   }
-
-  async function syncTopup() {
+  async function syncTopupPackages() {
     setSyncingTopup(true);
-    setSyncResult("");
+    setSyncResult("Syncing topup packages from eSIM Access...");
     try {
-      await fetch("/api/plans", {
+      const res = await fetch("/api/admin/plans", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "topup" })
+        body: JSON.stringify({ action: "sync_topup" }),
       });
-      setSyncResult("📦 Syncing topup... (check terminal)");
-      // Keep button disabled - user can refresh page to reset
+      const data = await res.json();
+      if (data.success) {
+        setSyncResult(`✓ Synced ${data.synced} topup packages (${data.elapsed})`);
+      } else {
+        setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
+      }
+      await fetchStats();
     } catch (error) {
-      console.error("Topup sync failed:", error);
-      setSyncResult("✗ Topup sync failed");
+      console.error("Sync topup failed:", error);
+      setSyncResult("✗ Sync topup failed");
+    } finally {
       setSyncingTopup(false);
     }
   }
+
 
   if (authLoading || loading) {
     return (
@@ -119,6 +131,10 @@ export default function AdminDashboardPage() {
     );
   }
 
+  
+
+
+
   const stats = data?.stats;
 
   return (
@@ -134,38 +150,30 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={syncPlans}
-              disabled={syncingPlans || syncingTopup}
+              disabled={syncing}
               className="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
             >
-              {syncingPlans ? (
+              {syncing ? (
                 <>
-                  <span className="animate-spin">↻</span>
-                  Syncing Plans...
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  Syncing...
                 </>
-              ) : (
-                <>
-                  <span>🔄</span>
-                  Sync Plans
-                </>
-              )}
+              ) : "🔄 Sync Plans"}
             </button>
+            
             <button
-              onClick={syncTopup}
-              disabled={syncingPlans || syncingTopup}
-              className="bg-green-500 hover:bg-green-600 disabled:bg-slate-300 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
+              onClick={syncTopupPackages}
+              disabled={syncingTopup}
+              className="bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
             >
               {syncingTopup ? (
                 <>
-                  <span className="animate-spin">↻</span>
-                  Syncing Topup...
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  Syncing...
                 </>
-              ) : (
-                <>
-                  <span>📦</span>
-                  Sync Topup
-                </>
-              )}
+              ) : "⚡ Sync Topup Packages"}
             </button>
+            
             <Link href="/" className="text-slate-500 hover:text-slate-700 text-sm">View Site</Link>
           </div>
         </div>

@@ -164,7 +164,9 @@ export async function getBalance(): Promise<BalanceObj> {
 
 export async function getPackageList(params: {
   locationCode?: string;
-  type?: "TOPUP";
+  type?: "BASE" | "TOPUP";
+  page?: number;           // Thêm cái này
+  pageSize?: number;
   slug?: string;
   packageCode?: string;
   iccid?: string;
@@ -172,11 +174,15 @@ export async function getPackageList(params: {
   // For TOPUP requests, always include locationCode, slug, iccid as empty strings
   // This matches the working Postman request format
   const body: Record<string, unknown> = {
-    locationCode: params.locationCode || (params.type === "TOPUP" ? "" : undefined),
+    locationCode: params.locationCode || (params.type === "BASE" ? "" : undefined),
     type: params.type,
-    slug: params.slug || (params.type === "TOPUP" ? "" : undefined),
+    pager: {
+      page: params.page || 1,
+      pageSize: params.pageSize || 100 // Lấy tối đa mỗi lần 100 gói
+    },
+    slug: params.slug || (params.type === "BASE" ? "" : undefined),
     packageCode: params.packageCode,
-    iccid: params.iccid || (params.type === "TOPUP" ? "" : undefined),
+    iccid: params.iccid || (params.type === "BASE" ? "" : undefined),
   };
 
   // Remove undefined values

@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, formatPrice, currency, rates } = useI18n();
-  const planId = searchParams.get("planId");
+  const planId = searchParams.get("planId") || "";
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [topupPackage, setTopupPackage] = useState<TopupPackage | null>(null);
@@ -57,8 +57,6 @@ export default function CheckoutPage() {
   const topupMode = searchParams.get("mode") === "topup";
   const topupDays = parseInt(searchParams.get("days") || "0");
   const topupId = searchParams.get("topupId") || "";
-  
-  console.log("[Checkout] Params:", { planId, topupMode, topupDays, topupId });
   const [error, setError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paypal");
   const [success, setSuccess] = useState<{ orderId: number; qrCode?: string; activationCode?: string } | null>(null);
@@ -177,14 +175,30 @@ export default function CheckoutPage() {
           
           // If topup mode, fetch the topup package - use topupId if provided
           if (found && topupMode) {
-            fetch(`/api/topup-packages?planIds=${planId}`)
+            // DEBUG: Log what we're searching for
+            console.log('[Checkout] FetchTopup:', { planId, topupId, topupIdType: typeof topupId });
+            
+            // Build URL: prefer topupId if available, otherwise use planIds
+            let apiUrl = '';
+            if (topupId) {
+              apiUrl = `/api/topup-packages?topupId=${topupId}`;
+            } else {
+              apiUrl = `/api/topup-packages?planIds=${planId}`;
+            }
+            console.log('[Checkout] API URL:', apiUrl);
+            
+            fetch(apiUrl)
               .then((r) => r.json())
               .then((pkgData) => {
+                // DEBUG: Log API response
+                console.log('[Checkout] TopupAPI:', { packages: pkgData.packages, count: pkgData.packages?.length });
                 if (pkgData.packages && pkgData.packages.length > 0) {
                   // Use topupId if provided, otherwise find flexible or first
                   let selectedPkg = pkgData.packages[0];
                   if (topupId) {
-                    selectedPkg = pkgData.packages.find((p: TopupPackage) => p.id === parseInt(topupId)) || selectedPkg;
+                    const parsedTopupId = parseInt(topupId);
+                    console.log('[Checkout] FindById:', { parsedTopupId, packagesIds: pkgData.packages.map((p: any) => p.id) });
+                    selectedPkg = pkgData.packages.find((p: TopupPackage) => p.id === parsedTopupId) || selectedPkg;
                   } else {
                     const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
                     selectedPkg = flexiblePkg || selectedPkg;
@@ -193,8 +207,11 @@ export default function CheckoutPage() {
                   if (!selectedPkg.retailPriceUsd && selectedPkg.priceUsd) {
                     selectedPkg.retailPriceUsd = selectedPkg.priceUsd;
                   }
-                  console.log("[Checkout] Using topup package:", selectedPkg);
+                  console.log('[Checkout] SelectedPkg:', selectedPkg);
                   setTopupPackage(selectedPkg);
+                } else {
+                  console.log('[Checkout] NoTopupPackages:', { planId });
+                  setTopupPackage(null);
                 }
               })
               .catch(() => setTopupPackage(null));
@@ -433,7 +450,8 @@ export default function CheckoutPage() {
                 src={success.qrCode}
                 alt="eSIM QR Code"
                 className="w-48 h-48 sm:w-64 sm:h-64 mx-auto"
-                fill
+                width={256} 
+                height={256}
               />
             </div>
           )}
@@ -486,16 +504,45 @@ export default function CheckoutPage() {
   const PAYPAL_SUPPORTED_CURRENCIES = ["AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "SEK", "SGD", "USD", "MXN", "BRL", "INR", "KRW"];
 const isPayPalSupported = PAYPAL_SUPPORTED_CURRENCIES.includes(currency);
 
+// DEBUG: Log inputs BEFORE calculation
+console.log('[Checkout] BeforeCalc:', { topupMode, topupDays, topupDaysType: typeof topupDays, hasTopupPackage: !!topupPackage, planExists: !!plan, planDuration: plan?.durationDays, planPrice: plan?.retailPriceUsd || plan?.priceUsd });
+
+// DEBUG: Log ALL inputs before calculation to identify which is failing
+console.log('[Checkout] BEFORE_IF:', {
+  topupMode, topupDays, topupDaysType: typeof topupDays,
+  hasTopupPackage: !!topupPackage,
+  topupPackageId: topupPackage?.id,
+  topupPackagePrice: topupPackage?.retailPriceUsd || topupPackage?.priceUsd,
+  hasPlan: !!plan,
+  planDuration: plan?.durationDays,
+  planPrice: plan?.retailPriceUsd || plan?.priceUsd,
+  extraDays: plan ? Math.max(0, (topupDays || 0) - plan.durationDays) : 0,
+  condition: `${topupMode} && ${topupDays} > 0 && ${!!topupPackage} && ${!!plan}`
+});
+
 // Calculate price: Base price + (SelectedDays - BaseDays) * TopupPrice for topup mode
 let unitPrice = plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd;
 if (topupMode && topupDays > 0 && topupPackage && plan) {
   const topupRetail = topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd;
   const extraDays = Math.max(0, topupDays - plan.durationDays); // Ensure non-negative
+  console.log("[PriceCalc] Values:", {
+    planRetail: plan.retailPriceUsd,
+    planPrice: plan.priceUsd,
+    topupMode,
+    topupDays,
+    topupPackage,
+    topupRetail,
+    extraDays,
+    planDuration: plan.durationDays,
+    baseUnitPrice: unitPrice
+  });
   if (extraDays > 0) {
     unitPrice = unitPrice + (extraDays * topupRetail);
   }
 }
 const totalPrice = unitPrice * quantity;
+// DEBUG: Log final calculation results
+console.log('[Checkout] FinalCalc:', { topupMode, unitPrice, totalPrice, quantity });
 const isUnlimited = plan.dataAmount >= 999;
 
   return (
@@ -628,7 +675,14 @@ const isUnlimited = plan.dataAmount >= 999;
                     </div>
                     <div className="flex justify-between text-orange-600 text-xs font-medium">
                       <span>• +{Math.max(0, topupDays - plan.durationDays)} days extension</span>
-                      <span>+{formatPrice((topupPackage?.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : (topupPackage?.priceUsd || 0)) * Math.max(0, topupDays - plan.durationDays) * quantity)}</span>
+                      <span className="font-bold text-red-600">
+                        {/* TEMP DEBUG - force show price */}
+                        {(() => {
+                          const DEBUG_PRICE = 1;
+                          const ext = Math.max(0, topupDays - plan.durationDays);
+                          return `${(DEBUG_PRICE * ext * quantity).toFixed(2)}`;
+                        })()}
+                      </span>
                     </div>
                   </>
                 ) : (
