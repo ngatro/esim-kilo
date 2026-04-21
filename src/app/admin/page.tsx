@@ -87,7 +87,7 @@ async function syncPlans() {
       setSyncing(false);
     }
   }
-  async function syncTopupPackages() {
+    async function syncTopupPackages() {
     setSyncingTopup(true);
     setSyncResult("Syncing topup packages from eSIM Access...");
     try {
@@ -98,7 +98,11 @@ async function syncPlans() {
       });
       const data = await res.json();
       if (data.success) {
-        setSyncResult(`✓ Synced ${data.synced} topup packages (${data.elapsed})`);
+        let msg = `✓ Synced ${data.synced} topup packages (${data.elapsed})`;
+        if (data.errors && data.errors.length > 0) {
+          msg += `\n\nErrors (${data.errors.length}):\n${data.errors.slice(0, 5).join('\n')}${data.errors.length > 5 ? '\n... and ' + (data.errors.length - 5) + ' more' : ''}`;
+        }
+        setSyncResult(msg);
       } else {
         setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
       }
@@ -110,8 +114,6 @@ async function syncPlans() {
       setSyncingTopup(false);
     }
   }
-
-
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
