@@ -89,6 +89,14 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - Updated frontend (EsimDataTypeModal.tsx) and checkout with new formula
   - Updated order API to calculate correct price on server-side
 
+ - [x] **Sync Topup Packages** - Admin can sync top-up packages from eSIM Access:
+   - Button "Sync Topup Packages" in admin dashboard with loading state
+   - POST /api/admin/plans handler with action 'sync_topup'
+   - Deletes all existing TopupPackage records before sync
+   - Filters plans with supportTopUpType === 3 (flexible day-based top-up)
+   - Fetches topup packages in batches of 10 with 500ms delay to avoid rate limiting
+   - Saves each topup package with planId reference and updates Plan.topupPackageId
+   - Shows success popup with count of synced packages
 ## Current Structure
 
 | File/Directory | Purpose | Status |
@@ -199,3 +207,4 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-05 | Added country search with autocomplete + dynamic data/duration filters |
 | 2026-04-10 | Added complete Affiliate system with cookie tracking, commission by rank, dashboard, withdrawals, admin management |
 | 2026-04-13 | Added client-side dependent faceted filters to /esim/[country] + converted /plans to landing page + Unsplash images for destinations and regions |
+| 2026-04-21 | Added Sync Topup Packages feature - Admin can sync top-up packages with batching and rate limiting
