@@ -48,6 +48,8 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncingTopup, setSyncingTopup] = useState(false);
+  const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0, percent: 0, message: "" });
+  const [syncErrors, setSyncErrors] = useState<string[]>([]);
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
   useEffect(() => {
@@ -89,24 +91,62 @@ async function syncPlans() {
   }
     async function syncTopupPackages() {
     setSyncingTopup(true);
-    setSyncResult("Syncing topup packages from eSIM Access...");
+    setSyncProgress({ current: 0, total: 0, percent: 0, message: "Starting..." });
+    setSyncErrors([]);
+    setSyncResult(null);
+    
     try {
       const res = await fetch("/api/admin/plans", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "sync_topup" }),
       });
-      const data = await res.json();
-      if (data.success) {
-        let msg = `✓ Synced ${data.synced} topup packages (${data.elapsed})`;
-        if (data.errors && data.errors.length > 0) {
-          msg += `\n\nErrors (${data.errors.length}):\n${data.errors.slice(0, 5).join('\n')}${data.errors.length > 5 ? '\n... and ' + (data.errors.length - 5) + ' more' : ''}`;
+
+      if (!res.body) throw new Error("No response body");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let errors: string[] = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value, { stream: true });
+        const lines = text.split("\n").filter(line => line.trim());
+
+        for (const line of lines) {
+          try {
+            const data = JSON.parse(line);
+            if (data.type === "progress") {
+              setSyncProgress({
+                current: data.current,
+                total: data.total,
+                percent: data.percent,
+                message: data.message,
+              });
+            } else if (data.type === "complete") {
+              const msg = `✓ Synced ${data.synced} topup packages (${data.elapsed})`;
+              setSyncResult(msg);
+              setSyncProgress({ current: data.totalPlans, total: data.totalPlans, percent: 100, message: "Complete!" });
+              
+              if (data.errors && data.errors.length > 0) {
+                errors = data.errors;
+                setSyncErrors(errors);
+              }
+              await fetchStats();
+            }
+          } catch (e) {
+            console.error("Failed to parse stream line:", e);
+          }
         }
-        setSyncResult(msg);
-      } else {
-        setSyncResult(`✗ Error: ${data.error || "Unknown"}`);
       }
-      await fetchStats();
+
+      // Show errors if any
+      if (errors.length > 0) {
+        const errorMsg = `✓ Synced with errors (${errors.length}):\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? '\n... and ' + (errors.length - 5) + ' more' : ''}`;
+        setSyncResult(errorMsg);
+      }
     } catch (error) {
       console.error("Sync topup failed:", error);
       setSyncResult("✗ Sync topup failed");
@@ -182,10 +222,46 @@ async function syncPlans() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Sync Progress */}
+        {syncingTopup && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-blue-800">
+                Đang đồng bộ gói nạp...
+              </span>
+              <span className="text-sm text-blue-600">
+                {syncProgress.current} / {syncProgress.total} ({syncProgress.percent}%)
+              </span>
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-2.5">
+              <div 
+                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                style={{ width: `${syncProgress.percent}%` }}
+              />
+            </div>
+            <p className="text-xs text-blue-600 mt-2">{syncProgress.message}</p>
+          </div>
+        )}
+
         {/* Sync Result */}
         {syncResult && (
           <div className="mb-6 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
             {syncResult}
+          </div>
+        )}
+
+        {/* Sync Errors */}
+        {syncErrors.length > 0 && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h4 className="text-sm font-semibold text-red-800 mb-2">Errors ({syncErrors.length}):</h4>
+            <ul className="text-xs text-red-700 space-y-1 max-h-40 overflow-y-auto">
+              {syncErrors.slice(0, 10).map((err, i) => (
+                <li key={i} className="font-mono">{err}</li>
+              ))}
+              {syncErrors.length > 10 && (
+                <li className="italic">... and {syncErrors.length - 10} more</li>
+              )}
+            </ul>
           </div>
         )}
 

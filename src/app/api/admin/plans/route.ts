@@ -366,7 +366,9 @@ export async function POST(request: Request) {
       // Step 1: Reset - Delete all topup packages
       await prisma.topupPackage.deleteMany({});
 
-      // Step 2: Filter plans with supportTopUpType === 3 (flexible day-based top-up)
+      // Step 2: Get total count and filter plans with supportTopUpType === 3
+      const totalToSync = await prisma.plan.count({ where: { supportTopUpType: 3 } });
+      
       const eligiblePlans = await prisma.plan.findMany({
         where: { supportTopUpType: 3 },
         select: { id: true, packageCode: true, name: true },
@@ -378,92 +380,133 @@ export async function POST(request: Request) {
 
       let totalTopupPackages = 0;
       let errorLog: string[] = [];
-      const batchSize = 7; // Process 7 plans at a time (safe for 8 req/s limit)
+      const batchSize = 7;
       const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-      // Step 3: Fetch topup packages in batches with rate limiting
-      for (let i = 0; i < eligiblePlans.length; i += batchSize) {
-        const batch = eligiblePlans.slice(i, i + batchSize);
+      // Create a streaming response
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          // Send initial progress
+          controller.enqueue(encoder.encode(JSON.stringify({
+            type: "progress",
+            current: 0,
+            total: totalToSync,
+            percent: 0,
+            message: "Starting sync..."
+          }) + "\n"));
 
-        // Use Promise.allSettled to handle individual failures gracefully
-        const results = await Promise.allSettled(
-          batch.map(async (plan) => {
-            try {
-              const res = await getPackageList({
-                type: "TOPUP",
-                packageCode: plan.packageCode,
-              });
+          for (let i = 0; i < eligiblePlans.length; i += batchSize) {
+            const batch = eligiblePlans.slice(i, i + batchSize);
 
-              const topupList = res.packageList || [];
+            const results = await Promise.allSettled(
+              batch.map(async (plan) => {
+                try {
+                  const res = await getPackageList({
+                    type: "TOPUP",
+                    packageCode: plan.packageCode,
+                  });
 
-              // Step 4: Save each topup package and link to plan
-              for (const topupPkg of topupList) {
-                const created = await prisma.topupPackage.create({
-                  data: {
-                    planId: plan.id,
-                    packageCode: topupPkg.packageCode,
-                    name: topupPkg.name,
-                    priceUsd: topupPkg.price / 10000,
-                    priceRaw: topupPkg.price,
-                    retailPriceRaw: topupPkg.retailPrice || topupPkg.price,
-                    retailPriceUsd: (topupPkg.retailPrice || topupPkg.price) / 10000,
-                    isFlexible: true,
-                    isActive: true,
-                  },
-                });
+                  const topupList = res.packageList || [];
 
-                // Update the plan with the topupPackageId (use the first one as the sample)
-                await prisma.plan.update({
-                  where: { id: plan.id },
-                  data: { topupPackageId: created.id },
-                });
+                  for (const topupPkg of topupList) {
+                    const created = await prisma.topupPackage.upsert({
+                      where: { packageCode: topupPkg.packageCode },
+                      update: {
+                        planId: plan.id,
+                        name: topupPkg.name,
+                        priceUsd: topupPkg.price / 10000,
+                        priceRaw: topupPkg.price,
+                        retailPriceRaw: topupPkg.retailPrice || topupPkg.price,
+                        retailPriceUsd: (topupPkg.retailPrice || topupPkg.price) / 10000,
+                        isFlexible: true,
+                        isActive: true,
+                      },
+                      create: {
+                        planId: plan.id,
+                        packageCode: topupPkg.packageCode,
+                        name: topupPkg.name,
+                        priceUsd: topupPkg.price / 10000,
+                        priceRaw: topupPkg.price,
+                        retailPriceRaw: topupPkg.retailPrice || topupPkg.price,
+                        retailPriceUsd: (topupPkg.retailPrice || topupPkg.price) / 10000,
+                        isFlexible: true,
+                        isActive: true,
+                      },
+                    });
 
-                totalTopupPackages++;
+                    await prisma.plan.update({
+                      where: { id: plan.id },
+                      data: { topupPackageId: created.id },
+                    });
+
+                    totalTopupPackages++;
+                  }
+                  
+                  return { success: true, planCode: plan.packageCode };
+                } catch (err) {
+                  console.error(`Failed to sync topup for plan ${plan.packageCode}:`, err);
+                  return { 
+                    success: false, 
+                    planCode: plan.packageCode, 
+                    error: err instanceof Error ? err.message : String(err) 
+                  };
+                }
+              })
+            );
+
+            // Count completed (including failures that still count as processed)
+            const processed = Math.min(i + batchSize, eligiblePlans.length);
+            const percent = Math.round((processed / totalToSync) * 100);
+            
+            // Send progress update
+            controller.enqueue(encoder.encode(JSON.stringify({
+              type: "progress",
+              current: processed,
+              total: totalToSync,
+              percent,
+              message: `Processed ${processed}/${totalToSync} plans`
+            }) + "\n"));
+
+            // Collect errors
+            const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+            if (failed.length > 0) {
+              for (const f of failed) {
+                const result = f.status === 'rejected' ? f.reason : f.value;
+                const errorMsg = f.status === 'rejected' ? String(result) : result.error;
+                errorLog.push(`${result.planCode || 'Unknown'}: ${errorMsg}`);
               }
-              
-              return { success: true, planCode: plan.packageCode };
-            } catch (err) {
-              console.error(`Failed to sync topup for plan ${plan.packageCode}:`, err);
-              return { 
-                success: false, 
-                planCode: plan.packageCode, 
-                error: err instanceof Error ? err.message : String(err) 
-              };
             }
-          })
-        );
 
-        // Collect errors from this batch
-        const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
-        if (failed.length > 0) {
-          for (const f of failed) {
-            const result = f.status === 'rejected' ? f.reason : f.value;
-            const errorMsg = f.status === 'rejected' ? String(result) : result.error;
-            errorLog.push(`${result.planCode || 'Unknown'}: ${errorMsg}`);
+            // Delay between batches
+            if (i + batchSize < eligiblePlans.length) {
+              await delay(1000);
+            }
           }
-        }
 
-        // Add delay between batches to avoid rate limiting (skip after last batch)
-        if (i + batchSize < eligiblePlans.length) {
-          await delay(1000); // 1 second between batches
+          // Send final summary
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+          const finalData: any = {
+            type: "complete",
+            success: true,
+            synced: totalTopupPackages,
+            elapsed: `${elapsed}s`,
+            totalPlans: eligiblePlans.length,
+          };
+          if (errorLog.length > 0) {
+            finalData.errors = errorLog;
+          }
+          controller.enqueue(encoder.encode(JSON.stringify(finalData) + "\n"));
+          controller.close();
         }
-      }
+      });
 
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      
-      // Return detailed result including any errors
-      const result: any = {
-        success: true,
-        synced: totalTopupPackages,
-        elapsed: `${elapsed}s`,
-        totalPlans: eligiblePlans.length,
-      };
-      
-      if (errorLog.length > 0) {
-        result.errors = errorLog;
-      }
-      
-      return NextResponse.json(result);
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          'Cache-Control': 'no-cache',
+        },
+      });
     }
 
     return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400 });
@@ -472,4 +515,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }
+
 
