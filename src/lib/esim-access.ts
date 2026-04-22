@@ -130,6 +130,13 @@ async function esimAccessPost(endpoint: string, body: Record<string, unknown> = 
   // Generate HMAC-SHA256 signature
   const signature = generateSignature(timestamp, requestId, accessCode, bodyStr);
 
+  console.log(`[eSIM API] ${endpoint} REQUEST:`, {
+    url,
+    timestamp,
+    requestId,
+    body: body,
+  });
+
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -144,11 +151,22 @@ async function esimAccessPost(endpoint: string, body: Record<string, unknown> = 
 
   if (!res.ok) {
     const text = await res.text();
-    console.error(`[eSIM API] Error ${res.status}: ${text}`);
+    console.error(`[eSIM API] ${endpoint} ERROR ${res.status}:`, {
+      status: res.status,
+      response: text,
+      request: body,
+    });
     throw new Error(`eSIM Access API: ${res.status} ${text}`);
   }
 
-  return res.json() as Promise<EsimAccessResponse>;
+  const json = await res.json() as EsimAccessResponse;
+  console.log(`[eSIM API] ${endpoint} RESPONSE:`, {
+    success: json.success,
+    message: json.message,
+    obj: json.obj,
+  });
+  
+  return json;
 }
 
 export async function getBalance(): Promise<BalanceObj> {

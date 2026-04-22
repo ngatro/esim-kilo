@@ -229,16 +229,18 @@ export async function POST(request: Request) {
           let planId = "";
           let isTopupMode = false;
           let selectedDuration: number | undefined;
+          let topupPackageCode: string | undefined;
           try { 
             const parsed = JSON.parse(customId || "{}");
             planId = parsed.planId || "";
             isTopupMode = parsed.isTopupMode || false;
             selectedDuration = parsed.selectedDuration;
+            topupPackageCode = parsed.topupPackageCode;
           } catch {}
 
           // Get top-up metadata if in top-up mode
           let extraDays = 0;
-          let topupPackageCode: string | null = null;
+          let topupPkgCode: string | null = topupPackageCode || null;
           let basePlanDays: number | null = null;
           
           if (isTopupMode && planId) {
@@ -247,10 +249,13 @@ export async function POST(request: Request) {
               extraDays = selectedDuration - plan.durationDays;
               basePlanDays = plan.durationDays;
               if (extraDays > 0) {
-                const topupPkg = await prisma.topupPackage.findFirst({
-                  where: { planId: plan.id, isActive: true, isFlexible: true },
-                });
-                topupPackageCode = topupPkg?.packageCode || null;
+                // Use passed topupPackageCode, or fetch from DB as fallback
+                if (!topupPkgCode) {
+                  const topupPkg = await prisma.topupPackage.findFirst({
+                    where: { planId: plan.id, isActive: true, isFlexible: true },
+                  });
+                  topupPkgCode = topupPkg?.packageCode || null;
+                }
               }
             }
           }
@@ -286,7 +291,7 @@ export async function POST(request: Request) {
           });
 
           // Auto-activate (with top-up processing)
-          await activateEsimAndEmail(order.id, planId, 1, isTopupMode, extraDays, topupPackageCode);
+          await activateEsimAndEmail(order.id, planId, 1, isTopupMode, extraDays, topupPkgCode);
         }
       }
     }
@@ -301,7 +306,7 @@ export async function POST(request: Request) {
 // Frontend confirmation (after PayPal redirect)
 export async function PUT(request: Request) {
   try {
-    const { orderId, planId, quantity = 1, isTopupMode = false, selectedDuration } = await request.json();
+    const { orderId, planId, quantity = 1, isTopupMode = false, selectedDuration, topupPackageCode } = await request.json();
     if (!orderId) return NextResponse.json({ error: "Order ID required" }, { status: 400 });
 
     // Get userId from cookie
@@ -341,7 +346,7 @@ export async function PUT(request: Request) {
 
     // Get top-up metadata if in top-up mode
     let extraDays = 0;
-    let topupPackageCode: string | null = null;
+    let topupPkgCode: string | null = topupPackageCode || null;
     let basePlanDays: number | null = null;
     let itemPrice = amount;
     
@@ -350,16 +355,23 @@ export async function PUT(request: Request) {
       basePlanDays = plan.durationDays;
       
       if (extraDays > 0) {
-        const topupPkg = await prisma.topupPackage.findFirst({
-          where: { planId: plan.id, isActive: true, isFlexible: true },
-        });
+        // Use passed topupPackageCode, or fetch from DB as fallback
+        if (!topupPkgCode) {
+          const topupPkg = await prisma.topupPackage.findFirst({
+            where: { planId: plan.id, isActive: true, isFlexible: true },
+          });
+          topupPkgCode = topupPkg?.packageCode || null;
+        }
         
-        if (topupPkg) {
-          topupPackageCode = topupPkg.packageCode;
+        if (topupPkgCode) {
+          // Get package for price calculation - must handle null case
+          const topupPkgInfo = await prisma.topupPackage.findUnique({
+            where: { packageCode: topupPkgCode },
+          });
           // Recalculate price to match backend calculation
           const basePrice = plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd;
-          const topupRetail = topupPkg.retailPriceUsd > 0 ? topupPkg.retailPriceUsd : topupPkg.priceUsd;
-          itemPrice = basePrice + (extraDays * topupRetail);
+          const topupCost = topupPkgInfo ? (topupPkgInfo.retailPriceUsd > 0 ? topupPkgInfo.retailPriceUsd : topupPkgInfo.priceUsd) : 0;
+          itemPrice = basePrice + (extraDays * topupCost);
         }
       }
     }
@@ -395,7 +407,7 @@ export async function PUT(request: Request) {
     });
 
     // Auto-activate eSIM + send email (with top-up processing)
-    await activateEsimAndEmail(order.id, planId, quantity, isTopupMode, extraDays, topupPackageCode);
+    await activateEsimAndEmail(order.id, planId, quantity, isTopupMode, extraDays, topupPkgCode);
 
     const updatedOrder = await prisma.order.findUnique({
       where: { id: order.id },

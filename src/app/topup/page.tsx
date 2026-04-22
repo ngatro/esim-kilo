@@ -13,6 +13,18 @@ interface TopUpPackage {
   priceUSD: number;
   volume: number;
   duration: number;
+  isFlexible?: boolean; // For flexible packages that can extend custom days
+}
+
+interface CurrentPlan {
+  planName: string;
+  iccid: string;
+  esimStatus: string;
+  totalVolume: number;
+  orderUsage: number;
+  orderItemId: number;
+  supportTopUpType: number;
+  durationDays?: number; // Current plan's duration
 }
 
 interface CurrentPlan {
@@ -45,6 +57,13 @@ export default function TopUpPage() {
   const [success, setSuccess] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<TopUpPackage | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"paypal" | "lemonsqueezy" | "gumroad">("paypal");
+  
+  // For flexible top-up (supportTopUpType=3): custom day selection
+  const [customDays, setCustomDays] = useState<number>(1); // Default 1 extra day
+  const maxExtraDays = 30; // Max 30 extra days
+
+  // Calculate price for custom flexible days (rate = price per day)
+  const customDayPrice = selectedPackage?.priceUSD || 0;
 
   const PAYPAL_SUPPORTED_CURRENCIES = ["AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "SEK", "SGD", "USD", "MXN", "BRL", "INR", "KRW"];
   const isPayPalSupported = PAYPAL_SUPPORTED_CURRENCIES.includes(currency);
@@ -87,6 +106,9 @@ export default function TopUpPage() {
     if (!selectedPackage || !currentPlan) return;
     setProcessing(true);
     
+    // Calculate number of extra days - use customDays for flexible packages
+    const extraDays = selectedPackage.isFlexible ? customDays : selectedPackage.duration;
+    
     try {
       if (paymentMethod === "paypal") {
         // Get price in display currency - always convert from USD to display currency
@@ -104,7 +126,8 @@ export default function TopUpPage() {
             isTopUp: true,
             orderItemId: currentPlan.orderItemId,
             packageCode: selectedPackage.packageCode,
-            periodNum: currentPlan.supportTopUpType === 3 ? selectedPackage.duration.toString() : undefined,
+            // Pass custom periodNum for flexible top-up
+            periodNum: currentPlan.supportTopUpType === 3 ? extraDays.toString() : undefined,
           }),
         });
         
@@ -309,7 +332,13 @@ export default function TopUpPage() {
               {packages.map((pkg) => (
                 <motion.button
                   key={pkg.packageCode}
-                  onClick={() => setSelectedPackage(pkg)}
+                  onClick={() => {
+                    setSelectedPackage(pkg);
+                    // Reset custom days when switching to a new package
+                    if (pkg.isFlexible) {
+                      setCustomDays(1);
+                    }
+                  }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`w-full p-5 rounded-2xl border text-left transition-all ${
@@ -321,10 +350,48 @@ export default function TopUpPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-slate-800 font-semibold">{formatData(pkg.volume)}</p>
-                      <p className="text-slate-600 text-sm">{pkg.duration} days validity</p>
+                      <p className="text-slate-600 text-sm">
+                        {pkg.isFlexible ? "Flexible - choose days" : `${pkg.duration} days validity`}
+                      </p>
                     </div>
-                    <p className="text-xl font-bold text-orange-500">{formatPrice(pkg.priceUSD)}</p>
+                    <p className="text-xl font-bold text-orange-500">
+                      {formatPrice(pkg.priceUSD)}
+                    </p>
                   </div>
+                  {/* Day selector for flexible packages */}
+                  {pkg.isFlexible && selectedPackage?.packageCode === pkg.packageCode && currentPlan?.supportTopUpType === 3 && (
+                    <div className="mt-3 pt-3 border-t border-slate-200">
+                      <label className="block text-xs text-slate-600 mb-2">
+                        Extra days to add (1-{maxExtraDays}):
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCustomDays(Math.max(1, customDays - 1));
+                          }}
+                          className="w-8 h-8 rounded-lg bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-sm font-bold"
+                        >
+                          -
+                        </button>
+                        <span className="flex-1 text-center font-semibold text-lg">
+                          {customDays} day{customDays !== 1 ? "s" : ""}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCustomDays(Math.min(maxExtraDays, customDays + 1));
+                          }}
+                          className="w-8 h-8 rounded-lg bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-sm font-bold"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1 text-center">
+                        = {formatPrice(pkg.priceUSD * customDays)} for {customDays} extra days
+                      </p>
+                    </div>
+                  )}
                 </motion.button>
               ))}
 
@@ -370,8 +437,8 @@ export default function TopUpPage() {
                     Processing...
                   </>
                 ) : selectedPackage ? (
-                  `Pay ${formatPrice(selectedPackage.priceUSD)}`
-                ) : (
+                    `Pay ${selectedPackage.isFlexible ? formatPrice(selectedPackage.priceUSD * customDays) : formatPrice(selectedPackage.priceUSD)}`
+                  ) : (
                   "Select a package"
                 )}
               </button>

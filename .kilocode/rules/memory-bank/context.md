@@ -2,9 +2,17 @@
 
 ## Current State
 
-**App Status**: ✅ SimPal — eSIM Travel Data Marketplace with i18n, Auth, Cart, Admin & Affiliate
+**App Status**: ✅ SimPal — eSIM Travel Data Marketplace with i18n, Auth, Cart, Admin & Affiliate + Top-up
 
-A full-featured eSIM marketplace built on Next.js 16 with internationalization, user authentication, shopping cart, admin dashboard, and affiliate system.
+A full-featured eSIM marketplace built on Next.js 16 with internationalization, user authentication, shopping cart, admin dashboard, affiliate system, and top-up functionality.
+
+## Recently Completed
+
+- [x] **Fix BigInt issue**: Database schema already uses String for iccid columns (not BigInt) - verified by code review
+- [x] **Remove FLEXIBLE_TOPUP placeholder**: Fixed order API to remove the fake FLEXIBLE_TOPUP code and use real DB data
+- [x] **PayPal flow fix**: Store topupPackageCode in localStorage before redirect, pass to webhook on payment confirm
+- [x] **Day selection for flexible top-up**: Added +/- day selector UI (1-30 days) on /topup page for supportTopUpType=3
+- [x] **Comprehensive logging**: Added detailed request/response logging to eSIM Access API for debugging
 
 ## Recently Completed
 
@@ -210,4 +218,5 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-05 | Added country search with autocomplete + dynamic data/duration filters |
 | 2026-04-10 | Added complete Affiliate system with cookie tracking, commission by rank, dashboard, withdrawals, admin management |
 | 2026-04-13 | Added client-side dependent faceted filters to /esim/[country] + converted /plans to landing page + Unsplash images for destinations and regions |
-| 2026-04-21 | Added Sync Topup Packages feature - Admin can sync top-up packages with batching and rate limiting
+| 2026-04-21 | Added Sync Topup Packages feature - Admin can sync top-up packages with batching and rate limiting |
+| 2026-04-22 | Fixed top-up issues: removed FLEXIBLE_TOPUP placeholder, added day selection UI, comprehensive eSIM API logging, PayPal flow topupPackageCode tracking |

@@ -21,15 +21,11 @@ function calculateOrderPrice(
     itemPrice = plan.retailPriceUsd;
   }
 
-  // Handle top-up mode: Calculate extra days and fetch top-up package
+  // Handle top-up mode: Calculate extra days
+  // Note: actual topupPackageCode is fetched in main handler to avoid multiple DB calls
   if (topupMode && selectedDuration && selectedDuration > 0) {
     extraDays = selectedDuration - plan.durationDays;
-    
-    if (extraDays > 0 && plan.supportTopUpType === 3) {
-      // Fetch the flexible top-up package for this plan
-      // We'll fetch it in the main function to avoid multiple DB calls
-      topupPackageCode = "FLEXIBLE_TOPUP"; // Placeholder - we'll resolve this
-    }
+    // topupPackageCode will be fetched from DB in the main handler
   }
 
   const totalPrice = itemPrice * quantity;

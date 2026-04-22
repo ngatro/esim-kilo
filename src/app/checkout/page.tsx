@@ -119,6 +119,8 @@ export default function CheckoutPage() {
       // Get top-up data from localStorage
       const savedTopupMode = localStorage.getItem("paypal_topupMode") === "true";
       const savedTopupDays = parseInt(localStorage.getItem("paypal_topupDays") || "0");
+      // Get top-up package code from localStorage (if stored)
+      const savedTopupPackageCode = localStorage.getItem("paypal_topupPackageCode") || undefined;
 
       if (!savedPlanId) {
         setError("Plan ID not found");
@@ -126,7 +128,7 @@ export default function CheckoutPage() {
       }
 
       setProcessing(true);
-      // Confirm payment and create order - include top-up data
+      // Confirm payment and create order - include top-up data and package code
       fetch("/api/payment/paypal/webhook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -136,6 +138,7 @@ export default function CheckoutPage() {
           quantity: savedQty,
           isTopupMode: savedTopupMode,
           selectedDuration: savedTopupDays > 0 ? savedTopupDays : undefined,
+          topupPackageCode: savedTopupPackageCode,
         }),
       })
         .then((r) => r.json())
@@ -271,11 +274,15 @@ export default function CheckoutPage() {
     if (!res.ok) throw new Error(data.error || "PayPal failed");
 
     if (data.approveUrl) {
-      // Save planId, quantity, and top-up data before redirecting to PayPal
+      // Save planId, quantity, top-up data, and package code before redirecting to PayPal
       localStorage.setItem("paypal_planId", plan!.id);
       localStorage.setItem("paypal_qty", quantity.toString());
       localStorage.setItem("paypal_topupMode", topupMode ? "true" : "false");
       localStorage.setItem("paypal_topupDays", topupDays > 0 ? String(topupDays) : "");
+      // Store topupPackageCode for later use (after payment completes)
+      if (topupMode && topupPackage) {
+        localStorage.setItem("paypal_topupPackageCode", topupPackage.packageCode);
+      }
       window.location.href = data.approveUrl;
       return;
     }
@@ -429,6 +436,15 @@ export default function CheckoutPage() {
       </div>
     );
   }
+  if (processing && !success) {
+  return (
+    <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center text-slate-800 ">
+      <div className="animate-spin w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full mb-4" />
+      <p className="text-lg font-semibold">Processing your payment...</p>
+      <p className="text-sm text-slate-400 mt-2">Please wait, do not close this page</p>
+    </div>
+  );
+}
 
   if (success) {
     return (
