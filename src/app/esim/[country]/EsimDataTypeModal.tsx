@@ -129,7 +129,7 @@ export default function EsimDataTypeModal({
   // All duration options user can select
   // All duration options user can select
   const ALL_DURATIONS = [1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 180];
-  
+
   // Duration options from DB plans
   const durationOptions = useMemo(() => {
     const durations = new Set<number>();
@@ -138,6 +138,8 @@ export default function EsimDataTypeModal({
     });
     return Array.from(durations).sort((a, b) => a - b);
   }, [regularPlans]);
+
+  console.log('[Checkout] DurationOptions:', durationOptions);
 
   // Get duration options from FUP plans
   const fupDurationOptions = useMemo(() => {
@@ -205,9 +207,9 @@ export default function EsimDataTypeModal({
   }, [topupPackages]);
 
   // Check if any top-up is available
-  const hasTopupPackages = useMemo(() => {
-    return topupPackages.length > 0;
-  }, [topupPackages]);
+  // const hasTopupPackages = useMemo(() => {
+  //   return topupPackages.length > 0;
+  // }, [topupPackages]);
 
   // Find exact matching plan based on selection (search in correct group)
   const exactPlan = useMemo(() => {
@@ -246,6 +248,7 @@ export default function EsimDataTypeModal({
     }
     return 0;
   }, [basePlan, topupPackage, selectedDuration, ]);
+
 
   // Initialize with first available options
   useEffect(() => {
@@ -326,7 +329,7 @@ export default function EsimDataTypeModal({
               {/* Left Side - Banner & Selection */}
               <div className="lg:w-1/2 bg-gradient-to-br from-slate-100 to-slate-50 p-6 lg:p-8">
                 {/* Banner Image */}
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-6 shadow-lg">
+                <div className="relative aspect-[5/3] rounded-2xl overflow-hidden mb-6 shadow-lg">
                   <Image
                     src={heroImage}
                     alt={countryName}
@@ -337,29 +340,19 @@ export default function EsimDataTypeModal({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div className="absolute bottom-4 left-4">
-                    <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                    <span className="bg-orange-500 text-white text-sm font-bold px-3 py-1.5 rounded-full">
                       {dataType === 1 ? "Fixed Data" : "Daily Data"}
                     </span>
                   </div>
                 </div>
 
-                {/* Product Name */}
-                <h2 className="text-2xl lg:text-3xl font-bold text-slate-800 mb-2">
-                  {countryName}
-                </h2>
 
-                {/* Data Type Badge */}
-                <p className="text-slate-600 mb-6">
-                  {dataType === 1 
-                    ? "Fixed data - all data available for the entire validity period"
-                    : "Daily data - data resets each day"
-                  }
-                </p>
+                
 
                 {/* Data & Duration Selection - REAL options from database */}
                 <div className="space-y-4">
                   {/* Category Toggle (Regular vs FUP) - Only show if FUP plans exist */}
-                  {fupPlans.length > 0 && dataType === 2 && (
+                  {/* {fupPlans.length > 0 && dataType === 2 && (
                     <div className="flex gap-2 mb-4">
                       <button
                         onClick={() => { setDataCategory('regular'); setSelectedData(dataOptions[0] || 0); }}
@@ -382,7 +375,7 @@ export default function EsimDataTypeModal({
                         ♾ {t("modal.unlimited") || "Unlimited"}
                       </button>
                     </div>
-                  )}
+                  )} */}
 
                   {/* Data Amount Selection */}
                   <div>
@@ -418,27 +411,39 @@ export default function EsimDataTypeModal({
                       Duration (Days)
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {ALL_DURATIONS.map((duration) => (
-                        <button
-                          key={duration}
-                          onClick={() => setSelectedDuration(duration)}
-                          className={`px-4 py-2.5 rounded-full font-medium text-sm transition-all ${
-                            selectedDuration === duration
-                              ? "bg-orange-500 text-white border-2 border-orange-500"
-                              : "bg-white text-slate-600 border-2 border-slate-200 hover:border-orange-300"
-                          }`}
-                        >
-                          {duration} days
-                        </button>
-                      ))}
+                      {(dataCategory === 'fup' ? ALL_DURATIONS : durationOptions).map((duration) => (
+                      <button
+                        key={duration}
+                        onClick={() => setSelectedDuration(duration)}
+                        className={`px-4 py-2.5 rounded-full font-medium text-sm transition-all ${
+                          selectedDuration === duration
+                            ? "bg-orange-500 text-white border-2 border-orange-500"
+                            : "bg-white text-slate-600 border-2 border-slate-200 hover:border-orange-300"
+                        }`}
+                      >
+                        {duration} days
+                      </button>
+                    ))}
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Right Side - Summary Box */}
-              <div className="lg:w-1/2 p-6 lg:p-8 bg-white">
+              <div className="lg:w-1/2 p-6 lg:p-8 bg-white">              
                 <div className="bg-slate-50 rounded-2xl p-6">
+                  {/* Product Name */}
+                  <h2 className="text-2xl lg:text-3xl font-bold text-slate-800 mb-2">
+                    {countryName}
+                  </h2>
+                  {/* Data Type Badge */}
+                  <p className="text-slate-600 mb-6">
+                    {dataType === 1 
+                      ? "Fixed data - all data available for the entire validity period"
+                      : "Daily data - data resets each day"
+                    }
+                  </p>
+
                   {/* FUP Warning */}
                   {dataCategory === 'fup' && exactPlan && exactPlan.fupPolicy && (
                     <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-3">
@@ -470,19 +475,19 @@ export default function EsimDataTypeModal({
                     </p>
                     {/* Debug info */}
                     {exactPlan && (
-                      <div className="text-xs text-slate-500 mt-2 p-2 bg-slate-100 rounded">
+                      <div className="text-sm text-slate-500 mt-2 p-2 bg-slate-100 rounded">
                         <p>📦 Plan packageCode: <code className="bg-slate-200 px-1 rounded">{exactPlan.packageCode}</code></p>
                         <p>💰 Price: {formatPrice(exactPlan.retailPriceUsd > 0 ? exactPlan.retailPriceUsd : exactPlan.priceUsd)} USD</p>
                         <p>📅 Duration: {exactPlan.durationDays} days</p>
                       </div>
                     )}
                     {exactPlan && (
-                      <p className="text-xs text-green-600 mt-1">
+                      <p className="text-sm text-green-600 mt-1">
                         ✓ Exact plan available
                       </p>
                     )}
                     {isUsingTopUp && topupPackage && (
-                      <div className="text-xs text-amber-600 mt-1">
+                      <div className="text-sm text-amber-600 mt-1">
                         <p>⚠️ Stacked from {topupPackage.packageCode}</p>
                         <p>💰 Price topup: {formatPrice(topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd)} USD</p>
                         <p>price preview: ${basePlan?.retailPriceUsd} + ${topupPackage.retailPriceUsd} x ({selectedDuration} - {basePlan?.durationDays})</p>
