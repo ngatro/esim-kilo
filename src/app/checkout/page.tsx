@@ -82,6 +82,8 @@ export default function CheckoutPage() {
           customerName,
           customerEmail,
           status: "pending",
+          isTopupMode: topupMode,
+          selectedDuration: topupDays,
         }),
       });
       return res.ok ? (await res.json()).order : null;
@@ -288,73 +290,7 @@ export default function CheckoutPage() {
     }
     throw new Error("No approval URL");
   }
-
-  // async function handleLemonSqueezy() {
-  //   const res = await fetch("/api/payment/lemonsqueezy", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       planId: plan!.id,
-  //       planName: `${plan!.destination} eSIM`,
-  //       price: plan!.priceUsd * quantity,
-  //       customerEmail,
-  //     }),
-  //   });
-
-  //   const data = await res.json();
-  //   if (!res.ok) throw new Error(data.error || "LemonSqueezy failed");
-
-  //   if (data.checkoutUrl) {
-  //     window.location.href = data.checkoutUrl;
-  //     return;
-  //   }
-  //   throw new Error("No checkout URL");
-  // }
-
-  // async function handleGumroad() {
-  //   const res = await fetch("/api/payment/gumroad", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       planId: plan!.id,
-  //       planName: `${plan!.destination} eSIM`,
-  //       price: plan!.priceUsd * quantity,
-  //       customerEmail,
-  //     }),
-  //   });
-
-  //   const data = await res.json();
-  //   if (!res.ok) throw new Error(data.error || "Gumroad failed");
-
-  //   if (data.checkoutUrl) {
-  //     window.open(data.checkoutUrl, "_blank");
-  //     return;
-  //   }
-  //   throw new Error("No checkout URL");
-  // }
-
-  // async function handlePayoneer() {
-  //   const res = await fetch("/api/payment/payoneer", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       planId: plan!.id,
-  //       planName: `${plan!.destination} eSIM`,
-  //       price: plan!.priceUsd * quantity,
-  //       customerEmail,
-  //     }),
-  //   });
-
-  //   const data = await res.json();
-  //   if (!res.ok) throw new Error(data.error || "Payoneer failed");
-
-  //   if (data.checkoutUrl) {
-  //     window.location.href = data.checkoutUrl;
-  //     return;
-  //   }
-  //   throw new Error("No checkout URL");
-  // }
-
+  
   async function handleDirectCheckout() {
     if (!plan) return;
     if (!customerEmail) {
@@ -373,6 +309,8 @@ export default function CheckoutPage() {
           items: [{ planId: plan.id, quantity, topupMode, days: topupDays }],
           customerName,
           customerEmail,
+          isTopupMode: topupMode,
+          selectedDuration: topupDays,
         }),
       });
 

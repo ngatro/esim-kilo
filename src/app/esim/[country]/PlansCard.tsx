@@ -11,6 +11,7 @@ interface Plan {
   packageCode: string;
   destination: string;
   dataAmount: number;
+  dataVolume: number;
   durationDays: number;
   priceUsd: number;
   retailPriceUsd: number;
@@ -19,6 +20,20 @@ interface Plan {
   supportTopUpType: number;
   fupPolicy: string | null;
   topupPackageId?: number;
+  speed?: string | null;
+  networkType?: string | null;
+  locationNetworkList?: unknown;
+  ipExport?: string | null;
+  coverageCount?: number;
+  smsStatus?: number;
+  activeType?: number;
+  unusedValidTime?: number;
+  badge?: string | null;
+  isPopular?: boolean;
+  isBestSeller?: boolean;
+
+  isHot?: boolean;
+  locations?: unknown;
 }
 
 interface TopupPackage {
@@ -33,25 +48,55 @@ interface TopupPackage {
 interface PlansCardProps {
   group: {
     destination: string;
-    countryCode?: string;
-    dataType: number;
+    countryId?: string | null;
+    dataType: number
     plans: Plan[];
   };
-  onDetailClick: (config: any) => void;
+  onDetailClick: (config: PlanCardConfig) => void;
+}
+
+// Configuration object that will be passed to the modal
+export interface PlanCardConfig {
+  selectedData: number;
+  selectedDuration: number;
+  dataCategory: 'regular' | 'fup';
+  pricePreview: number;
+  basePlan: Plan | null;
+  topupPackage: TopupPackage | null;
+  exactPlan: Plan | null;
+  topupPackages: TopupPackage[];
+  countryName: string;
+  countryId?: string;
+  dataType: number;
+  quantity: number;
+  canMultiply: boolean;
+  supportTopUpType: number;
+  isUsingTopUp: boolean;
+  fupPlans: Plan[];
+  regularPlans: Plan[];
+  dataOptions: number[];
+  fupDataOptions: number[];
+  durationOptions: number[];
+  fupDurationOptions: number[];
+  // imageUrl: string | null;
+
+  allPlans: Plan[];
 }
 
 export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
-  const { destination, countryCode, dataType, plans } = group;
+  const { destination, countryId, dataType, plans } = group;
   const { formatPrice } = useI18n();
   const ALL_DURATIONS = [1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 180];
+  const { t } = useI18n();
 
   // 1. States
   const [selectedData, setSelectedData] = useState<number>(0);
   const [selectedDuration, setSelectedDuration] = useState<number>(0);
   const [dataCategory, setDataCategory] = useState<'regular' | 'fup'>('regular');
   const [topupPackages, setTopupPackages] = useState<TopupPackage[]>([]);
+  const [quantity, setQuantity] = useState<number>(1);
 
-  // 2. Fetch Topup Packages y hệt Modal của mày
+  // 2. Fetch Topup Packages
   useEffect(() => {
     async function fetchTopups() {
       if (!plans.length) return;
@@ -119,7 +164,7 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
 
   // 7. Logic tìm TOPUP PACKAGE (Bê nguyên từ Modal sang)
   const topupPackage = useMemo(() => {
-    if (!basePlan) return topupPackages[0];
+    if (!basePlan) return null;
     if (basePlan.topupPackageId) {
       const linked = topupPackages.find(p => p.id === basePlan.topupPackageId);
       if (linked) return linked;
@@ -128,7 +173,7 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
     if (forPlan) return forPlan;
     const flexible = topupPackages.find(p => p.isFlexible);
     if (flexible) return flexible;
-    return topupPackages[0];
+    return null;
   }, [topupPackages, basePlan]);
 
   // 8. Logic tính GIÁ (Bê nguyên từ Modal sang)
@@ -153,110 +198,162 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
 
   // 9. Duration Options cho Select
   const durationOptions = useMemo(() => {
-    if (dataType === 2) return ALL_DURATIONS;
+    const allDurations = [1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 180];
+    if (dataType === 2) return allDurations;
     const plansToSearch = dataCategory === 'fup' ? fupPlans : regularPlans;
     return Array.from(new Set(plansToSearch.filter(p => p.dataAmount === selectedData).map(p => p.durationDays))).sort((a, b) => a - b);
   }, [dataType, dataCategory, fupPlans, regularPlans, selectedData]);
 
+  // 10. FUP Data Options
+  const fupDataOptions = useMemo(() => {
+    const amounts = new Set<number>();
+    fupPlans.forEach(p => p.dataAmount && amounts.add(p.dataAmount));
+    return Array.from(amounts).sort((a, b) => a - b);
+  }, [fupPlans]);
+
+  // 11. FUP Duration Options
+  const fupDurationOptions = useMemo(() => {
+    const durations = new Set<number>();
+    fupPlans.forEach(p => p.durationDays && durations.add(p.durationDays));
+    return Array.from(durations).sort((a, b) => a - b);
+  }, [fupPlans]);
+
+  // 12. Check if can multiply (has flexible topup)
+  const canMultiply = useMemo(() => {
+    return topupPackages.some(p => p.isFlexible);
+  }, [topupPackages]);
+
+  // 13. Get supportTopUpType from plans
+  const supportTopUpType = useMemo(() => {
+    const maxType = plans.reduce((max, p) => Math.max(max, p.supportTopUpType || 1), 1);
+    return maxType;
+  }, [plans]);
+
+  // 14. Determine if using top-up
+  const isUsingTopUp = useMemo(() => {
+    return !exactPlan && supportTopUpType === 3 && canMultiply && basePlan !== null && topupPackage !== null;
+  }, [exactPlan, supportTopUpType, canMultiply, basePlan, topupPackage]);
+
   return (
-    <div className="group bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 flex flex-col h-full relative">
+    <div className="flex justify-center w-full py-4"> {/* Giảm py-8 xuống py-4 để tiết kiệm không gian dọc */}
+      <div className={`group bg-white rounded-[28px] transition-all duration-500 flex flex-col w-full max-w-[340px] relative overflow-hidden
+        ${dataCategory === 'fup' 
+        ? 'ring-1 ring-orange-500/30 shadow-[0_20px_40px_-12px_rgba(249,115,22,0.15)]' 
+        : 'border border-slate-100 shadow-[0_8px_25px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.07)]'
+      }`}>
       
-      {/* Banner Ảnh */}
-      <div className="relative aspect-[16/7] rounded-2xl overflow-hidden mb-5">
+      {/* Badge UNLIMITED - Thu nhỏ lại */}
+      {dataCategory === 'fup' && (
+        <div className="absolute top-4 left-4 z-20">
+          <div className="bg-orange-500 text-white text-[9px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md border border-white/10 tracking-wider">
+            <span className="w-1 h-1 bg-white rounded-full animate-ping" />
+            UNLIMITED
+          </div>
+        </div>
+      )}
+
+      {/* Banner Ảnh - Dẹt hơn (16/8) để đẩy nội dung lên */}
+      <div className="relative w-full aspect-[16/8] overflow-hidden">
         <Image 
-          src={getDestinationImage((countryCode || destination).toLowerCase())} 
+          src={ getDestinationImage((countryId || destination).toLowerCase())}
           alt={destination} 
           fill 
-          className="object-cover group-hover:scale-105 transition-transform duration-500" 
+          className="object-cover transition-transform duration-1000 group-hover:scale-110" 
           unoptimized 
         />
-        <div className="absolute top-2 left-2 bg-[#00E676] text-slate-900 text-[10px] font-black px-2 py-1 rounded-md shadow-sm">
-          BEST CHOICE
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-black/10" />
+        
+        <div className="absolute bottom-4 left-6">
+          <p className="text-slate-500 text-[8px] font-semibold uppercase tracking-[0.3em] mb-0.5">eSIM</p>
+          <h3 className="text-3xl font-medium text-slate-900 tracking-tighter leading-none">
+            {t(`countries.${countryId}`)}
+          </h3>
         </div>
-        {dataCategory === 'fup' && (
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-            <span className="bg-white/90 px-3 py-1 rounded-lg text-[10px] font-bold text-orange-500">
-              Không giới hạn dung lượng
-            </span>
-          </div>
-        )}
       </div>
 
-      <div className="flex-grow space-y-4">
+      {/* Body Section - Giảm padding từ 9 xuống 6 */}
+      <div className="flex-grow space-y-5 p-6 pt-3">
         {/* Hàng Dung lượng */}
         <div className="flex items-center justify-between">
-          <label className="text-sm font-bold text-slate-500">Dung lượng</label>
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] font-bold text-slate-400 mb-1">
-              {dataType === 1 ? "Cố định" : "Hàng Ngày"}
-            </span>
-            <div className="relative w-[140px]">
-              <select 
-                value={selectedData} 
-                onChange={(e) => setSelectedData(Number(e.target.value))} 
-                className="w-full h-10 pl-4 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-bold text-sm appearance-none outline-none focus:border-orange-500 transition-all cursor-pointer"
-              >
-                {dataOptions.map(d => (
-                  <option key={d} value={d}>{d} GB</option>
-                ))}
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-              </div>
+          <div className="space-y-0.5">
+            <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Data</label>
+            <p className="text-[12px] text-slate-600 font-medium leading-tight">
+              {dataType === 1 ? "Fixed" : "Daily"}
+            </p>
+          </div>
+          <div className="relative">
+            <select 
+              value={selectedData} 
+              onChange={(e) => setSelectedData(Number(e.target.value))} 
+              className="pl-3 pr-8 py-2 rounded-xl bg-slate-50 border-none text-slate-800 font-semibold text-xs appearance-none outline-none ring-1 ring-slate-100 focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer"
+            >
+              {dataOptions.map(d => (
+                <option key={d} value={d}>{d} GB</option>
+              ))}
+            </select>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 scale-75">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
             </div>
           </div>
         </div>
 
         {/* Hàng Số ngày */}
         <div className="flex items-center justify-between">
-          <label className="text-sm font-bold text-slate-500">Số ngày</label>
-          <div className="relative w-[100px]">
+          <div className="space-y-0.5">
+            <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Duration</label>
+            <p className="text-[12px] text-slate-600 font-medium leading-tight">Validity</p>
+          </div>
+          <div className="relative">
             <select 
               value={selectedDuration} 
               onChange={(e) => setSelectedDuration(Number(e.target.value))} 
-              className="w-full h-10 pl-4 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-bold text-sm appearance-none outline-none focus:border-orange-500 transition-all cursor-pointer"
+              className="pl-3 pr-8 py-2 rounded-xl bg-slate-50 border-none text-slate-800 font-semibold text-xs appearance-none outline-none ring-1 ring-slate-100 focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer"
             >
               {durationOptions.map(day => (
-                <option key={day} value={day}>{day} ngày</option>
+                <option key={day} value={day}>{day} Days</option>
               ))}
             </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 scale-75">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
             </div>
           </div>
         </div>
 
-        {/* Hàng Phạm vi */}
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-bold text-slate-500">Phạm vi</label>
-          <span className="text-sm font-black text-slate-900">{destination}</span>
-        </div>
-      </div>
-
-      {/* Giá tiền và Button */}
-      <div className="mt-8 pt-5 border-t border-slate-50 text-center">
-        <div className="mb-5">
-          <div className="text-3xl font-black text-orange-500 tracking-tighter">
-            {formatPrice(pricePreview)}
+        {/* Footer - Tiết kiệm tối đa chiều cao */}
+        <div className="mt-2 pt-5 border-t border-slate-50">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded w-fit mb-1 tracking-tighter">OFFER -40%</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-semibold text-slate-900 tracking-tighter leading-none">
+                  {formatPrice(pricePreview)}
+                </span>
+                <span className="text-[10px] line-through text-slate-300">
+                  {formatPrice(pricePreview / 0.6)}
+                </span>
+              </div>
+            </div>
+            {dataCategory === 'fup' && (
+              <div className="text-orange-500 font-semibold text-[8px] uppercase tracking-widest">FUP Active</div>
+            )}
           </div>
-          <div className="flex justify-center mt-1">
-            <span className="bg-orange-50 text-orange-500 text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
-              -40% <span className="line-through text-slate-300 font-normal">{formatPrice(pricePreview / 0.6)}</span>
-            </span>
-          </div>
-        </div>
 
-        <button 
-          onClick={() => onDetailClick({
-            selectedData, selectedDuration, dataCategory,
-            pricePreview, basePlan, topupPackage, exactPlan,
-            topupPackages, countryName: destination, countryCode, dataType
-          })} 
-          className="w-full h-12 bg-slate-100 hover:bg-slate-200 text-slate-900 font-black rounded-xl transition-all text-sm uppercase tracking-tight shadow-sm"
-        >
-          Xem Chi Tiết
-        </button>
+          <button 
+            onClick={() => onDetailClick({
+              selectedData, selectedDuration, dataCategory, pricePreview, 
+              basePlan: basePlan || null, topupPackage: topupPackage || null, 
+              exactPlan: exactPlan || null, topupPackages, countryName: destination, 
+              countryId: countryId || undefined, dataType, quantity, canMultiply, supportTopUpType,
+              isUsingTopUp, fupPlans, regularPlans, dataOptions, fupDataOptions,
+              durationOptions, fupDurationOptions, allPlans: plans
+            })} 
+            className="w-full h-12 rounded-[18px] bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs uppercase tracking-[0.15em] transition-all shadow-lg shadow-orange-100 active:scale-[0.96]"
+          >
+            View Details
+          </button>
+        </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

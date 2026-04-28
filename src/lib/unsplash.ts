@@ -73,7 +73,7 @@ export async function getUnsplashImage(query: string): Promise<string> {
 
 // Store only photo IDs (not full URLs) in fallback
 const destinationPhotoIds: Record<string, string> = {
-  "japan": "1490806843955-31ec4f4f6a60",
+  "japan": "1545569341-9eb8b30979d9",
   "south-korea": "1718958505977-6f5790f1cf1a",
   "thailand": "1552465011-b4e21bf6e79a",
   "singapore": "1525625293386-3f8f99389edd",

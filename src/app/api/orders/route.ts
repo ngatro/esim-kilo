@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createOrder, queryOrder, createTopUp } from "@/lib/esim-access";
 import { sendEmail, getOrderConfirmationHtml, getOrderConfirmationAdminHtml } from "@/lib/email";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Đường dẫn đến file auth mày vừa sửa lúc nãy
 import { createCommission } from "@/lib/affiliate";
 
 // Backend-only price calculation to prevent price manipulation
@@ -70,19 +72,48 @@ async function processTopUp(
 
 export async function POST(request: Request) {
   try {
-    const cookie = request.headers.get("cookie");
-    const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
+    // 1. Lấy session từ NextAuth (Dành cho Google OAuth)
+   const session = await getServerSession(authOptions);
+   
+   // 2. Lấy token từ Cookie thủ công (Dành cho login thường của)
+   const cookie = request.headers.get("cookie");
+   const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
+   
+   // 3. XÁC ĐỊNH DANH TÍNH: Ưu tiên Session (Google) > Token (Thường) > Email Param
+   let userId: number | null = null;
+   let userEmail: string | null = null;
+   
+   if (session?.user) {
+     userEmail = session.user.email || userEmail;
+     // Fix: Properly check if id exists and is not null/undefined
+     if (session.user.id !== null && session.user.id !== undefined) {
+       userId = Number(session.user.id);
+     }
+     
+     // Nếu session có email nhưng chưa có id (fallback), truy vấn từ DB
+     if (!userId && userEmail) {
+       const dbUser = await prisma.user.findUnique({ where: { email: userEmail } });
+       if (dbUser) userId = dbUser.id;
+     }
+   } else if (token) {
+     userId = parseInt(token);
+   }
     
-    const userId = token ? parseInt(token) : null;
-    const { 
-      items, 
-      customerName, 
-      customerEmail, 
+    const {
+      items,
+      customerName,
+      customerEmail: bodyCustomerEmail,
       status,
       // Top-up mode fields
       isTopupMode = false,
       selectedDuration,
     } = await request.json();
+
+    // 4. Nếu vẫn không có userId, thử lấy từ email trong body
+    if (!userId && bodyCustomerEmail) {
+      const dbUser = await prisma.user.findUnique({ where: { email: bodyCustomerEmail } });
+      if (dbUser) userId = dbUser.id;
+    }
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items" }, { status: 400 });
@@ -175,7 +206,7 @@ export async function POST(request: Request) {
         totalAmount,
         status: orderStatus,
         customerName: customerName || null,
-        customerEmail: customerEmail || null,
+        customerEmail: bodyCustomerEmail || null,
         // Top-up metadata
         isTopupMode: hasTopupMode,
         selectedDuration: selectedDuration || null,
@@ -219,6 +250,7 @@ export async function POST(request: Request) {
           });
 
           const qrCodeUrl = esimOrder.qrCodeUrl || esimOrder.qrCode || null;
+          
           
           await prisma.orderItem.update({
             where: { id: orderItem.id },
@@ -370,10 +402,17 @@ export async function POST(request: Request) {
 // PUT: Retry payment for pending order
 export async function PUT(request: Request) {
   try {
+
+     const session = await getServerSession(authOptions);
+    
+    // 2. Lấy token từ Cookie thủ công (Dành cho login thường của)
     const cookie = request.headers.get("cookie");
     const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
     
-    if (!token) {
+    // 3. Ưu tiên ID từ Session (Google), nếu không có thì lấy từ Token (Thường)
+    let userId: number | null = session?.user ? (session.user as any).id : (token ? parseInt(token) : null);
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
@@ -387,7 +426,7 @@ export async function PUT(request: Request) {
     const order = await prisma.order.findFirst({
       where: { 
         id: orderId,
-        userId: parseInt(token),
+        userId: userId,
         status: "pending",
       },
       include: { orderItems: true },
@@ -410,23 +449,48 @@ export async function PUT(request: Request) {
   }
 }
 
+
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const email = url.searchParams.get("email");
+    const emailParam = url.searchParams.get("email");
 
+    // 1. Lấy session từ NextAuth (Dành cho Google OAuth)
+    const session = await getServerSession(authOptions);
+    
+    // 2. Lấy token từ Cookie cũ (Dành cho login bằng password)
     const cookie = request.headers.get("cookie");
     const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
 
-    const where: Record<string, unknown> = {};
+    let userId: number | null = null;
+    let userEmail: string | null = emailParam;
 
-    if (token) {
-      where.userId = parseInt(token);
-    } else if (email) {
-      where.customerEmail = email;
-    } else {
-      return NextResponse.json({ error: "Unauthorized - login or provide email" }, { status: 401 });
+    // 3. XÁC ĐỊNH DANH TÍNH: Ưu tiên Session (Google) > Token (Legacy) > Email Param
+    if (session?.user) {
+      userEmail = session.user.email || userEmail;
+      userId = (session.user as any).id ? Number((session.user as any).id) : null;
+      
+      // Nếu session có email nhưng chưa có id (fallback), truy vấn từ DB
+      if (!userId && userEmail) {
+        const dbUser = await prisma.user.findUnique({ where: { email: userEmail } });
+        if (dbUser) userId = dbUser.id;
+      }
+    } else if (token) {
+      userId = parseInt(token);
     }
+
+    if (!userId && !userEmail) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // 4. TRUY VẤN ĐƠN HÀNG: Tìm theo ID user HOẶC Email khách hàng để tránh sót đơn
+    const where: any = {
+      OR: [
+        userId ? { userId } : null,
+        userEmail ? { customerEmail: userEmail } : null
+      ].filter(Boolean)
+    };
 
     const orders = await prisma.order.findMany({
       where,
@@ -440,6 +504,7 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: "desc" },
     });
+    console.log("[Orders API] Found", orders.length, "orders");
 
     return NextResponse.json({ orders }, {
       headers: {
@@ -449,6 +514,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    console.error("Lỗi GET Order:", error);
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { getDestinationImage, getValidUrl } from "@/lib/unsplash";
+import SmartSearchBox from "@/components/ui/SearchBox";
 
 function getCountryEmoji(countryCode: string): string {
   const code = countryCode.toUpperCase();
@@ -43,33 +44,33 @@ interface DestinationRegion {
 }
 
 // Default destinations with landmark names (photo IDs for Unsplash)
-const DEFAULT_DESTINATIONS = [
-  { id: "jp", name: "Japan", slug: "japan", emoji: "🇯🇵", landmark: "Mount Fuji", isHot: true, imageUrl: getDestinationImage("japan"), photoId: "1490806843955-31ec4f4f6a60" },
-  { id: "kr", name: "Korea", slug: "south-korea", emoji: "🇰🇷", landmark: "Bukchon Hanok", isHot: true, imageUrl: getDestinationImage("south-korea"), photoId: "1535568097429-8d6c4c586db4" },
-  { id: "th", name: "Thailand", slug: "thailand", emoji: "🇹🇭", landmark: "Phi Phi Islands", isHot: true, imageUrl: getDestinationImage("thailand"), photoId: "1552465011-b4e21bf6e79a" },
-  { id: "sg", name: "Singapore", slug: "singapore", emoji: "🇸🇬", landmark: "Marina Bay", isHot: true, imageUrl: getDestinationImage("singapore"), photoId: "1525966160135-9e8d4f15c8d2" },
-  { id: "vn", name: "Vietnam", slug: "vietnam", emoji: "🇻🇳", landmark: "Ha Long Bay", isHot: false, imageUrl: getDestinationImage("vietnam"), photoId: "1528127269322-539801943592" },
-  { id: "us", name: "USA", slug: "united-states", emoji: "🇺🇸", landmark: "Grand Canyon", isHot: false, imageUrl: getDestinationImage("united-states"), photoId: "1474044159687-1ee9fc1e22c2" },
-  { id: "gb", name: "UK", slug: "united-kingdom", emoji: "🇬🇧", landmark: "Tower Bridge", isHot: false, imageUrl: getDestinationImage("united-kingdom"), photoId: "1513635269975-59663e0ac1ad" },
-  { id: "fr", name: "France", slug: "france", emoji: "🇫🇷", landmark: "French Alps", isHot: false, imageUrl: getDestinationImage("france"), photoId: "1502602898657-3e91760cbb34" },
-  { id: "de", name: "Germany", slug: "germany", emoji: "🇩🇪", landmark: "Neuschwanstein", isHot: false, imageUrl: getDestinationImage("germany"), photoId: "1467269204594-9661b134dd2b" },
-  { id: "cn", name: "China", slug: "china", emoji: "🇨🇳", landmark: "Zhangjiajie", isHot: false, imageUrl: getDestinationImage("china"), photoId: "1537533160920-2a56329a092b" },
-  { id: "hk", name: "Hong Kong", slug: "hong-kong", emoji: "🇭🇰", landmark: "Victoria Peak", isHot: false, imageUrl: getDestinationImage("hong-kong"), photoId: "1536599018102-9f803c140fc1" },
-  { id: "tw", name: "Taiwan", slug: "taiwan", emoji: "🇹🇼", landmark: "Alishan", isHot: false, imageUrl: getDestinationImage("taiwan"), photoId: "1470005434218-02f92e9f63ac" },
-  { id: "my", name: "Malaysia", slug: "malaysia", emoji: "🇲🇾", landmark: "Langkawi", isHot: false, imageUrl: getDestinationImage("malaysia"), photoId: "1595399724438-08f1c76b2d0c" },
-  { id: "id", name: "Indonesia", slug: "indonesia", emoji: "🇮🇩", landmark: "Bali", isHot: false, imageUrl: getDestinationImage("indonesia"), photoId: "1537996194471-e657df975ab4" },
-  { id: "au", name: "Australia", slug: "australia", emoji: "🇦🇺", landmark: "Great Barrier Reef", isHot: false, imageUrl: getDestinationImage("australia"), photoId: "1506973035872-a4ec16b8e28d" },
-  { id: "it", name: "Italy", slug: "italy", emoji: "🇮🇹", landmark: "Amalfi Coast", isHot: false, imageUrl: getDestinationImage("italy"), photoId: "1516483638261-f4dbaf036963" },
-];
+// const DEFAULT_DESTINATIONS = [
+//   { id: "jp", name: "Japan", slug: "japan", emoji: "🇯🇵", landmark: "Mount Fuji", isHot: true, imageUrl: getDestinationImage("japan"), photoId: "1545569341-9eb8b30979d9" },
+//   { id: "kr", name: "Korea", slug: "south-korea", emoji: "🇰🇷", landmark: "Bukchon Hanok", isHot: true, imageUrl: getDestinationImage("south-korea"), photoId: "1535568097429-8d6c4c586db4" },
+//   { id: "th", name: "Thailand", slug: "thailand", emoji: "🇹🇭", landmark: "Phi Phi Islands", isHot: true, imageUrl: getDestinationImage("thailand"), photoId: "1552465011-b4e21bf6e79a" },
+//   { id: "sg", name: "Singapore", slug: "singapore", emoji: "🇸🇬", landmark: "Marina Bay", isHot: true, imageUrl: getDestinationImage("singapore"), photoId: "1525966160135-9e8d4f15c8d2" },
+//   { id: "vn", name: "Vietnam", slug: "vietnam", emoji: "🇻🇳", landmark: "Ha Long Bay", isHot: false, imageUrl: getDestinationImage("vietnam"), photoId: "1528127269322-539801943592" },
+//   { id: "us", name: "USA", slug: "united-states", emoji: "🇺🇸", landmark: "Grand Canyon", isHot: false, imageUrl: getDestinationImage("united-states"), photoId: "1474044159687-1ee9fc1e22c2" },
+//   { id: "gb", name: "UK", slug: "united-kingdom", emoji: "🇬🇧", landmark: "Tower Bridge", isHot: false, imageUrl: getDestinationImage("united-kingdom"), photoId: "1513635269975-59663e0ac1ad" },
+//   { id: "fr", name: "France", slug: "france", emoji: "🇫🇷", landmark: "French Alps", isHot: false, imageUrl: getDestinationImage("france"), photoId: "1502602898657-3e91760cbb34" },
+//   { id: "de", name: "Germany", slug: "germany", emoji: "🇩🇪", landmark: "Neuschwanstein", isHot: false, imageUrl: getDestinationImage("germany"), photoId: "1467269204594-9661b134dd2b" },
+//   { id: "cn", name: "China", slug: "china", emoji: "🇨🇳", landmark: "Zhangjiajie", isHot: false, imageUrl: getDestinationImage("china"), photoId: "1537533160920-2a56329a092b" },
+//   { id: "hk", name: "Hong Kong", slug: "hong-kong", emoji: "🇭🇰", landmark: "Victoria Peak", isHot: false, imageUrl: getDestinationImage("hong-kong"), photoId: "1536599018102-9f803c140fc1" },
+//   { id: "tw", name: "Taiwan", slug: "taiwan", emoji: "🇹🇼", landmark: "Alishan", isHot: false, imageUrl: getDestinationImage("taiwan"), photoId: "1470005434218-02f92e9f63ac" },
+//   { id: "my", name: "Malaysia", slug: "malaysia", emoji: "🇲🇾", landmark: "Langkawi", isHot: false, imageUrl: getDestinationImage("malaysia"), photoId: "1595399724438-08f1c76b2d0c" },
+//   { id: "id", name: "Indonesia", slug: "indonesia", emoji: "🇮🇩", landmark: "Bali", isHot: false, imageUrl: getDestinationImage("indonesia"), photoId: "1537996194471-e657df975ab4" },
+//   { id: "au", name: "Australia", slug: "australia", emoji: "🇦🇺", landmark: "Great Barrier Reef", isHot: false, imageUrl: getDestinationImage("australia"), photoId: "1506973035872-a4ec16b8e28d" },
+//   { id: "it", name: "Italy", slug: "italy", emoji: "🇮🇹", landmark: "Amalfi Coast", isHot: false, imageUrl: getDestinationImage("italy"), photoId: "1516483638261-f4dbaf036963" },
+// ];
 
-const DEFAULT_REGIONS = [
-  { id: "asia", name: "Asia", emoji: "🌏", imageUrl: getValidUrl("1528181304800-259d08817609", 800, 600), _count: { plans: 12 } },
-  { id: "europe", name: "Europe", emoji: "🏰", imageUrl: getValidUrl("1499856871958-5b9627545d1a", 800, 600), _count: { plans: 8 } },
-  { id: "americas", name: "Americas", emoji: "🗽", imageUrl: getValidUrl("1485738422979-f5c462d49f74", 800, 600), _count: { plans: 3 } },
-  { id: "middle-east", name: "Middle East", emoji: "🕌", imageUrl: getValidUrl("1488085061387-422e29b40080", 800, 600), _count: { plans: 2 } },
-  { id: "oceania", name: "Oceania", emoji: "🏝️", imageUrl: getValidUrl("1504214208752-2c4b56670f25", 800, 600), _count: { plans: 2 } },
-  { id: "africa", name: "Africa", emoji: "🦁", imageUrl: getValidUrl("1488085061387-422e29b40080", 800, 600), _count: { plans: 1 } },
-];
+// const DEFAULT_REGIONS = [
+//   { id: "asia", name: "Asia", emoji: "🌏", imageUrl: getValidUrl("1528181304800-259d08817609", 800, 600), _count: { plans: 12 } },
+//   { id: "europe", name: "Europe", emoji: "🏰", imageUrl: getValidUrl("1499856871958-5b9627545d1a", 800, 600), _count: { plans: 8 } },
+//   { id: "americas", name: "Americas", emoji: "🗽", imageUrl: getValidUrl("1485738422979-f5c462d49f74", 800, 600), _count: { plans: 3 } },
+//   { id: "middle-east", name: "Middle East", emoji: "🕌", imageUrl: getValidUrl("1488085061387-422e29b40080", 800, 600), _count: { plans: 2 } },
+//   { id: "oceania", name: "Oceania", emoji: "🏝️", imageUrl: getValidUrl("1504214208752-2c4b56670f25", 800, 600), _count: { plans: 2 } },
+//   { id: "africa", name: "Africa", emoji: "🦁", imageUrl: getValidUrl("1488085061387-422e29b40080", 800, 600), _count: { plans: 1 } },
+// ];
 
 // Fetch dynamic image from Unsplash API
 async function fetchUnsplashImage(countryName: string): Promise<string> {
@@ -130,24 +131,26 @@ export default function PlansPage() {
           isVisible: true,
           priority: d.priority || 1,
         })) as Destination[]);
-      } else {
-        setDestinations(DEFAULT_DESTINATIONS.map((d) => ({
-          ...d,
-          imageUrl: d.imageUrl || getDestinationImage(d.slug),
-          isVisible: true,
-          priority: parseInt(d.id) || 1,
-        })) as Destination[]);
-      }
+      } 
+      // else {
+      //   setDestinations(DEFAULT_DESTINATIONS.map((d) => ({
+      //     ...d,
+      //     imageUrl: d.imageUrl || getDestinationImage(d.slug),
+      //     isVisible: true,
+      //     priority: parseInt(d.id) || 1,
+      //   })) as Destination[]);
+      // }
       
       if (data.regions && data.regions.length > 0) {
         setRegions(data.regions as DestinationRegion[]);
-      } else {
-        setRegions(DEFAULT_REGIONS.map((r, i) => ({
-          ...r,
-          isVisible: true,
-          priority: i + 1,
-        })) as DestinationRegion[]);
-      }
+      } 
+      // else {
+      //   setRegions(DEFAULT_REGIONS.map((r, i) => ({
+      //     ...r,
+      //     isVisible: true,
+      //     priority: i + 1,
+      //   })) as DestinationRegion[]);
+      // }
       
       // Fetch hot plans for the hot plans section
       try {
@@ -181,7 +184,7 @@ export default function PlansPage() {
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
       {/* Hero Section with Dynamic Unsplash Image */}
-      <div className="relative h-[50vh] min-h-[400px] overflow-hidden">
+      <div className="relative h-[50vh] min-h-[400px] ">
         <Image
           src={heroImage}
           alt="Travel Hero"
@@ -196,12 +199,12 @@ export default function PlansPage() {
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 text-center drop-shadow-lg">
             {t("plans.title") || "Browse eSIM Plans"}
           </h1>
-          <p className="text-white/90 text-lg md:text-xl mb-8 text-center drop-shadow">
+          <p className="text-white/90 text-lg md:text-xl mb-8 text-center drop-shadow z-priority">
             {t("plans.subtitle") || "Choose your destination and stay connected"}
           </p>
-          
+          <SmartSearchBox />
           {/* White Glass Search Bar */}
-          <div className="w-full max-w-2xl">
+          {/* <div className="w-full max-w-2xl">
             <div className="relative bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-2xl">
               <input
                 type="text"
@@ -218,7 +221,7 @@ export default function PlansPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -334,7 +337,7 @@ export default function PlansPage() {
                           {region.name}
                         </h3>
                         <p className="text-white/70 text-sm">
-                          {region._count?.plans || 0} eSIM plans
+                          {region._count?.plans || 3} eSIM plans
                         </p>
                       </div>
                     </div>

@@ -4,9 +4,9 @@ import type { NextRequest } from 'next/server';
 // 1. ĐƯA BIẾN TĨNH RA NGOÀI: Khởi tạo 1 lần để tiết kiệm RAM
 const CODE_TO_COUNTRY: Record<string, string> = {
   TH: 'thailand', VN: 'vietnam', JP: 'japan', KR: 'south-korea', CN: 'china',
-  US: 'usa', AU: 'australia', SG: 'singapore', MY: 'malaysia', ID: 'indonesia',
+  US: 'united-states', AU: 'australia', SG: 'singapore', MY: 'malaysia', ID: 'indonesia',
   PH: 'philippines', HK: 'hong-kong', TW: 'taiwan', IN: 'india', AE: 'uae',
-  GB: 'uk', FR: 'france', DE: 'germany', IT: 'italy', ES: 'spain', NL: 'netherlands',
+  GB: 'united-kingdom', FR: 'france', DE: 'germany', IT: 'italy', ES: 'spain', NL: 'netherlands',
   CA: 'canada', MX: 'mexico', BR: 'brazil',
 };
 

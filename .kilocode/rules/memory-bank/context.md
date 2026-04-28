@@ -108,6 +108,11 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
    - Error messages collected and displayed in admin UI (up to 5 shown)
    - Saves each topup package with planId reference and updates Plan.topupPackageId
    - Returns synced count, total plans, elapsed time, and any errors
+- [x] **Fixed Google OAuth userId issue** - Updated order API to properly extract userId from Google OAuth session
+   - Enhanced userId extraction logic in POST /api/orders route
+   - Prioritizes session user ID (Google OAuth) > token (legacy) > email lookup
+   - Fixes null userId issue when logging in with Google OAuth
+   - Fixed variable naming error (customerEmail -> bodyCustomerEmail)
 ## Current Structure
 
 | File/Directory | Purpose | Status |
@@ -208,7 +213,7 @@ Create `src/app/api/[route]/route.ts`
 | Add Database | `.kilocode/recipes/add-database.md` | Data persistence with Drizzle + SQLite |
 
 ## Session History
-
+ 
 | Date | Changes |
 |------|---------|
 | Initial | Template created with base setup |
@@ -220,3 +225,9 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-13 | Added client-side dependent faceted filters to /esim/[country] + converted /plans to landing page + Unsplash images for destinations and regions |
 | 2026-04-21 | Added Sync Topup Packages feature - Admin can sync top-up packages with batching and rate limiting |
 | 2026-04-22 | Fixed top-up issues: removed FLEXIBLE_TOPUP placeholder, added day selection UI, comprehensive eSIM API logging, PayPal flow topupPackageCode tracking |
+| 2026-04-23 | Refactored PlansCard & EsimDataTypeModal: 
+   - Moved all calculation logic from EsimDataTypeModal to PlansCard
+   - Page.tsx now manages state with activeConfig to store calculation results from PlansCard
+   - EsimDataTypeModal receives config from PlansCard via page state, allows data/duration selection with interactive buttons
+   - Added detailed plan information display (speed, network type, coverage, IP export, SMS status, activation type, validity period, top-up support, badges, popular/best-seller/hot flags) |
+| 2026-04-28 | Fixed Google OAuth userId issue in order API - Enhanced userId extraction logic to prioritize session user ID (Google OAuth) > token (legacy) > email lookup, fixing null userId when logging in with Google OAuth |

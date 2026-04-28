@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createOrder as createEsimOrder, createTopUp } from "@/lib/esim-access";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const PAYPAL_API = process.env.PAYPAL_SANDBOX === "true"
   ? "https://api-m.sandbox.paypal.com"
@@ -309,10 +311,28 @@ export async function PUT(request: Request) {
     const { orderId, planId, quantity = 1, isTopupMode = false, selectedDuration, topupPackageCode } = await request.json();
     if (!orderId) return NextResponse.json({ error: "Order ID required" }, { status: 400 });
 
-    // Get userId from cookie
-    const cookie = request.headers.get("cookie");
-    const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
-    const userId = token ? parseInt(token) : null;
+    // Get userId from NextAuth session (Google OAuth) or legacy token
+    const session = await getServerSession(authOptions);
+    let userId: number | null = null;
+
+    if (session?.user) {
+      // Try to get id directly from session
+      if (session.user.id !== null && session.user.id !== undefined) {
+        userId = Number(session.user.id);
+      }
+      // Fallback: query by email
+      if (!userId && session.user.email) {
+        const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (dbUser) userId = dbUser.id;
+      }
+    }
+
+    // Fallback to legacy token (email/password login)
+    if (!userId) {
+      const cookie = request.headers.get("cookie");
+      const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
+      if (token) userId = parseInt(token);
+    }
 
     // Idempotency: Check if order already exists
     const existingOrder = await prisma.order.findFirst({

@@ -33,12 +33,18 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
 
   // Sync NextAuth session -> custom user state
   useEffect(() => {
+    console.log("[AuthProvider] useEffect triggered", { status, session, user });
     if (status === "authenticated" && session?.user?.email) {
+      console.log("[AuthProvider] NextAuth authenticated, session.user.email:", session.user.email);
       // If NextAuth is authenticated but custom user is null, fetch from DB
       if (!user) {
+        console.log("[AuthProvider] Fetching user from DB");
         fetchUserFromNextAuth(session.user.email);
+      } else {
+        console.log("[AuthProvider] User already set:", user);
       }
     } else if (status === "unauthenticated" && !user) {
+      console.log("[AuthProvider] Unauthenticated, setting loading to false");
       setLoading(false);
     }
   }, [status, session]);
@@ -62,13 +68,18 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
 
   async function fetchUserFromNextAuth(email: string) {
     try {
+      console.log("[AuthProvider] Fetching user from /api/auth/me?email=", email);
       const res = await fetch(`/api/auth/me?email=${encodeURIComponent(email)}`);
+      console.log("[AuthProvider] Response status:", res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log("[AuthProvider] User data:", data.user);
         setUser(data.user);
+      } else {
+        console.log("[AuthProvider] Response not ok");
       }
-    } catch {
-      console.error("Failed to fetch user from NextAuth session");
+    } catch (error) {
+      console.error("Failed to fetch user from NextAuth session", error);
     } finally {
       setLoading(false);
     }

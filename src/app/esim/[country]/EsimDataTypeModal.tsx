@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getDestinationImage } from "@/lib/unsplash";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { PlanCardConfig } from "./PlansCard";
 
 interface Plan {
   id: string;
@@ -21,8 +22,24 @@ interface Plan {
   supportTopUp: boolean;
   supportTopUpType: number;
   countryId: string | null;
+  countryName: string | null;
+  regionId: string | null;
+  regionName: string | null;
   fupPolicy: string | null;
-  topupPackageId?: number; // Direct link to its TopupPackage
+  topupPackageId?: number;
+  speed?: string | null;
+  networkType?: string | null;
+  locationNetworkList?: unknown;
+  ipExport?: string | null;
+  coverageCount?: number;
+  smsStatus?: number;
+  activeType?: number;
+  unusedValidTime?: number;
+  badge?: string | null;
+  isPopular?: boolean;
+  isBestSeller?: boolean;
+  isHot?: boolean;
+  locations?: unknown;
 }
 
 interface TopupPackage {
@@ -36,14 +53,14 @@ interface TopupPackage {
   isActive: boolean;
 }
 
-// Props for the modal
 interface EsimDataTypeModalProps {
-  plans: Plan[]; // All plans for this dataType (Fixed or Daily)
-  dataType: number; // 1 = Fixed, 2 = Daily
+  // plans: Plan[];
+  dataType: number;
   countryName: string;
-  countryCode: string;
+  countryId: string;
   isOpen: boolean;
   onClose: () => void;
+  config?: PlanCardConfig | null;
 }
 
 function formatData(gb: number, volume?: number): string {
@@ -55,540 +72,318 @@ function formatData(gb: number, volume?: number): string {
 }
 
 export default function EsimDataTypeModal({
-  plans,
+  // plans,
   dataType,
   countryName,
-  countryCode,
+  countryId,
   isOpen,
   onClose,
+  config,
 }: EsimDataTypeModalProps) {
   const { t, formatPrice } = useI18n();
   const [imgError, setImgError] = useState(false);
-  const [topupPackages, setTopupPackages] = useState<TopupPackage[]>([]);
-  
-  // Fetch topup packages for ALL plans
-  useEffect(() => {
-    async function fetchTopups() {
-      if (!plans.length) return;
-      // Get ALL plan IDs including both regular and FUP
-      const planIds = plans.map(p => p.id).join(',');
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        const res = await fetch(`${baseUrl}/api/topup-packages?planIds=${planIds}`);
-        if (res.ok) {
-          const data = await res.json();
-          setTopupPackages(data.packages || []);
-        }
-      } catch (e) {
-        console.error('Failed to fetch topup packages:', e);
-      }
-    }
-    fetchTopups();
-  }, [plans]);
-
-  // Selected options
-  const [selectedData, setSelectedData] = useState<number>(0);
-  const [selectedDuration, setSelectedDuration] = useState<number>(0);
   const [quantity, setQuantity] = useState(1);
   
-  // Track which type is selected: 'regular' or 'fup'
-  const [dataCategory, setDataCategory] = useState<'regular' | 'fup'>('regular');
-
-  // Separate plans into regular and FUP (Unlimited) groups
-  const { regularPlans, fupPlans } = useMemo(() => {
-    const regular: Plan[] = [];
-    const fup: Plan[] = [];
-    plans.forEach(plan => {
-      if (plan.fupPolicy) {
-        fup.push(plan);
-      } else {
-        regular.push(plan);
-      }
-    });
-    return { regularPlans: regular, fupPlans: fup };
-  }, [plans]);
-
-  // Get unique data options from regular plans (REAL data from DB)
-  const dataOptions = useMemo(() => {
-    const dataAmounts = new Set<number>();
-    regularPlans.forEach(plan => {
-      if (plan.dataAmount) dataAmounts.add(plan.dataAmount);
-    });
-    return Array.from(dataAmounts).sort((a, b) => a - b);
-  }, [regularPlans]);
-
-  // Get unique data options from FUP plans
-  const fupDataOptions = useMemo(() => {
-    const dataAmounts = new Set<number>();
-    fupPlans.forEach(plan => {
-      if (plan.dataAmount) dataAmounts.add(plan.dataAmount);
-    });
-    return Array.from(dataAmounts).sort((a, b) => a - b);
-  }, [fupPlans]);
-
-  // All duration options user can select
-  // All duration options user can select
+  // Initialize state from config, but allow user to change selection in modal
+  const [selectedData, setSelectedData] = useState(config?.selectedData ?? 0);
+  const [selectedDuration, setSelectedDuration] = useState(config?.selectedDuration ?? 0);
+  const [dataCategory, setDataCategory] = useState<'regular' | 'fup'>(config?.dataCategory ?? 'regular');
+  
+  // Update state when config changes (when user clicks different PlansCard)
+  useEffect(() => {
+    if (config) {
+      setSelectedData(config.selectedData ?? 0);
+      setSelectedDuration(config.selectedDuration ?? 0);
+      setDataCategory(config.dataCategory ?? 'regular');
+    }
+  }, [config]);
+  
+   // Use config values for computed data - wrap in useMemo to prevent stale closures
+   const topupPackages = useMemo(() => config?.topupPackages ?? [], [config?.topupPackages]);
+   const fupPlans = useMemo(() => config?.fupPlans ?? [], [config?.fupPlans]);
+   const regularPlans = useMemo(() => config?.regularPlans ?? [], [config?.regularPlans]);
+   const dataOptions = useMemo(() => config?.dataOptions ?? [], [config?.dataOptions]);
+   const fupDataOptions = useMemo(() => config?.fupDataOptions ?? [], [config?.fupDataOptions]);
+   const durationOptions = useMemo(() => config?.durationOptions ?? [], [config?.durationOptions]);
+   const fupDurationOptions = useMemo(() => config?.fupDurationOptions ?? [], [config?.fupDurationOptions]);
+  
+  // Computed values that depend on selection
   const ALL_DURATIONS = [1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 180];
-
-  // Duration options from DB plans
-  const durationOptions = useMemo(() => {
-    const durations = new Set<number>();
-    regularPlans.forEach(plan => {
-      if (plan.durationDays) durations.add(plan.durationDays);
-    });
-    return Array.from(durations).sort((a, b) => a - b);
-  }, [regularPlans]);
-
-  console.log('[Checkout] DurationOptions:', durationOptions);
-
-  // Get duration options from FUP plans
-  const fupDurationOptions = useMemo(() => {
-    const durations = new Set<number>();
-    fupPlans.forEach(plan => {
-      if (plan.durationDays) durations.add(plan.durationDays);
-    });
-    return Array.from(durations).sort((a, b) => a - b);
-  }, [fupPlans]);
-
-  // Find base plan for top-up calculation
-  // Use plan with closest duration to the selected duration (for stacking)
+  
+  // Find base plan based on current selection
   const basePlan = useMemo(() => {
     const plansToSearch = dataCategory === 'fup' ? fupPlans : regularPlans;
     if (!plansToSearch.length) return null;
     
-    // Find plan that matches selected data amount
     const sameDataPlans = plansToSearch.filter(p => p.dataAmount === selectedData);
     if (sameDataPlans.length > 0) {
-      // Find exact duration if exists
       const exactDuration = sameDataPlans.find(p => p.durationDays === selectedDuration);
       if (exactDuration) return exactDuration;
       
-      // Find closest shorter duration for stacking
       const availableDurations = sameDataPlans.map(p => p.durationDays).sort((a, b) => a - b);
       const closestDuration = availableDurations.find(d => d <= selectedDuration) || availableDurations[0];
       return sameDataPlans.find(p => p.durationDays === closestDuration) || sameDataPlans[0];
     }
-    
-    // Fallback: find 1-day plan
-    const oneDayPlan = plansToSearch.find(p => p.durationDays === 1);
-    if (oneDayPlan) return oneDayPlan;
-    
-    // Fallback to shortest
-    const shortestDuration = Math.min(...plansToSearch.map(p => p.durationDays));
-    return plansToSearch.find(p => p.durationDays === shortestDuration) || plansToSearch[0];
+    return plansToSearch[0];
   }, [regularPlans, fupPlans, selectedData, selectedDuration, dataCategory]);
 
-  // Find the correct topup package for the currently selected data amount
+  // Find topup package
   const topupPackage = useMemo(() => {
-    // First, we need a valid basePlan that matches selected data
-    if (!basePlan) return topupPackages[0];
-    
-    // Case 1: Use directly linked topupPackageId
+    if (!basePlan) return null;
     if (basePlan.topupPackageId) {
       const linked = topupPackages.find(p => p.id === basePlan.topupPackageId);
       if (linked) return linked;
     }
-    
-    // Case 2: Find topup by matching planId (the plan's ID that matches current data amount)
     const forPlan = topupPackages.find(p => p.planId === basePlan.id);
     if (forPlan) return forPlan;
-    
-    // Case 3: Fallback - find any topup that supports flexible (for stacking)
     const flexible = topupPackages.find(p => p.isFlexible);
     if (flexible) return flexible;
-    
-    // Last fallback
-    return topupPackages[0];
+    return null;
   }, [topupPackages, basePlan]);
   
-  // Can multiply if any topup is available
-  const canMultiply = useMemo(() => {
-    return topupPackages.some(p => p.isFlexible);
-  }, [topupPackages]);
-
-  // Check if any top-up is available
-  // const hasTopupPackages = useMemo(() => {
-  //   return topupPackages.length > 0;
-  // }, [topupPackages]);
-
-  // Find exact matching plan based on selection (search in correct group)
-  const exactPlan = useMemo(() => {
-    const plansToSearch = dataCategory === 'fup' ? fupPlans : regularPlans;
-    return plansToSearch.find(p => 
-      p.dataAmount === selectedData && 
-      p.durationDays === selectedDuration
-    );
-  }, [regularPlans, fupPlans, selectedData, selectedDuration, dataCategory]);
-
-  // Check supportTopUpType from plans
-  const supportTopUpType = useMemo(() => {
-    const maxType = plans.reduce((max, p) => Math.max(max, p.supportTopUpType || 1), 1);
-    return maxType;
-  }, [plans]);
-
-  // Determine if we're using top-up
-  // Must have: supportTopUpType === 3 AND canMultiply AND topupPackage
-  const isUsingTopUp = useMemo(() => {
-    return !exactPlan && supportTopUpType === 3 && canMultiply && basePlan && topupPackage;
-  }, [exactPlan, supportTopUpType, canMultiply, basePlan, topupPackage]);
-
-  // Calculate price based on selection
-  // Price formula: Base price + (SelectedDays - BaseDays) * TopupPrice
+  // Calculate price
   const pricePreview = useMemo(() => {
-    // Use basePlan + topup formula
     if (basePlan && topupPackage && selectedDuration > basePlan.durationDays) {
       const basePrice = basePlan.retailPriceUsd > 0 ? basePlan.retailPriceUsd : basePlan.priceUsd;
       const topupRetail = topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd;
       const extraDays = selectedDuration - basePlan.durationDays;
       return basePrice + (extraDays * topupRetail);
     }
-    // Exact match - just use base plan price
     if (basePlan) {
       return basePlan.retailPriceUsd > 0 ? basePlan.retailPriceUsd : basePlan.priceUsd;
     }
     return 0;
-  }, [basePlan, topupPackage, selectedDuration, ]);
+  }, [basePlan, topupPackage, selectedDuration]);
+  
+  // Find exact plan
+  const exactPlan = useMemo(() => {
+    const plansToSearch = dataCategory === 'fup' ? fupPlans : regularPlans;
+    
+    // First try exact match
+    const exact = plansToSearch.find(p => p.dataAmount === selectedData && p.durationDays === selectedDuration);
+    if (exact) return exact;
+    
+    // If not found, try to find any plan with same data amount
+    const sameData = plansToSearch.find(p => p.dataAmount === selectedData);
+    if (sameData) return sameData;
+    
+    // Fallback: return first plan in the category
+    return plansToSearch[0];
+  }, [regularPlans, fupPlans, selectedData, selectedDuration, dataCategory]);
+  
+  // Computed flags
+  const canMultiply = useMemo(() => {
+    return topupPackages.some(p => p.isFlexible);
+  }, [topupPackages]);
+  
+  const supportTopUpType = useMemo(() => {
+    const allPlans = [...regularPlans, ...fupPlans];
+    const maxType = allPlans.reduce((max, p) => Math.max(max, p.supportTopUpType || 1), 1);
+    return maxType;
+  }, [regularPlans, fupPlans]);
+  
+  const isUsingTopUp = useMemo(() => {
+    return !exactPlan && supportTopUpType === 3 && canMultiply && basePlan !== null && topupPackage !== null;
+  }, [exactPlan, supportTopUpType, canMultiply, basePlan, topupPackage]);
 
-
-  // Initialize with first available options
-  useEffect(() => {
-    const options = dataCategory === 'fup' ? fupDataOptions : dataOptions;
-    if (options.length > 0 && !selectedData) {
-      setSelectedData(options[0]);
-    }
-  }, [dataOptions, fupDataOptions, selectedData, dataCategory]);
-
-  // Initialize with first available data option
-  useEffect(() => {
-    const options = dataCategory === 'fup' ? fupDataOptions : dataOptions;
-    if (options.length > 0 && !selectedData) {
-      setSelectedData(options[0]);
-    }
-  }, [dataCategory, dataOptions, fupDataOptions]);
-
-  // Initialize duration - will be overridden by user selection
-  useEffect(() => {
-    if (!selectedDuration && selectedData) {
-      setSelectedDuration(1);
-    }
-  }, [selectedData]);
-
-  // Reset selections when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedData(dataOptions[0] || 0);
-      setSelectedDuration(durationOptions[0] || 0);
-      setQuantity(1);
-      // Default to regular category, unless no regular plans
-      setDataCategory(regularPlans.length > 0 ? 'regular' : 'fup');
-    }
-  }, [isOpen, dataOptions, durationOptions, regularPlans]);
-
+  console.log("Check Config:", config);
+console.log("Check Regular Plans:", regularPlans);
+console.log("Check Exact Plan:", exactPlan);
+  
   // All durations are enabled - topup allows any duration
   const isDurationDisabled = (_duration: number) => false;
-
+  
   if (!isOpen) return null;
-
+  
   const heroImage = imgError 
     ? "/favicon.ico" 
-    : getDestinationImage(countryCode?.toLowerCase() || countryName.toLowerCase());
+    : getDestinationImage(countryId?.toLowerCase() || countryName.toLowerCase());
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
+return (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-4 bg-slate-900/60 backdrop-blur-sm"
+      >
+        <motion.div className="absolute inset-0" onClick={onClose} />
+         
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          initial={{ scale: 0.98, opacity: 0, y: 10 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.98, opacity: 0, y: 10 }}
+          className="relative bg-white md:rounded-3xl shadow-2xl w-full max-w-7xl max-h-[95vh] md:max-h-[90vh] overflow-hidden flex flex-col lg:flex-row"
         >
-          {/* Overlay */}
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
-          />
-          
-          {/* Modal Content */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden"
-          >
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          {/* Close Button */}
+          <button onClick={onClose} className="absolute top-4 right-4 z-[70] p-2 bg-white/80 backdrop-blur-md rounded-full text-slate-400 hover:text-orange-500 transition-colors shadow-sm">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
 
-            <div className="flex flex-col lg:flex-row max-h-[90vh] overflow-y-auto">
-              {/* Left Side - Banner & Selection */}
-              <div className="lg:w-1/2 bg-gradient-to-br from-slate-100 to-slate-50 p-6 lg:p-8">
-                {/* Banner Image */}
-                <div className="relative aspect-[5/3] rounded-2xl overflow-hidden mb-6 shadow-lg">
-                  <Image
-                    src={heroImage}
-                    alt={countryName}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                    onError={() => setImgError(true)}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <span className="bg-orange-500 text-white text-sm font-bold px-3 py-1.5 rounded-full">
-                      {dataType === 1 ? "Fixed Data" : "Daily Data"}
-                    </span>
-                  </div>
-                </div>
+          {/* CỘT TRÁI: Media & Specs (Cuộn độc lập) */}
+          <div className="lg:w-[60%] xl:w-[65%] flex flex-col overflow-y-auto border-r border-slate-100 bg-white custom-scrollbar h-[35vh] lg:h-auto">
+            <div className="relative w-full aspect-video lg:aspect-[16/8] shrink-0">
+              <Image src={heroImage} alt={countryName} fill className="object-cover" unoptimized />
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+              <div className="absolute bottom-6 left-6 lg:bottom-8 lg:left-10">
+                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 tracking-tighter drop-shadow-sm">{countryId}11</h2>
+              </div>
+            </div>
 
-
-                
-
-                {/* Data & Duration Selection - REAL options from database */}
-                <div className="space-y-4">
-                  {/* Category Toggle (Regular vs FUP) - Only show if FUP plans exist */}
-                  {/* {fupPlans.length > 0 && dataType === 2 && (
-                    <div className="flex gap-2 mb-4">
-                      <button
-                        onClick={() => { setDataCategory('regular'); setSelectedData(dataOptions[0] || 0); }}
-                        className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
-                          dataCategory === 'regular'
-                            ? "bg-orange-500 text-white"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                        }`}
-                      >
-                        📵 {t("modal.regular") || "Regular"}
-                      </button>
-                      <button
-                        onClick={() => { setDataCategory('fup'); setSelectedData(fupDataOptions[0] || 0); }}
-                        className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
-                          dataCategory === 'fup'
-                            ? "bg-green-500 text-white"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                        }`}
-                      >
-                        ♾ {t("modal.unlimited") || "Unlimited"}
-                      </button>
-                    </div>
-                  )} */}
-
-                  {/* Data Amount Selection */}
-                  <div>
-                    <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                      {t("plans.data") || "Data"}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {(dataCategory === 'fup' ? fupDataOptions : dataOptions).map((data) => {
-                        const plansToCheck = dataCategory === 'fup' ? fupPlans : regularPlans;
-                        const hasAnyPlan = plansToCheck.some(p => p.dataAmount === data);
-                        return (
-                        <button
-                          key={data}
-                          onClick={() => setSelectedData(data)}
-                          className={`px-4 py-2.5 rounded-full font-medium text-sm transition-all ${
-                            selectedData === data
-                              ? "bg-orange-500 text-white border-2 border-orange-500"
-                              : "bg-white text-slate-600 border-2 border-slate-200 hover:border-orange-300"
-                          } disabled:opacity-50 disabled:cursor-not-allowed`}
-                        >
-                          {dataType === 1 
-                            ? formatData(data) 
-                            : `${formatData(data)}/day`
-                          }
-                        </button>
-                      )})}
-                    </div>
-                  </div>
-
-                  {/* Duration Selection */}
-                  <div>
-                    <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                      Duration (Days)
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {(dataCategory === 'fup' ? ALL_DURATIONS : durationOptions).map((duration) => (
-                      <button
-                        key={duration}
-                        onClick={() => setSelectedDuration(duration)}
-                        className={`px-4 py-2.5 rounded-full font-medium text-sm transition-all ${
-                          selectedDuration === duration
-                            ? "bg-orange-500 text-white border-2 border-orange-500"
-                            : "bg-white text-slate-600 border-2 border-slate-200 hover:border-orange-300"
-                        }`}
-                      >
-                        {duration} days
-                      </button>
-                    ))}
-                    </div>
-                  </div>
+            <div className="px-6 lg:px-10 py-8 space-y-8">
+              <div>
+                <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-5">Plan Specifications</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <SpecBoxSimple label="Network" value={exactPlan?.networkType || "4G/5G"} />
+                  <SpecBoxSimple label="Speed" value={exactPlan?.speed || "Max Speed"} />
+                  <SpecBoxSimple label="Activation" value={exactPlan?.activeType === 1 ? "Instant" : "Manual"} />
+                  <SpecBoxSimple label="Top-up" value={exactPlan?.supportTopUp ? "Available" : "No"} />
                 </div>
               </div>
 
-              {/* Right Side - Summary Box */}
-              <div className="lg:w-1/2 p-6 lg:p-8 bg-white">              
-                <div className="bg-slate-50 rounded-2xl p-6">
-                  {/* Product Name */}
-                  <h2 className="text-2xl lg:text-3xl font-bold text-slate-800 mb-2">
-                    {countryName}
-                  </h2>
-                  {/* Data Type Badge */}
-                  <p className="text-slate-600 mb-6">
-                    {dataType === 1 
-                      ? "Fixed data - all data available for the entire validity period"
-                      : "Daily data - data resets each day"
-                    }
-                  </p>
-
-                  {/* FUP Warning */}
-                  {dataCategory === 'fup' && exactPlan && exactPlan.fupPolicy && (
-                    <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-3">
-                      <p className="text-green-700 text-sm font-medium">
-                        ♾️ {t("modal.fupWarning") || `Sau khi dùng hết ${formatData(selectedData)} tốc độ cao, vẫn có thể tiếp tục sử dụng với tốc độ thấp (${exactPlan.fupPolicy})`}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Top-up Warning */}
-                  {isUsingTopUp && (
-                    <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
-                      <p className="text-amber-700 text-sm font-medium">
-                        ⚠️ {t("modal.stackedWarning") || "Gói này được cộng dồn từ nhiều gói 1 ngày"}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Selected Plan Summary */}
-                  <div className="mb-4 pb-4 border-b border-slate-200">
-                    <p className="text-sm text-slate-500 mb-1">Selected:</p>
-                    <p className="text-lg font-semibold text-slate-800">
-                      {dataCategory === 'fup' ? '♾️ ' : ''}
-                      {dataType === 1 
-                        ? formatData(selectedData) 
-                        : `${formatData(selectedData)}/day`
-                      } • {selectedDuration} days
-                      {exactPlan?.fupPolicy && ` (${exactPlan.fupPolicy})`}
-                    </p>
-                    {/* Debug info */}
-                    {exactPlan && (
-                      <div className="text-sm text-slate-500 mt-2 p-2 bg-slate-100 rounded">
-                        <p>📦 Plan packageCode: <code className="bg-slate-200 px-1 rounded">{exactPlan.packageCode}</code></p>
-                        <p>💰 Price: {formatPrice(exactPlan.retailPriceUsd > 0 ? exactPlan.retailPriceUsd : exactPlan.priceUsd)} USD</p>
-                        <p>📅 Duration: {exactPlan.durationDays} days</p>
-                      </div>
-                    )}
-                    {exactPlan && (
-                      <p className="text-sm text-green-600 mt-1">
-                        ✓ Exact plan available
-                      </p>
-                    )}
-                    {isUsingTopUp && topupPackage && (
-                      <div className="text-sm text-amber-600 mt-1">
-                        <p>⚠️ Stacked from {topupPackage.packageCode}</p>
-                        <p>💰 Price topup: {formatPrice(topupPackage.retailPriceUsd > 0 ? topupPackage.retailPriceUsd : topupPackage.priceUsd)} USD</p>
-                        <p>price preview: ${basePlan?.retailPriceUsd} + ${topupPackage.retailPriceUsd} x ({selectedDuration} - {basePlan?.durationDays})</p>
-
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Quantity */}
-                  <div className="mb-6">
-                    <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                      {t("common.quantity") || "Quantity"}
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="w-10 h-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center hover:border-orange-300 transition-colors text-slate-600 font-bold"
-                      >
-                        -
-                      </button>
-                      <span className="w-16 text-center font-bold text-xl">{quantity}</span>
-                      <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="w-10 h-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center hover:border-orange-300 transition-colors text-slate-600 font-bold"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Price */}
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-bold text-orange-500">
-                        {formatPrice(pricePreview * quantity)}
-                      </span>
-                      <span className="text-slate-500">{t("planDetail.oneTime") || "one-time"}</span>
-                    </div>
-                    {selectedDuration > 1 && (
-                      <p className="text-sm text-slate-400">
-                        ({(pricePreview / selectedDuration).toFixed(2)}/day)
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="space-y-3">
-                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 rounded-full text-lg transition-colors flex items-center justify-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      {t("plans.addToCart") || "Add to Cart"}
-                    </button>
-                    
-                    {/* Buy Now - use packageCode + quantity */}
-                    {exactPlan ? (
-                      <Link
-                        href={`/checkout?planId=${exactPlan.id}&qty=${quantity}`}
-                        className="block w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-4 rounded-full text-lg text-center transition-colors"
-                      >
-                        {t("plans.buyNow") || "Buy Now"}
-                      </Link>
-                    ) : isUsingTopUp && basePlan ? (
-                      // Using top-up - buy the base plan with quantity = selected duration
-                      <Link
-                        href={`/checkout?planId=${basePlan.id}&qty=${quantity}&days=${selectedDuration}&mode=topup&topupId=${topupPackage?.id || ''}`}
-                        className="block w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-4 rounded-full text-lg text-center transition-colors"
-                      >
-                        {t("plans.buyNow") || "Buy Now"}
-                      </Link>
-                    ) : (
-                      <button
-                        disabled
-                        className="block w-full bg-slate-300 text-slate-500 font-semibold py-4 rounded-full text-lg text-center cursor-not-allowed"
-                      >
-                        Not Available
-                      </button>
-                    )}
-                  </div>
+              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1.5 h-4 bg-orange-500 rounded-full" />
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Fair Usage Policy (FUP)</h4>
                 </div>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  {exactPlan?.fupPolicy 
+                    ? `After using ${selectedData} of high-speed data, the speed will be limited to ${exactPlan.fupPolicy}. High-speed data will be restored every 24 hours.`
+                    : "This plan offers premium high-speed connectivity. Once the data limit is reached, service may be suspended or speed reduced."}
+                </p>
+              </div>
+            </div>
+          </div>
 
-                {/* Features */}
-                <div className="mt-6 space-y-3 text-sm text-slate-600">
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    <span>{t("planDetail.instantDelivery")}</span>
+          {/* CỘT PHẢI: Selections & Checkout (Layout Flex để giữ chân Footer) */}
+          <div className="lg:w-[40%] xl:w-[35%] flex flex-col h-[65vh] lg:h-auto bg-white overflow-hidden">
+            {/* Vùng cuộn lựa chọn */}
+            <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 custom-scrollbar">
+              {/* 1. Data Selection */}
+              <div>
+                <label className="text-[11px] font-bold text-slate-900 uppercase mb-4 block tracking-wider">01. Select Data Amount</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(dataCategory === 'fup' ? fupDataOptions : dataOptions).map((data) => (
+                    <button
+                      key={data}
+                      onClick={() => setSelectedData(data)}
+                      className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
+                        selectedData === data
+                          ? "border-orange-500 text-orange-600 bg-orange-50/30 shadow-sm"
+                          : "border-slate-100 text-slate-500 hover:border-slate-200"
+                      }`}
+                    >
+                      {dataType === 1 ? formatData(data) : `${formatData(data)}/Day`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Duration Selection */}
+              <div>
+                <label className="text-[11px] font-bold text-slate-900 uppercase mb-4 block tracking-wider">02. Select Duration</label>
+                {dataCategory === 'fup' ? (
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 3, 5, 10, 15, 30].map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setSelectedDuration(d)}
+                        className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
+                          selectedDuration === d && [1, 3, 5, 10, 15, 30].includes(selectedDuration)
+                            ? "border-orange-500 text-orange-600 bg-orange-50/30"
+                            : "border-slate-100 text-slate-500 hover:border-slate-200"
+                        }`}
+                      >
+                        {d}d
+                      </button>
+                    ))}
+                    <div className="relative col-span-3 mt-1">
+                      <input
+                        type="number"
+                        placeholder="Custom days..."
+                        value={[1, 3, 5, 10, 15, 30].includes(selectedDuration) ? "" : selectedDuration}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (val > 0) setSelectedDuration(val);
+                          else if (e.target.value === "") setSelectedDuration(1);
+                        }}
+                        className="w-full py-3.5 px-5 rounded-xl text-sm font-medium border-2 border-slate-100 focus:border-orange-500 outline-none transition-all bg-slate-50/50"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300">DAYS</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    <span>{t("planDetail.secureCheckout")}</span>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {durationOptions.map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setSelectedDuration(d)}
+                        className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
+                          selectedDuration === d ? "border-orange-500 text-orange-600 bg-orange-50/30" : "border-slate-100 text-slate-500 hover:border-slate-200"
+                        }`}
+                      >
+                        {d}d
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    <span>{t("planDetail.refundPolicy")}</span>
-                  </div>
+                )}
+              </div>
+
+              {/* Quantity */}
+              <div className="flex items-center justify-between pt-2 pb-4">
+                <span className="text-sm font-bold text-slate-700">Quantity</span>
+                <div className="flex items-center bg-slate-50 rounded-xl p-1 border border-slate-100">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center text-slate-500 hover:bg-white rounded-lg transition-all">—</button>
+                  <span className="w-10 text-center font-bold text-slate-800">{quantity}</span>
+                  <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center text-slate-500 hover:bg-white rounded-lg transition-all">+</button>
                 </div>
               </div>
             </div>
-          </motion.div>
+
+            {/* Footer dính đáy: Giá & Action */}
+            <div className="shrink-0 p-6 lg:p-8 bg-white border-t border-slate-100 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
+              <div className="flex justify-between items-center mb-5">
+                <div className="leading-tight">
+                  <p className="text-2xl font-bold text-slate-900">{formatPrice(pricePreview * quantity)}</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Total for {selectedDuration} days</p>
+                </div>
+                <button className="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 text-xs hover:bg-slate-50 transition-all active:scale-95">
+                  Add to Cart
+                </button>
+              </div>
+
+              {exactPlan ? (
+                <Link 
+                 href={`/checkout?planId=${exactPlan.id}&qty=${quantity}${
+      // Nếu số ngày chọn khác số ngày gốc của plan, hoặc đang ở chế độ Topup
+      (selectedDuration !== exactPlan.durationDays || isUsingTopUp) 
+        ? `&mode=topup&days=${selectedDuration}${topupPackage ? `&topupId=${topupPackage.id}` : ''}` 
+        : ''
+    }`}
+                  className="w-full py-4 rounded-2xl bg-orange-500 text-white font-bold text-base text-center block hover:bg-orange-600 transition-all shadow-lg shadow-orange-100 active:scale-[0.98]"
+                >
+                  Buy Now
+                </Link>
+              ) : (
+                <button disabled className="w-full py-4 rounded-2xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed">Plan Unavailable</button>
+              )}
+            </div>
+          </div>
         </motion.div>
-      )}
-    </AnimatePresence>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+function SpecBoxSimple({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-orange-100 transition-colors">
+      <p className="text-[10px] text-slate-400 font-bold uppercase mb-1.5 tracking-wider">{label}</p>
+      <p className="text-sm font-bold text-slate-800 truncate">{value}</p>
+    </div>
   );
+}
 }

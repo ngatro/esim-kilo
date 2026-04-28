@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion"; // Cần cài framer-motion
 
 interface Promotion {
   id: number;
@@ -18,170 +19,148 @@ export default function PromotionPopup() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Check if user dismissed previously
     const dismissed = localStorage.getItem("promo_dismissed");
     if (dismissed) {
       setIsDismissed(true);
       return;
     }
 
-    // Delay show by 2 seconds
     const timer = setTimeout(() => {
       fetch("/api/promotions")
-        .then(res => res.json())
-        .then(data => {
-          if (data.promotions && data.promotions.length > 0) {
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.promotions?.length > 0) {
             setPromotions(data.promotions);
             setIsVisible(true);
-            // Add fade-in animation after a small delay
-            setTimeout(() => setIsLoaded(true), 50);
           }
         })
         .catch(() => {});
-    }, 2000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
 
   const handleClose = () => {
-    setIsLoaded(false);
-    setTimeout(() => {
-      setIsVisible(false);
-      setIsDismissed(true);
-      localStorage.setItem("promo_dismissed", "true");
-    }, 300);
+    setIsVisible(false);
+    localStorage.setItem("promo_dismissed", "true");
   };
 
   const handleClick = () => {
-    if (promotions[currentIndex]?.link) {
-      // Check if external link
-      if (promotions[currentIndex].link.startsWith("http")) {
-        window.location.href = promotions[currentIndex].link;
+    const promo = promotions[currentIndex];
+    if (promo?.link) {
+      if (promo.link.startsWith("http")) {
+        window.open(promo.link, "_blank");
       } else {
-        // Internal link - navigate within website
-        router.push(promotions[currentIndex].link);
+        router.push(promo.link);
       }
-      // Close popup after clicking
       handleClose();
     }
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex((prev) => (prev + 1) % promotions.length);
-  };
-
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex((prev) => (prev - 1 + promotions.length) % promotions.length);
-  };
-
-  if (!isVisible || isDismissed || promotions.length === 0) {
-    return null;
-  }
+  if (!isVisible || isDismissed || promotions.length === 0) return null;
 
   const currentPromo = promotions[currentIndex];
-  if (!currentPromo) return null;
 
   return (
-    <div 
-      className={`fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-      onClick={handleClose}
-    >
-      <div 
-        className={`relative max-w-md w-full rounded-2xl overflow-hidden shadow-2xl transform transition-all duration-300 scale-100 ${isLoaded ? 'scale-100' : 'scale-95'}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Close button */}
-        <button
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        {/* Overlay mờ nền */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           onClick={handleClose}
-          className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
-        >
-          ✕
-        </button>
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        />
 
-        {/* Discount Badge */}
-        {currentPromo.badge && (
-          <div className="absolute top-0 left-0 z-10">
-            <div className="bg-red-500 text-white px-4 py-2 rounded-br-xl font-bold text-sm flex items-center gap-1">
-              <span>🎁</span>
-              <span>{currentPromo.badge}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Image with gradient overlay */}
-        <div 
-          className="relative cursor-pointer group"
-          onClick={handleClick}
+        {/* Nội dung Popup */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className="relative max-w-[420px] w-full bg-white rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] group"
+          onClick={(e) => e.stopPropagation()}
         >
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10" />
-          
-          {currentPromo.imageUrl ? (
-            <Image
-              src={currentPromo.imageUrl}
-              alt={currentPromo.title}
-              width={500}
-              height={300}
-              className="w-full h-auto object-cover"
-            />
-          ) : (
-            <div className="bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600 p-8 text-center">
-              <div className="text-4xl mb-2">🎉</div>
-              <h3 className="text-xl font-bold text-white">{currentPromo.title}</h3>
+          {/* Nút đóng xịn sò */}
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 z-50 w-10 h-10 bg-black/20 hover:bg-black/40 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all duration-200 border border-white/20"
+          >
+            <span className="text-xl">✕</span>
+          </button>
+
+          {/* Badge khuyến mãi */}
+          {currentPromo.badge && (
+            <div className="absolute top-5 left-0 z-40 bg-gradient-to-r from-red-600 to-orange-500 text-white px-5 py-1.5 rounded-r-full font-bold text-sm shadow-lg uppercase tracking-wider">
+              ✨ {currentPromo.badge}
             </div>
           )}
-          
-          {/* Title overlay at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-            <h3 className="text-2xl font-bold text-white mb-3 drop-shadow-lg">{currentPromo.title}</h3>
+
+          {/* Khu vực ảnh và nội dung */}
+          <div className="relative aspect-[4/5] cursor-pointer" onClick={handleClick}>
+            {/* Gradient phủ lên ảnh để nổi bật text */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
             
-            {/* CTA Button */}
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-full flex items-center gap-2 transition-colors shadow-lg">
-              <span>Shop Now</span>
-              <span className="text-lg">→</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation arrows */}
-        {promotions.length > 1 && (
-          <>
-            <button
-              onClick={handlePrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors"
-            >
-              ‹
-            </button>
-            <button
-              onClick={handleNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors"
-            >
-              ›
-            </button>
-          </>
-        )}
-
-        {/* Dots indicator */}
-        {promotions.length > 1 && (
-          <div className="flex justify-center gap-2 py-3 bg-slate-900">
-            {promotions.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrentIndex(idx);
-                }}
-                className={`w-2 h-2 rounded-full transition-colors ${idx === currentIndex ? "bg-orange-500" : "bg-slate-600 hover:bg-slate-500"}`}
+            {currentPromo.imageUrl ? (
+              <Image
+                src={currentPromo.imageUrl}
+                alt={currentPromo.title}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
               />
-            ))}
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center" />
+            )}
+
+            {/* Thông tin khuyến mãi */}
+            <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
+              <motion.h3 
+                key={currentPromo.title}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-3xl font-extrabold text-white mb-4 leading-tight drop-shadow-md"
+              >
+                {currentPromo.title}
+              </motion.h3>
+              
+              <button className="relative overflow-hidden bg-white text-black font-black px-8 py-4 rounded-xl flex items-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-orange-500/40">
+                <span>MUA NGAY</span>
+                <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">→</span>
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Điều hướng (chỉ hiện khi có > 1 promo) */}
+          {promotions.length > 1 && (
+            <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => (prev - 1 + promotions.length) % promotions.length); }} 
+                className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors">
+                ❮
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => (prev + 1) % promotions.length); }} 
+                className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors">
+                ❯
+              </button>
+            </div>
+          )}
+
+          {/* Dots Indicator bọc trong khung kính */}
+          {promotions.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30 bg-white/10 backdrop-blur-md px-3 py-2 rounded-full border border-white/10">
+              {promotions.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex ? "w-6 bg-orange-500" : "w-1.5 bg-white/50"}`}
+                />
+              ))}
+            </div>
+          )}
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 }

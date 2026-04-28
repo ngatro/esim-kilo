@@ -10,11 +10,12 @@ import Link from "next/link";
 import EsimDataTypeModal from "./EsimDataTypeModal";
 import WifiLoader from "@/components/animations/WifiLoader";
 import FadeIn from "@/components/animations/FadeIn";
-import PlansCard from "./PlansCard";
+import PlansCard, { PlanCardConfig } from "./PlansCard";
 interface OperatorInfo {
   operatorName: string;
   networkType: string;
 }
+
 
 interface LocationNetwork {
   locationCode: string;
@@ -56,12 +57,16 @@ interface Plan {
   activeType: number;
   supportTopUpType: number;
   topupPackageId?: number;
+  
+
+
 }
 
 // Grouped plan for display
 interface GroupedPlan {
   key: string;
   destination: string;
+  countryId?: string | undefined | null;
   fupPolicy: string | null;
   plans: Plan[];
   minPrice: number;
@@ -166,23 +171,23 @@ async function fetchUnsplashImage(countryName: string): Promise<string> {
   return getDestinationImage(countryName.toLowerCase().replace(/\s+/g, '-'));
 }
 
-function formatData(gb: number, volume?: number): string {
-  const dataValue = gb > 0 ? gb : (volume ? Math.round((volume / (1024 * 1024 * 1024)) * 10) / 10 : 0);
-  if (dataValue >= 999) return "Unlimited";
-  if (dataValue < 1 && dataValue > 0) return `${Math.round(dataValue * 1024)}MB`;
-  if (dataValue === 0) return "N/A";
-  return `${dataValue}GB`;
-}
+// function formatData(gb: number, volume?: number): string {
+//   const dataValue = gb > 0 ? gb : (volume ? Math.round((volume / (1024 * 1024 * 1024)) * 10) / 10 : 0);
+//   if (dataValue >= 999) return "Unlimited";
+//   if (dataValue < 1 && dataValue > 0) return `${Math.round(dataValue * 1024)}MB`;
+//   if (dataValue === 0) return "N/A";
+//   return `${dataValue}GB`;
+// }
 
-function getDataTypeLabel(type: number): string {
-  switch (type) {
-    case 1: return "Fixed Data";
-    case 2: return "Daily Limit (Speed Reduced)";
-    case 3: return "Daily Limit (Service Cut-off)";
-    case 4: return "Daily Unlimited";
-    default: return "Data Plan";
-  }
-}
+// function getDataTypeLabel(type: number): string {
+//   switch (type) {
+//     case 1: return "Fixed Data";
+//     case 2: return "Daily Limit (Speed Reduced)";
+//     case 3: return "Daily Limit (Service Cut-off)";
+//     case 4: return "Daily Unlimited";
+//     default: return "Data Plan";
+//   }
+// }
 
 export default function EsimCountryPage({ params }: { params: Promise<{ country: string }> }) {
   const resolvedParams = use(params);
@@ -203,6 +208,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
   const [isDataTypeModalOpen, setIsDataTypeModalOpen] = useState(false);
   const [selectedDataType, setSelectedDataType] = useState<number>(0);
   const [plansForDataType, setPlansForDataType] = useState<Plan[]>([]);
+  const [activeConfig, setActiveConfig] = useState<PlanCardConfig | null>(null);
 
 useEffect(() => {
   async function load() {
@@ -223,6 +229,7 @@ useEffect(() => {
 
       setHeroImage(imageUrl);
       setPlans(data);
+      
     } catch (error) {
       console.error("Lỗi load data:", error);
     } finally {
@@ -232,6 +239,7 @@ useEffect(() => {
   }
   load();
 }, [resolvedParams]);
+
 
   // Duration options
   const durationOptions = useMemo(() => {
@@ -283,7 +291,9 @@ useEffect(() => {
         groups[key] = {
           key,
           destination: country.charAt(0).toUpperCase() + country.slice(1), // Use URL country param
+          countryId: plan.countryId,
           fupPolicy: plan.fupPolicy,
+          
           plans: [],
           minPrice: plan.retailPriceUsd || plan.priceUsd,
           maxPrice: plan.retailPriceUsd || plan.priceUsd,
@@ -303,43 +313,31 @@ useEffect(() => {
     });
   }, [filteredPlans, country]);
 
-  const displayName = country.charAt(0).toUpperCase() + country.slice(1);
+  const displayNameId = plans.length > 0 ? plans[0].countryId || country : country;
+  
 
-  if (!loading && plans.length === 0) {
+  // if (!loading && plans.length === 0) {
+  //   return (
+  //     <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+  //     </div>
+  //         );
+  //       }
+
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 space-y-4">
-        <div className="scale-110"> {/* Phóng to nhẹ loader nếu muốn */}
-          <WifiLoader text="" /> 
-        </div>
-        <p className="text-sm font-medium text-slate-500 animate-pulse">
-          Vui lòng đợi giây lát...
-        </p>
+      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
       </div>
-          );
-        }
+    );
+  }
 
-  const handleClearFilters = () => {
-    setSelectedDuration("all");
-    setSelectedData("all");
-  };
-
-  const hasActiveFilters = selectedDuration !== "all" || selectedData !== "all";
-
-  // Handle plan click - open modal
-  const handlePlanClick = (plan: Plan) => {
-    setSelectedPlan(plan);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedPlan(null);
-  };
-
-  // Handle dataType group click - open new modal with all plans for that dataType
-  const handleDataTypeClick = (dataType: number, groupPlans: Plan[]) => {
+  const handleDataTypeClick = (dataType: number, groupPlans: Plan[], config?: PlanCardConfig) => {
     setSelectedDataType(dataType);
     setPlansForDataType(groupPlans);
+    if (config) {
+      setActiveConfig(config);
+    }
     setIsDataTypeModalOpen(true);
   };
 
@@ -349,71 +347,70 @@ useEffect(() => {
     setPlansForDataType([]);
   };
 
-  
 
-  return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      {/* Hero with Dynamic Unsplash Image */}
-      <div className="relative h-[60vh] min-h-[400px] overflow-hidden">
-        <Image
-          src={heroImage}
-          alt={displayName}
-          fill
-          className="object-cover scale-105"
-          priority
-          unoptimized
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-[#F8F9FA]" />
-        
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-2 text-center drop-shadow-lg">
-            {displayName}
-          </h1>
-          <p className="text-white/90 text-lg text-center drop-shadow">
-            {plans.length} {t("countryPage.esimPlansAvailable")}
-          </p>
-        </div>
+
+return (
+  <div className="min-h-screen bg-white"> {/* Đổi sang nền trắng cho sạch */}
+    {/* Header Section: Gọn gàng, khoe ảnh nhưng không chiếm chỗ */}
+    <div className="relative w-full h-[45vh] lg:h-[40vh] overflow-hidden">
+      <Image
+        src={heroImage}
+        alt={displayNameId}
+        fill
+        className="object-cover"
+        priority
+        unoptimized
+      />
+      {/* Gradient dốc từ trong suốt sang trắng để hòa tan vào phần nội dung bên dưới */}
+      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-black/30" />
+      
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+        <p className="text-white/80 text-[10px] font-bold uppercase tracking-[0.4em] mb-3 drop-shadow-sm">
+          Premium Connectivity
+        </p>
+        <h1 className="text-5xl md:text-7xl font-medium text-white mb-2 tracking-tighter drop-shadow-xl">
+          {t(`countries.${displayNameId}`)}
+        </h1>
+        <div className="h-1 w-12 bg-orange-500 rounded-full mb-4 shadow-lg shadow-orange-500/50" />
       </div>
+    </div>
 
-      {/* Filter Section */}
-      <div className="max-w-7xl mx-auto px-4 -mt-10 relative z-10">
-        {/* Plans Grid - Show 2 simple cards: Fixed and Daily */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-16">
-          {displayPlans.map((group, index) => (
-            <FadeIn key={group.key}> 
+    {/* Content Section: Đẩy Grid lên sát hơn */}
+    <div className="max-w-7xl mx-auto px-6 -mt-24 relative z-10">
+      {/* Plans Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 pb-12">
+        {displayPlans.map((group, index) => (
+          <FadeIn key={group.key}> 
+            {/* Thêm wrapper để căn chỉnh card chuẩn hơn */}
+            <div className="h-full flex flex-col">
               <PlansCard 
                 group={group} 
-                onDetailClick={() => handleDataTypeClick(group.dataType, group.plans)} 
+                onDetailClick={(config) => handleDataTypeClick(group.dataType, group.plans, config)} 
               />
-            </FadeIn>
-          ))}
-
-          {displayPlans.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 bg-slate-50/50 rounded-[32px] border-2 border-dashed border-slate-200">
-              <WifiLoader />
-              <p className="text-slate-400 mt-4 font-medium italic">
-                Đang tìm kiếm gói cước tốt nhất cho bạn...
-              </p>
             </div>
-        )}
-        </div>
-      </div>
-      {/* Modal - Legacy single plan modal */}
-      {/* <PlanModal 
-        plan={selectedPlan} 
-        onClose={handleCloseModal} 
-        isOpen={isModalOpen}
-      /> */}
+          </FadeIn>
+        ))}
 
-      {/* New DataType Selection Modal */}
-      <EsimDataTypeModal
-        plans={plansForDataType}
-        dataType={selectedDataType}
-        countryName={country}
-        countryCode={country}
-        isOpen={isDataTypeModalOpen}
-        onClose={handleCloseDataTypeModal}
-      />
+       
+      </div>
     </div>
-  );
+
+    {/* Footer trang - Nếu cần thông tin thêm thì để ở đây nhẹ nhàng */}
+    <div className="max-w-2xl mx-auto text-center pb-20 px-6">
+      <p className="text-slate-400 text-sm leading-relaxed">
+        {t("countryPage.esimPlansAvailableDescription")}
+      </p>
+    </div>
+
+    {/* Modal */}
+    <EsimDataTypeModal
+      dataType={selectedDataType}
+      countryName={country}
+      countryId={country}
+      isOpen={isDataTypeModalOpen}
+      onClose={handleCloseDataTypeModal}
+      config={activeConfig}
+    />
+  </div>
+);
 }
