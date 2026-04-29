@@ -128,23 +128,39 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white border-b border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center">
-              <Image 
-                src="/esim.svg" 
-                alt="eSIM Logo" 
-                width={64}
-                height={64}
-                priority
-                
-                className="w-[150%] h-[150%] max-w-none text-white object-contain"
-              />
-            </div>
-            <span className="text-lg font-semibold text-slate-800">
-              Open<span className="text-orange-500">World</span>
-            </span>
-          </Link>
+          {/* Left side: Mobile Menu Toggle + Logo */}
+          <div className="flex items-center gap-2">
+            {/* Mobile Menu Toggle - visible only on mobile */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-slate-600 hover:text-orange-500 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center">
+                <Image
+                  src="/esim.svg"
+                  alt="eSIM Logo"
+                  width={64}
+                  height={64}
+                  priority
+                  
+                  className="w-[150%] h-[150%] max-w-none text-white object-contain"
+                />
+              </div>
+              <span className="text-lg font-semibold text-slate-800">
+                Open<span className="text-orange-500">World</span>
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Nav with Dropdown */}
           <nav className="hidden md:flex items-center gap-1">
@@ -261,9 +277,9 @@ export default function Header() {
 
           {/* Right Side */}
           <div className="flex items-center gap-2">
-            {/* Language Selector */}
-            <div 
-              className="relative"
+            {/* Language Selector - Desktop only */}
+            <div
+              className="relative hidden md:block"
               onMouseEnter={() => handleMouseEnter("lang")}
               onMouseLeave={() => handleMouseLeave("lang")}
             >
@@ -362,17 +378,15 @@ export default function Header() {
                 <div className="w-8 h-8 bg-slate-100 rounded-lg animate-pulse" />
               </div>
             ) : mounted && !authLoading && user ? (
-              <div 
+              <div
                 className="relative"
                 onMouseEnter={() => handleMouseEnter("user")}
                 onMouseLeave={() => handleMouseLeave("user")}
               >
-                <button className="flex items-center gap-2 p-1.5 text-slate-600 hover:text-orange-500 transition-colors">
-                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
+                <button className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:text-orange-500 transition-colors">
+                  <span className="text-sm font-medium">
+                    {t("header.welcome")}, {user.name?.split(' ')[0] || user.name}
+                  </span>
                 </button>
                 <AnimatePresence>
                   {userDropdownOpen && (
@@ -437,19 +451,18 @@ export default function Header() {
               </button>
             ) : null}
 
-            {/* Mobile Menu Toggle */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-slate-600"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                {mobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
+            {/* Mobile Login Button (visible on mobile only) */}
+            {mounted && !authLoading && !user && (
+              <button
+                onClick={openLogin}
+                className="md:hidden flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                {t("header.login")}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -464,6 +477,39 @@ export default function Header() {
             exit={{ opacity: 0, height: 0 }}
           >
             <div className="px-4 py-4 space-y-2">
+              {/* Language Selector - Mobile only (dropdown like desktop) */}
+              <details className="group border-b border-slate-100 pb-2 mb-1">
+                <summary className="flex items-center justify-between py-2 text-slate-600 font-medium cursor-pointer list-none">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                    {t("header.language")}
+                  </span>
+                  <svg className="w-4 h-4 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="pl-4 space-y-1 mt-1">
+                  {SUPPORTED_LOCALES.map((l) => (
+                    <button
+                      key={l.code}
+                      onClick={() => {
+                        handleLanguageChange(l.code);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2 py-1.5 text-sm ${
+                        locale === l.code
+                          ? "text-orange-500 font-medium"
+                          : "text-slate-500 hover:text-orange-500"
+                      }`}
+                    >
+                      <span>{l.flag}</span> <span>{l.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </details>
+
               {navItems.map((item) => (
                 <div key={item.href}>
                   {item.children ? (
@@ -515,18 +561,6 @@ export default function Header() {
                   )}
                 </div>
               ))}
-
-              {mounted && !authLoading && !user && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    openLogin();
-                  }}
-                  className="w-full py-2.5 text-left text-slate-600 font-medium"
-                >
-                  Login
-                </button>
-              )}
 
               {mounted && !authLoading && user && (
                 <button

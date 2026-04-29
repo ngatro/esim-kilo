@@ -50,7 +50,9 @@
     "devices": "Thiết bị",
     "allDevices": "Tất cả thiết bị",
     "byDevice": "Theo thiết bị",
-    "support": "Hỗ trợ"
+    "support": "Hỗ trợ",
+    "welcome": "Chào mừng",
+    "language": "Ngôn ngữ"
   },
   "hero": {
     "title": {

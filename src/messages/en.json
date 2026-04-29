@@ -50,7 +50,9 @@
     "devices": "Devices",
     "allDevices": "All Devices",
     "byDevice": "By Device",
-    "support": "Support"
+    "support": "Support",
+    "welcome": "Welcome",
+    "language": "Language"
   },
   "hero": {
     "title": {
