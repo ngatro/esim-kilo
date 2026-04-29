@@ -167,27 +167,40 @@ export async function POST(request: Request) {
         );
       }
 
-      // Get top-up package if in top-up mode
-      let extraDays = 0;
+      // Determine selected duration and compute extra days directly
+      const itemSelectedDuration = item.selectedDuration || item.days || selectedDuration;
+      const extraDays = Math.max(0, (itemSelectedDuration || 0) - plan.durationDays);
+      
+      // If extraDays > 0, this order includes top-up
+      if (extraDays > 0) {
+        hasTopupMode = true;
+        totalExtraDays = Math.max(totalExtraDays, extraDays);
+      }
+
       let topupPackageCode: string | null = null;
       let topupRetailPrice = 0;
 
-      // Check if this item is in top-up mode
-      const itemIsTopupMode = item.isTopupMode || (isTopupMode && item.days && item.days > 0);
-      const itemSelectedDuration = item.selectedDuration || item.days || selectedDuration;
-
-      if (itemIsTopupMode && itemSelectedDuration) {
-        extraDays = itemSelectedDuration - plan.durationDays;
-        
-        if (extraDays > 0) {
-          hasTopupMode = true;
-          totalExtraDays = Math.max(totalExtraDays, extraDays);
-          
-          // Fetch the flexible top-up package for this plan
+      // If top-up needed (extraDays > 0), find topup package
+      if (extraDays > 0) {
+        // Prefer provided topupPackageCode (from resumed pending order or cart)
+        if (item.topupPackageCode) {
+          const specifiedPkg = await prisma.topupPackage.findFirst({
+            where: {
+              planId: plan.id,
+              packageCode: item.topupPackageCode,
+              isActive: true
+            },
+          });
+          if (specifiedPkg) {
+            topupPackageCode = specifiedPkg.packageCode;
+            topupRetailPrice = specifiedPkg.retailPriceUsd > 0 ? specifiedPkg.retailPriceUsd : specifiedPkg.priceUsd;
+          }
+        }
+        // If no specific package provided or not found, fallback to any flexible active package for this plan
+        if (!topupPackageCode) {
           const topupPkg = await prisma.topupPackage.findFirst({
             where: { planId: plan.id, isActive: true, isFlexible: true },
           });
-          
           if (topupPkg) {
             topupPackageCode = topupPkg.packageCode;
             topupRetailPrice = topupPkg.retailPriceUsd > 0 ? topupPkg.retailPriceUsd : topupPkg.priceUsd;

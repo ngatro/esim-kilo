@@ -71,7 +71,7 @@ export default function CheckoutPage() {
   }, []);
 
   // Create pending order when payment cancelled
-  async function createPendingOrder(planId: string, qty: number) {
+  async function createPendingOrder(planId: string, qty: number, topupPackageCode?: string) {
     if (!planId) return null;
     try {
       // Fetch plan to get its duration (needed for exact plans when plan state may not be loaded)
@@ -86,7 +86,13 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: [{ planId, quantity: qty, topupMode, days: topupDays }],
+          items: [{
+            planId,
+            quantity: qty,
+            topupMode,
+            days: topupDays,
+            topupPackageCode: topupPackageCode || undefined,
+          }],
           customerName,
           customerEmail,
           status: "pending",
@@ -110,8 +116,9 @@ export default function CheckoutPage() {
     if (cancelled) {
       const savedPlanId = localStorage.getItem("paypal_planId") || planId;
       const savedQty = parseInt(localStorage.getItem("paypal_qty") || "1");
+      const savedTopupPackageCode = localStorage.getItem("paypal_topupPackageCode");
       if (savedPlanId) {
-        createPendingOrder(savedPlanId, savedQty).then(order => {
+        createPendingOrder(savedPlanId, savedQty, savedTopupPackageCode || undefined).then(order => {
           if (order) {
             router.replace("/orders?pending=" + order.id);
           } else {
@@ -179,63 +186,104 @@ export default function CheckoutPage() {
   }, [searchParams, planId]);
 
   useEffect(() => {
-    if (planId) {
-      fetch(`/api/plans?id=${planId}`)
-        .then((r) => r.json())
-        .then((data) => {
-          const found = (data.plans || []).find((p: Plan) => p.id === planId);
-          setPlan(found || null);
-          
-          // If topup mode, fetch the topup package - use topupId if provided
-          if (found && topupMode) {
-            // DEBUG: Log what we're searching for
-            console.log('[Checkout] FetchTopup:', { planId, topupId, topupIdType: typeof topupId });
-            
-            // Build URL: prefer topupId if available, otherwise use planIds
-            let apiUrl = '';
-            if (topupId) {
-              apiUrl = `/api/topup-packages?topupId=${topupId}`;
-            } else {
-              apiUrl = `/api/topup-packages?planIds=${planId}`;
-            }
-            console.log('[Checkout] API URL:', apiUrl);
-            
-            fetch(apiUrl)
-              .then((r) => r.json())
-              .then((pkgData) => {
-                // DEBUG: Log API response
-                console.log('[Checkout] TopupAPI:', { packages: pkgData.packages, count: pkgData.packages?.length });
-                if (pkgData.packages && pkgData.packages.length > 0) {
-                  // Use topupId if provided, otherwise find flexible or first
-                  let selectedPkg = pkgData.packages[0];
-                  if (topupId) {
-                    const parsedTopupId = parseInt(topupId);
-                    console.log('[Checkout] FindById:', { parsedTopupId, packagesIds: pkgData.packages.map((p: any) => p.id) });
-                    selectedPkg = pkgData.packages.find((p: TopupPackage) => p.id === parsedTopupId) || selectedPkg;
-                  } else {
-                    const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
-                    selectedPkg = flexiblePkg || selectedPkg;
-                  }
-                  // Fallback: if retailPriceUsd is 0, use priceUsd
-                  if (!selectedPkg.retailPriceUsd && selectedPkg.priceUsd) {
-                    selectedPkg.retailPriceUsd = selectedPkg.priceUsd;
-                  }
-                  console.log('[Checkout] SelectedPkg:', selectedPkg);
-                  setTopupPackage(selectedPkg);
-                } else {
-                  console.log('[Checkout] NoTopupPackages:', { planId });
-                  setTopupPackage(null);
-                }
-              })
-              .catch(() => setTopupPackage(null));
-          }
-        })
-        .catch(() => setPlan(null))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [planId, topupMode]);
+   if (planId) {
+     fetch(`/api/plans?id=${planId}`)
+       .then((r) => r.json())
+       .then((data) => {
+         const found = (data.plans || []).find((p: Plan) => p.id === planId);
+         setPlan(found || null);
+         
+         // If topup mode, fetch the topup package - use topupId if provided
+         if (found && topupMode) {
+           // DEBUG: Log what we're searching for
+           console.log('[Checkout] FetchTopup:', { planId, topupId, topupIdType: typeof topupId });
+           
+           // Determine fetch strategy based on topupId type
+           const isNumericId = /^\d+$/.test(topupId);
+           
+           if (topupId && isNumericId) {
+             // Modal flow: topupId is numeric DB ID, fetch that specific package directly (may belong to any plan)
+             fetch(`/api/topup-packages?topupId=${topupId}`)
+               .then((r) => r.json())
+               .then((pkgData) => {
+                 if (pkgData.packages && pkgData.packages.length > 0) {
+                   const selectedPkg = pkgData.packages[0];
+                   // Fallback: if retailPriceUsd is 0, use priceUsd
+                   if (!selectedPkg.retailPriceUsd && selectedPkg.priceUsd) {
+                     selectedPkg.retailPriceUsd = selectedPkg.priceUsd;
+                   }
+                   console.log('[Checkout] SelectedPkg (by ID):', selectedPkg);
+                   setTopupPackage(selectedPkg);
+                 } else {
+                   console.log('[Checkout] Package not found by ID, falling back to plan packages');
+                   // Fallback to plan-based fetch
+                   return fetch(`/api/topup-packages?planIds=${planId}`);
+                 }
+               })
+               .then(fetchPlanPkgs => {
+                 if (fetchPlanPkgs) {
+                   return fetchPlanPkgs.json().then(pkgData => {
+                     if (pkgData.packages && pkgData.packages.length > 0) {
+                       let selectedPkg = pkgData.packages[0];
+                       // Try match by packageCode as fallback
+                       if (topupId) {
+                         const codeMatch = pkgData.packages.find((p: TopupPackage) => p.packageCode === topupId);
+                         if (codeMatch) selectedPkg = codeMatch;
+                       } else {
+                         const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
+                         selectedPkg = flexiblePkg || selectedPkg;
+                       }
+                       if (!selectedPkg.retailPriceUsd && selectedPkg.priceUsd) {
+                         selectedPkg.retailPriceUsd = selectedPkg.priceUsd;
+                       }
+                       console.log('[Checkout] SelectedPkg (plan fallback):', selectedPkg);
+                       setTopupPackage(selectedPkg);
+                     } else {
+                       setTopupPackage(null);
+                     }
+                   });
+                 }
+               })
+               .catch(() => setTopupPackage(null));
+           } else {
+             // Orders page flow or no specific package: fetch by plan and match by packageCode or flexible
+             fetch(`/api/topup-packages?planIds=${planId}`)
+               .then((r) => r.json())
+               .then((pkgData) => {
+                 if (pkgData.packages && pkgData.packages.length > 0) {
+                   let selectedPkg = pkgData.packages[0];
+                   if (topupId) {
+                     // Match by packageCode (non-numeric topupId)
+                     const codeMatch = pkgData.packages.find((p: TopupPackage) => p.packageCode === topupId);
+                     if (codeMatch) {
+                       selectedPkg = codeMatch;
+                     }
+                   } else {
+                     // No specific package requested, pick flexible or first
+                     const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
+                     selectedPkg = flexiblePkg || selectedPkg;
+                   }
+                   // Fallback: if retailPriceUsd is 0, use priceUsd
+                   if (!selectedPkg.retailPriceUsd && selectedPkg.priceUsd) {
+                     selectedPkg.retailPriceUsd = selectedPkg.priceUsd;
+                   }
+                   console.log('[Checkout] SelectedPkg (plan):', selectedPkg);
+                   setTopupPackage(selectedPkg);
+                 } else {
+                   console.log('[Checkout] NoTopupPackages:', { planId });
+                   setTopupPackage(null);
+                 }
+               })
+               .catch(() => setTopupPackage(null));
+           }
+         }
+       })
+       .catch(() => setPlan(null))
+       .finally(() => setLoading(false));
+   } else {
+     setLoading(false);
+   }
+ }, [planId, topupMode]);
 
   useEffect(() => {
     if (user) {
@@ -316,7 +364,13 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: [{ planId: plan.id, quantity, topupMode, days: topupDays }],
+          items: [{
+            planId: plan.id,
+            quantity,
+            topupMode,
+            days: topupDays,
+            topupPackageCode: topupPackage?.packageCode || undefined,
+          }],
           customerName,
           customerEmail,
           isTopupMode: topupMode,
