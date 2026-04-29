@@ -102,6 +102,10 @@ interface OrderItem {
   esimStatus: string | null;
   orderUsage: number | null;
   enabledAt: string | null;
+  // Top-up fields
+  extraDays?: number | null;
+  basePlanDays?: number | null;
+  topupPackageCode?: string | null;
 }
 
 interface Order {
@@ -114,6 +118,12 @@ interface Order {
   esimaccessOrderStatus: string | null;
   createdAt: string;
   orderItems: OrderItem[];
+  // Top-up fields
+  isTopupMode?: boolean;
+  selectedDuration?: number | null;
+  basePlanDays?: number | null;
+  extraDays?: number | null;
+  topupPackageCode?: string | null;
 }
 
 export default function OrdersPage() {
