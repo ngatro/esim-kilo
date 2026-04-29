@@ -308,7 +308,7 @@ export async function POST(request: Request) {
 // Frontend confirmation (after PayPal redirect)
 export async function PUT(request: Request) {
   try {
-    const { orderId, planId, quantity = 1, isTopupMode = false, selectedDuration, topupPackageCode } = await request.json();
+    const { orderId, planId, quantity = 1, isTopupMode = false, selectedDuration, topupPackageCode, pendingOrderId } = await request.json();
     if (!orderId) return NextResponse.json({ error: "Order ID required" }, { status: 400 });
 
     // Get userId from NextAuth session (Google OAuth) or legacy token
@@ -334,7 +334,7 @@ export async function PUT(request: Request) {
       if (token) userId = parseInt(token);
     }
 
-    // Idempotency: Check if order already exists
+    // Idempotency: Check if order already exists by PayPal order ID
     const existingOrder = await prisma.order.findFirst({
       where: { esimaccessOrderId: orderId },
       include: { orderItems: true },
@@ -342,10 +342,10 @@ export async function PUT(request: Request) {
 
     if (existingOrder) {
       console.log("[PayPal Confirm] Order already exists: " + existingOrder.id);
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         order: existingOrder,
-        alreadyProcessed: true 
+        alreadyProcessed: true
       });
     }
 
@@ -396,35 +396,119 @@ export async function PUT(request: Request) {
       }
     }
 
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        totalAmount: amount,
-        status: "completed",
-        customerEmail: data.payer?.email_address || "",
-        customerName: `${data.payer?.name?.given_name || ""} ${data.payer?.name?.surname || ""}`.trim(),
-        esimaccessOrderId: orderId,
-        esimaccessOrderStatus: "paid",
-        // Top-up metadata
-        isTopupMode,
-        selectedDuration: selectedDuration || null,
-        basePlanDays,
-        extraDays: extraDays > 0 ? extraDays : null,
-        topupPackageCode,
-        orderItems: {
-          create: [{
-            planId: planId || null,
-            planName: plan?.name || "eSIM Plan",
-            packageCode: plan?.packageCode || null,
-            price: itemPrice,
-            quantity,
-            extraDays: extraDays > 0 ? extraDays : null,
+    let order: { id: number; orderItems: { id: number }[] };
+
+    // If pendingOrderId is provided, update the existing pending order instead of creating new
+    if (pendingOrderId) {
+      console.log(`[PayPal Confirm] Updating pending order ${pendingOrderId}`);
+      const pendingOrder = await prisma.order.findUnique({
+        where: { id: Number(pendingOrderId) },
+        include: { orderItems: true },
+      });
+
+      if (pendingOrder && pendingOrder.status === "pending") {
+        // Update the pending order to completed with payment info
+        const updatedOrder = await prisma.order.update({
+          where: { id: Number(pendingOrderId) },
+          data: {
+            status: "completed",
+            totalAmount: amount,
+            customerEmail: data.payer?.email_address || pendingOrder.customerEmail,
+            customerName: `${data.payer?.name?.given_name || ""} ${data.payer?.name?.surname || ""}`.trim() || pendingOrder.customerName,
+            esimaccessOrderId: orderId,
+            esimaccessOrderStatus: "paid",
+            // Top-up metadata
+            isTopupMode,
+            selectedDuration: selectedDuration || null,
             basePlanDays,
+            extraDays: extraDays > 0 ? extraDays : null,
             topupPackageCode,
-          }],
+            // Update order items if needed (for top-up price recalculation)
+            orderItems: {
+              update: pendingOrder.orderItems.map(item => ({
+                where: { id: item.id },
+                data: {
+                  price: itemPrice,
+                  extraDays: extraDays > 0 ? extraDays : null,
+                  basePlanDays,
+                  topupPackageCode,
+                },
+              })),
+            },
+          },
+          include: { orderItems: true }, // Include orderItems in response
+        });
+        order = updatedOrder;
+      } else {
+        // Pending order not found or already processed, create new as fallback
+        console.log(`[PayPal Confirm] Pending order ${pendingOrderId} not found or not pending, creating new order`);
+        const newOrder = await prisma.order.create({
+          data: {
+            userId,
+            totalAmount: amount,
+            status: "completed",
+            customerEmail: data.payer?.email_address || "",
+            customerName: `${data.payer?.name?.given_name || ""} ${data.payer?.name?.surname || ""}`.trim(),
+            esimaccessOrderId: orderId,
+            esimaccessOrderStatus: "paid",
+            // Top-up metadata
+            isTopupMode,
+            selectedDuration: selectedDuration || null,
+            basePlanDays,
+            extraDays: extraDays > 0 ? extraDays : null,
+            topupPackageCode,
+            orderItems: {
+              create: [{
+                planId: planId || null,
+                planName: plan?.name || "eSIM Plan",
+                packageCode: plan?.packageCode || null,
+                price: itemPrice,
+                quantity,
+                extraDays: extraDays > 0 ? extraDays : null,
+                basePlanDays,
+                topupPackageCode,
+              }],
+            },
+          },
+          include: { orderItems: true },
+        });
+        order = newOrder;
+      }
+    } else {
+      // No pendingOrderId: create new order (direct checkout or fallback)
+      console.log("[PayPal Confirm] No pending order ID, creating new order");
+      const newOrder = await prisma.order.create({
+        data: {
+          userId,
+          totalAmount: amount,
+          status: "completed",
+          customerEmail: data.payer?.email_address || "",
+          customerName: `${data.payer?.name?.given_name || ""} ${data.payer?.name?.surname || ""}`.trim(),
+          esimaccessOrderId: orderId,
+          esimaccessOrderStatus: "paid",
+          // Top-up metadata
+          isTopupMode,
+          selectedDuration: selectedDuration || null,
+          basePlanDays,
+          extraDays: extraDays > 0 ? extraDays : null,
+          topupPackageCode,
+          orderItems: {
+            create: [{
+              planId: planId || null,
+              planName: plan?.name || "eSIM Plan",
+              packageCode: plan?.packageCode || null,
+              price: itemPrice,
+              quantity,
+              extraDays: extraDays > 0 ? extraDays : null,
+              basePlanDays,
+              topupPackageCode,
+            }],
+          },
         },
-      },
-    });
+        include: { orderItems: true },
+      });
+      order = newOrder;
+    }
 
     // Auto-activate eSIM + send email (with top-up processing)
     await activateEsimAndEmail(order.id, planId, quantity, isTopupMode, extraDays, topupPkgCode);

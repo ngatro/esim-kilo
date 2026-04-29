@@ -8,6 +8,7 @@ import { useCart } from "@/components/providers/CartProvider";
 import { useUI } from "@/components/providers/UIProvider";
 import { useI18n, SUPPORTED_LOCALES } from "@/components/providers/I18nProvider";
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 
 const DEFAULT_HOT_COUNTRIES = [
   { code: "JP", name: "Japan", emoji: "🇯🇵" },
@@ -129,13 +130,19 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-orange-500 flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center">
+              <Image 
+                src="/esim.svg" 
+                alt="eSIM Logo" 
+                width={64}
+                height={64}
+                priority
+                
+                className="w-[150%] h-[150%] max-w-none text-white object-contain"
+              />
             </div>
             <span className="text-lg font-semibold text-slate-800">
-              OpenWorld<span className="text-orange-500">eSIM</span>
+              Open<span className="text-orange-500">World</span>
             </span>
           </Link>
 

@@ -52,7 +52,9 @@ export default function CheckoutPage() {
   const [quantity, setQuantity] = useState(1);
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  
+  // Store the pending orderId from our DB to update later
+  const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
+   
   // Topup mode params from URL
   const topupMode = searchParams.get("mode") === "topup";
   const topupDays = parseInt(searchParams.get("days") || "0");
@@ -70,8 +72,8 @@ export default function CheckoutPage() {
       .catch(() => setPaypalConfigured(false));
   }, []);
 
-  // Create pending order when payment cancelled
-  async function createPendingOrder(planId: string, qty: number, topupPackageCode?: string) {
+  // Create pending order when payment cancelled or before PayPal redirect
+  async function createPendingOrder(planId: string, qty: number, topupPackageCode?: string): Promise<number | null> {
     if (!planId) return null;
     try {
       // Fetch plan to get its duration (needed for exact plans when plan state may not be loaded)
@@ -100,7 +102,17 @@ export default function CheckoutPage() {
           selectedDuration: actualDuration,
         }),
       });
-      return res.ok ? (await res.json()).order : null;
+      if (res.ok) {
+        const data = await res.json();
+        const orderId = data.order?.id;
+        if (orderId) {
+          setPendingOrderId(orderId);
+          // Also store in localStorage as backup
+          localStorage.setItem("pending_order_id", String(orderId));
+        }
+        return orderId || null;
+      }
+      return null;
     } catch (err) {
       console.error("Failed to create pending order:", err);
       return null;
@@ -114,17 +126,35 @@ export default function CheckoutPage() {
     const cancelled = searchParams.get("cancelled");
 
     if (cancelled) {
-      const savedPlanId = localStorage.getItem("paypal_planId") || planId;
-      const savedQty = parseInt(localStorage.getItem("paypal_qty") || "1");
-      const savedTopupPackageCode = localStorage.getItem("paypal_topupPackageCode");
-      if (savedPlanId) {
-        createPendingOrder(savedPlanId, savedQty, savedTopupPackageCode || undefined).then(order => {
-          if (order) {
-            router.replace("/orders?pending=" + order.id);
+      // Prefer URL parameters (embedded in cancel_url) for reliability
+      const urlPlanId = searchParams.get("planId") || planId;
+      const urlTopupPackageCode = searchParams.get("topupId"); // packageCode from cancel URL
+      const qty = quantity; // current quantity state
+
+      if (urlPlanId) {
+        createPendingOrder(urlPlanId, qty, urlTopupPackageCode || undefined).then(orderId => {
+          if (orderId) {
+            router.replace("/orders?pending=" + orderId);
           } else {
             setError("Payment cancelled - please try again");
           }
         });
+      } else {
+        // Fallback to localStorage (old method) for backward compatibility
+        const savedPlanId = localStorage.getItem("paypal_planId");
+        const savedQty = parseInt(localStorage.getItem("paypal_qty") || "1");
+        const savedTopupPackageCode = localStorage.getItem("paypal_topupPackageCode");
+        if (savedPlanId) {
+          createPendingOrder(savedPlanId, savedQty, savedTopupPackageCode || undefined).then(orderId => {
+            if (orderId) {
+              router.replace("/orders?pending=" + orderId);
+            } else {
+              setError("Payment cancelled - please try again");
+            }
+          });
+        } else {
+          setError("Payment cancelled - please try again");
+        }
       }
       return;
     }
@@ -138,6 +168,8 @@ export default function CheckoutPage() {
       const savedTopupDays = parseInt(localStorage.getItem("paypal_topupDays") || "0");
       // Get top-up package code from localStorage (if stored)
       const savedTopupPackageCode = localStorage.getItem("paypal_topupPackageCode") || undefined;
+      // Get pending orderId from state or localStorage (our DB order to update)
+      const savedPendingOrderId = pendingOrderId || (localStorage.getItem("pending_order_id") ? parseInt(localStorage.getItem("pending_order_id")!) : null);
 
       if (!savedPlanId) {
         setError("Plan ID not found");
@@ -145,17 +177,19 @@ export default function CheckoutPage() {
       }
 
       setProcessing(true);
-      // Confirm payment and create order - include top-up data and package code
+      // Confirm payment and update/create order - include top-up data, package code, and our pending orderId
       fetch("/api/payment/paypal/webhook", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          orderId: paypalOrderId, 
-          planId: savedPlanId, 
+        body: JSON.stringify({
+          orderId: paypalOrderId,
+          planId: savedPlanId,
           quantity: savedQty,
           isTopupMode: savedTopupMode,
           selectedDuration: savedTopupDays > 0 ? savedTopupDays : undefined,
           topupPackageCode: savedTopupPackageCode,
+          // Our internal pending order ID to update instead of create new
+          pendingOrderId: savedPendingOrderId,
         }),
       })
         .then((r) => r.json())
@@ -246,33 +280,38 @@ export default function CheckoutPage() {
                })
                .catch(() => setTopupPackage(null));
            } else {
-             // Orders page flow or no specific package: fetch by plan and match by packageCode or flexible
-             fetch(`/api/topup-packages?planIds=${planId}`)
+             // Orders page flow or no specific package: topupId is a packageCode (string)
+             // First try direct fetch by packageCode (handles packages not linked to plan)
+             fetch(`/api/topup-packages?packageCode=${encodeURIComponent(topupId)}`)
                .then((r) => r.json())
                .then((pkgData) => {
                  if (pkgData.packages && pkgData.packages.length > 0) {
-                   let selectedPkg = pkgData.packages[0];
-                   if (topupId) {
-                     // Match by packageCode (non-numeric topupId)
-                     const codeMatch = pkgData.packages.find((p: TopupPackage) => p.packageCode === topupId);
-                     if (codeMatch) {
-                       selectedPkg = codeMatch;
-                     }
-                   } else {
-                     // No specific package requested, pick flexible or first
-                     const flexiblePkg = pkgData.packages.find((p: TopupPackage) => p.isFlexible);
-                     selectedPkg = flexiblePkg || selectedPkg;
-                   }
-                   // Fallback: if retailPriceUsd is 0, use priceUsd
+                   const selectedPkg = pkgData.packages[0];
                    if (!selectedPkg.retailPriceUsd && selectedPkg.priceUsd) {
                      selectedPkg.retailPriceUsd = selectedPkg.priceUsd;
                    }
-                   console.log('[Checkout] SelectedPkg (plan):', selectedPkg);
+                   console.log('[Checkout] SelectedPkg (by code):', selectedPkg);
                    setTopupPackage(selectedPkg);
-                 } else {
-                   console.log('[Checkout] NoTopupPackages:', { planId });
-                   setTopupPackage(null);
+                   return;
                  }
+                 // If not found by code, fallback to plan-based fetch
+                 return fetch(`/api/topup-packages?planIds=${planId}`).then(r => r.json()).then(pkgData => {
+                   if (pkgData.packages && pkgData.packages.length > 0) {
+                     let selectedPkg = pkgData.packages[0];
+                     // Try match by packageCode as fallback
+                     const codeMatch = pkgData.packages.find((p: TopupPackage) => p.packageCode === topupId);
+                     if (codeMatch) selectedPkg = codeMatch;
+                     // Fallback: if retailPriceUsd is 0, use priceUsd
+                     if (!selectedPkg.retailPriceUsd && selectedPkg.priceUsd) {
+                       selectedPkg.retailPriceUsd = selectedPkg.priceUsd;
+                     }
+                     console.log('[Checkout] SelectedPkg (plan fallback):', selectedPkg);
+                     setTopupPackage(selectedPkg);
+                   } else {
+                     console.log('[Checkout] NoTopupPackages for plan:', planId);
+                     setTopupPackage(null);
+                   }
+                 });
                })
                .catch(() => setTopupPackage(null));
            }
@@ -310,7 +349,19 @@ export default function CheckoutPage() {
     if (!priceDisplay || priceDisplay <= 0) {
       throw new Error("Invalid price");
     }
-    
+
+    // Create pending order BEFORE redirecting to PayPal
+    const actualDuration = topupMode && topupDays > 0 ? topupDays : (plan?.durationDays || 0);
+    const pendingOrderId = await createPendingOrder(
+      plan!.id,
+      quantity,
+      topupMode && topupPackage ? topupPackage.packageCode : undefined
+    );
+
+    if (!pendingOrderId) {
+      throw new Error("Failed to create pending order");
+    }
+
     const res = await fetch("/api/payment/paypal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -320,10 +371,11 @@ export default function CheckoutPage() {
         price: priceDisplay,
         currency: currency,
         customerEmail,
-        // Pass top-up metadata
+        // Pass top-up metadata (including package code for cancel/resume)
         customData: {
           isTopupMode: topupMode,
           selectedDuration: topupDays > 0 ? topupDays : undefined,
+          topupPackageCode: topupMode && topupPackage ? topupPackage.packageCode : undefined,
         },
       }),
     });
@@ -341,6 +393,8 @@ export default function CheckoutPage() {
       if (topupMode && topupPackage) {
         localStorage.setItem("paypal_topupPackageCode", topupPackage.packageCode);
       }
+      // Store pending order ID for webhook to update
+      localStorage.setItem("pending_order_id", String(pendingOrderId));
       window.location.href = data.approveUrl;
       return;
     }

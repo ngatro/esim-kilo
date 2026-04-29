@@ -6,9 +6,32 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const planIds = url.searchParams.get("planIds"); // comma-separated plan IDs
-    const topupId = url.searchParams.get("topupId"); // specific topup package ID
+    const topupId = url.searchParams.get("topupId"); // specific topup package ID (numeric)
+    const packageCode = url.searchParams.get("packageCode"); // specific topup package code (string)
 
-    // If topupId is provided, fetch that specific package directly
+    // If packageCode is provided, fetch that specific package directly (by code)
+    if (packageCode) {
+      const pkg = await prisma.topupPackage.findFirst({
+        where: { packageCode, isActive: true },
+        select: {
+          id: true,
+          planId: true,
+          packageCode: true,
+          name: true,
+          priceUsd: true,
+          retailPriceUsd: true,
+          isFlexible: true,
+          isActive: true,
+        },
+      });
+      if (pkg) {
+        return NextResponse.json({ packages: [pkg] });
+      }
+      // If not found, return empty
+      return NextResponse.json({ packages: [] });
+    }
+
+    // If topupId is provided (numeric), fetch that specific package directly
     if (topupId) {
       const pkg = await prisma.topupPackage.findUnique({
         where: { id: parseInt(topupId) },

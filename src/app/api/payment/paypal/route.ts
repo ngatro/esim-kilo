@@ -96,6 +96,15 @@ export async function POST(request: Request) {
       returnUrl = `${appUrl}/topup?success=true&orderItemId=${orderItemId}&packageCode=${packageCode || ""}`;
     }
 
+    // Build cancel URL with necessary metadata to resume order without localStorage
+    let cancelUrl = `${appUrl}/checkout?cancelled=true&planId=${planId}`;
+    if (customData?.isTopupMode) {
+      cancelUrl += `&mode=topup&days=${customData.selectedDuration || ''}`;
+      if (customData.topupPackageCode) {
+        cancelUrl += `&topupId=${encodeURIComponent(customData.topupPackageCode)}`;
+      }
+    }
+
     // Build custom_id with top-up metadata if provided
     let customIdData: Record<string, unknown> = { planId, planName, email: customerEmail, isTopUp, orderItemId, packageCode, periodNum };
     if (customData) {
@@ -127,7 +136,7 @@ export async function POST(request: Request) {
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
           return_url: returnUrl,
-          cancel_url: isTopUp ? `${appUrl}/topup?cancelled=true` : `${appUrl}/checkout?cancelled=true`,
+          cancel_url: cancelUrl,
         },
       }),
     });

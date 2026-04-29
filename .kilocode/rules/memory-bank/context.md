@@ -15,6 +15,18 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 - [x] **Comprehensive logging**: Added detailed request/response logging to eSIM Access API for debugging
 - [x] **Fix Google OAuth userId null**: Updated PayPal webhook PUT handler to use NextAuth session for user identification, ensuring userId is set for Google OAuth users.
 - [x] **Fix pending order selectedDuration**: Added top-level `isTopupMode` and `selectedDuration` to order creation requests to preserve top-up data across cancellations.
+- [x] **Preserve top-up info in pending orders**:
+  - Refactored POST /api/orders to compute `extraDays` directly from duration difference, independent of frontend flag
+  - Ensures `topupPackageCode`, `extraDays`, `basePlanDays` are saved correctly
+  - Fixed checkout page topup fetch: numeric ID (modal) vs string code (orders page)
+  - Added `topupPackageCode` to `createPendingOrder` and `handleDirectCheckout`
+  - Pending orders now store complete top-up metadata for accurate resume and pricing
+- [x] **Order Update Flow (Cập nhật vs Tạo mới)**:
+  - Checkout now creates a pending order BEFORE redirecting to PayPal and stores the pending orderId
+  - PayPal webhook PUT accepts `pendingOrderId` and updates the existing pending order instead of creating duplicate
+  - Backend logic: if `pendingOrderId` exists → `prisma.order.update()`, else → `prisma.order.create()` (fallback)
+  - Eliminates duplicate orders when payment succeeds
+  - Pending order ID stored in component state and localStorage for reliability
 
 ## Recently Completed
 
@@ -233,3 +245,5 @@ Create `src/app/api/[route]/route.ts`
    - EsimDataTypeModal receives config from PlansCard via page state, allows data/duration selection with interactive buttons
    - Added detailed plan information display (speed, network type, coverage, IP export, SMS status, activation type, validity period, top-up support, badges, popular/best-seller/hot flags) |
 | 2026-04-28 | Fixed Google OAuth userId issue in order API - Enhanced userId extraction logic to prioritize session user ID (Google OAuth) > token (legacy) > email lookup, fixing null userId when logging in with Google OAuth |
+| 2026-04-29 | Fixed pending order top-up preservation: order API now computes extraDays directly, saves topupPackageCode, basePlanDays, extraDays; checkout fetch handles both ID and code; ensures correct pricing on resume |
+| 2026-04-29 | Implemented order update flow: Checkout creates pending order before PayPal redirect, stores pendingOrderId; PayPal webhook updates existing pending order instead of creating duplicate, eliminating duplicate orders |

@@ -167,9 +167,10 @@ export async function POST(request: Request) {
         );
       }
 
-      // Determine selected duration and compute extra days directly
-      const itemSelectedDuration = item.selectedDuration || item.days || selectedDuration;
-      const extraDays = Math.max(0, (itemSelectedDuration || 0) - plan.durationDays);
+      // Determine chosen days (total duration selected) with proper casting
+      const chosenDays = Number(item.selectedDuration || item.days || selectedDuration || plan.durationDays);
+      const baseDays = Number(plan.durationDays);
+      const extraDays = Math.max(0, chosenDays - baseDays);
       
       // If extraDays > 0, this order includes top-up
       if (extraDays > 0) {
@@ -184,12 +185,9 @@ export async function POST(request: Request) {
       if (extraDays > 0) {
         // Prefer provided topupPackageCode (from resumed pending order or cart)
         if (item.topupPackageCode) {
+          // Look up by packageCode regardless of plan to honor user's selected package
           const specifiedPkg = await prisma.topupPackage.findFirst({
-            where: {
-              planId: plan.id,
-              packageCode: item.topupPackageCode,
-              isActive: true
-            },
+            where: { packageCode: item.topupPackageCode, isActive: true },
           });
           if (specifiedPkg) {
             topupPackageCode = specifiedPkg.packageCode;
@@ -236,6 +234,17 @@ export async function POST(request: Request) {
     // Determine order status: pending for failed payments, otherwise completed
     const orderStatus = status === "pending" ? "pending" : "completed";
     
+    // Debug log before creating order
+    console.log("DEBUG ORDER:", {
+      totalAmount,
+      basePlanDays: orderItemsData[0]?.basePlanDays,
+      extraDays: hasTopupMode ? totalExtraDays : null,
+      isTopupMode: hasTopupMode,
+      topupPackageCode: hasTopupMode ? orderItemsData[0]?.topupPackageCode : null,
+      selectedDuration: selectedDuration || null,
+      orderItemsData
+    });
+
     const order = await prisma.order.create({
       data: {
         userId,
@@ -246,7 +255,8 @@ export async function POST(request: Request) {
         // Top-up metadata
         isTopupMode: hasTopupMode,
         selectedDuration: selectedDuration || null,
-        basePlanDays: hasTopupMode ? orderItemsData[0]?.basePlanDays : null,
+        // Always save basePlanDays (duration of the base plan)
+        basePlanDays: orderItemsData[0]?.basePlanDays || null,
         extraDays: hasTopupMode ? totalExtraDays : null,
         topupPackageCode: hasTopupMode ? orderItemsData[0]?.topupPackageCode : null,
         orderItems: {
