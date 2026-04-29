@@ -27,6 +27,14 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - Backend logic: if `pendingOrderId` exists → `prisma.order.update()`, else → `prisma.order.create()` (fallback)
   - Eliminates duplicate orders when payment succeeds
   - Pending order ID stored in component state and localStorage for reliability
+- [x] **Header Redesign**:
+  - Replaced avatar icon with "Welcome, {firstName}" text for logged-in users (desktop)
+  - Moved hamburger menu to left side, next to logo (mobile)
+  - Added language selector inside mobile menu as a collapsible dropdown (using `<details>`)
+  - Hidden language selector on mobile header (desktop only)
+  - Added login button visible on mobile header (outside hamburger menu)
+  - Removed duplicate login button from mobile menu
+  - Added translation keys: `header.welcome`, `header.language` (EN & VI)
 
 ## Recently Completed
 
@@ -247,3 +255,4 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-28 | Fixed Google OAuth userId issue in order API - Enhanced userId extraction logic to prioritize session user ID (Google OAuth) > token (legacy) > email lookup, fixing null userId when logging in with Google OAuth |
 | 2026-04-29 | Fixed pending order top-up preservation: order API now computes extraDays directly, saves topupPackageCode, basePlanDays, extraDays; checkout fetch handles both ID and code; ensures correct pricing on resume |
 | 2026-04-29 | Implemented order update flow: Checkout creates pending order before PayPal redirect, stores pendingOrderId; PayPal webhook updates existing pending order instead of creating duplicate, eliminating duplicate orders |
+| 2026-04-29 | Header redesign: replaced avatar with Welcome text, moved hamburger to left, added mobile language dropdown, mobile login button, removed duplicate login from mobile menu |
