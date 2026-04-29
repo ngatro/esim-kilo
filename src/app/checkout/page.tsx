@@ -74,8 +74,14 @@ export default function CheckoutPage() {
   async function createPendingOrder(planId: string, qty: number) {
     if (!planId) return null;
     try {
-      // Determine actual selected duration: use topupDays if in topup mode, otherwise use plan's duration
-      const actualDuration = topupMode && topupDays > 0 ? topupDays : (plan?.durationDays || 0);
+      // Fetch plan to get its duration (needed for exact plans when plan state may not be loaded)
+      const planRes = await fetch(`/api/plans?id=${planId}`);
+      const planData = await planRes.json();
+      const planInfo = planData.plans?.[0];
+      const actualDuration = topupMode && topupDays > 0
+        ? topupDays
+        : (planInfo?.durationDays || 0);
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -304,6 +310,8 @@ export default function CheckoutPage() {
     setError("");
 
     try {
+      // For direct checkout, we already have plan loaded, use it directly
+      const actualDuration = topupMode && topupDays > 0 ? topupDays : (plan?.durationDays || 0);
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -312,7 +320,7 @@ export default function CheckoutPage() {
           customerName,
           customerEmail,
           isTopupMode: topupMode,
-          selectedDuration: topupMode && topupDays > 0 ? topupDays : (plan?.durationDays || 0),
+          selectedDuration: actualDuration,
         }),
       });
 
