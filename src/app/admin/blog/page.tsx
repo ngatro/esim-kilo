@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { BLOG_POSTS, BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-data";
+import { BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-data";
+import { SUPPORTED_LOCALES, type Locale } from "@/components/providers/I18nProvider";
 
 function generateId(): string {
   return `blog-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -17,11 +18,33 @@ function generateSlug(title: string): string {
 }
 
 export default function BlogAdminPage() {
-  const [posts, setPosts] = useState<BlogPost[]>(BLOG_POSTS);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch posts from API
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  async function fetchPosts() {
+    try {
+      const res = await fetch("/api/admin/blog");
+      if (!res.ok) throw new Error("Failed to fetch posts");
+      const data = await res.json();
+      setPosts(data);
+    } catch (err) {
+      setError("Failed to load posts");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const emptyPost: Omit<BlogPost, 'id'> = {
     slug: '',
@@ -36,11 +59,12 @@ export default function BlogAdminPage() {
     publishedAt: new Date().toISOString().split('T')[0],
     readTime: 5,
     featured: false,
+    locales: ['en'],
   };
 
   const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+    post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   function handleNew() {
@@ -53,35 +77,125 @@ export default function BlogAdminPage() {
     setIsEditing(true);
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!editingPost) return;
+    setSaving(true);
 
-    let updatedPost = { ...editingPost };
-    if (updatedPost.slug === '') {
-      updatedPost.slug = generateSlug(updatedPost.title);
+    try {
+      let updatedPost = { ...editingPost };
+      if (updatedPost.slug === '') {
+        updatedPost.slug = generateSlug(updatedPost.title);
+      }
+
+      // Prepare data for API
+      const postData = {
+        id: updatedPost.id,
+        title: updatedPost.title,
+        slug: updatedPost.slug,
+        excerpt: updatedPost.excerpt,
+        content: updatedPost.content,
+        coverImage: updatedPost.coverImage,
+        category: updatedPost.category,
+        tags: updatedPost.tags,
+        author: updatedPost.author,
+        authorAvatar: updatedPost.authorAvatar,
+        readTime: updatedPost.readTime,
+        featured: updatedPost.featured,
+        locales: updatedPost.locales || ['en'],
+        isPublished: true, // Always publish for now
+      };
+
+      const isEditingExisting = posts.some(p => p.id === updatedPost.id);
+      const url = isEditingExisting ? "/api/admin/blog" : "/api/admin/blog";
+      const method = isEditingExisting ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(postData),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to save post");
+      }
+
+      const savedPost = await res.json();
+
+      if (isEditingExisting) {
+        setPosts(posts.map(p => p.id === savedPost.id ? savedPost : p));
+      } else {
+        setPosts([savedPost, ...posts]);
+      }
+
+      setIsEditing(false);
+      setEditingPost(null);
+    } catch (error) {
+      console.error("Error saving post:", error);
+      alert(error instanceof Error ? error.message : "Failed to save post");
+    } finally {
+      setSaving(false);
     }
-
-    const existingIndex = posts.findIndex(p => p.id === updatedPost.id);
-    if (existingIndex >= 0) {
-      const newPosts = [...posts];
-      newPosts[existingIndex] = updatedPost;
-      setPosts(newPosts);
-    } else {
-      setPosts([updatedPost, ...posts]);
-    }
-
-    setIsEditing(false);
-    setEditingPost(null);
   }
 
-  function handleDelete(id: string) {
-    setPosts(posts.filter(p => p.id !== id));
-    setShowDeleteConfirm(null);
+  async function handleDelete(id: string) {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+
+    try {
+      const res = await fetch(`/api/admin/blog?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete post");
+      setPosts(posts.filter(p => p.id !== id));
+      setShowDeleteConfirm(null);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post");
+    }
   }
 
   function handleCancel() {
     setIsEditing(false);
     setEditingPost(null);
+  }
+
+  // Handle locale checkbox change
+  function handleLocaleChange(locale: string, checked: boolean) {
+    if (!editingPost) return;
+    const currentLocales = editingPost.locales || ['en'];
+    let newLocales: string[];
+    if (checked) {
+      newLocales = [...currentLocales, locale];
+    } else {
+      newLocales = currentLocales.filter(l => l !== locale);
+      // Ensure at least one locale remains
+      if (newLocales.length === 0) {
+        newLocales = ['en'];
+      }
+    }
+    setEditingPost({ ...editingPost, locales: newLocales });
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading posts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button onClick={fetchPosts} className="bg-sky-500 hover:bg-sky-400 px-4 py-2 rounded">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -125,6 +239,7 @@ export default function BlogAdminPage() {
                   <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Post</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Category</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Status</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Languages</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-slate-400">Date</th>
                   <th className="text-right px-6 py-4 text-sm font-semibold text-slate-400">Actions</th>
                 </tr>
@@ -160,6 +275,18 @@ export default function BlogAdminPage() {
                         <span className="bg-green-500/20 text-green-400 px-2 py-0.5 rounded text-xs font-medium">
                           Published
                         </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {(post.locales || ['en']).map((loc) => {
+                          const localeInfo = SUPPORTED_LOCALES.find(l => l.code === loc);
+                          return (
+                            <span key={loc} className="bg-slate-700 text-slate-300 px-2 py-0.5 rounded text-xs">
+                              {localeInfo?.flag} {loc}
+                            </span>
+                          );
+                        })}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-400 text-sm">
@@ -308,18 +435,6 @@ export default function BlogAdminPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-1">Published Date</label>
-                      <input
-                        type="date"
-                        value={editingPost.publishedAt}
-                        onChange={(e) => setEditingPost({ ...editingPost, publishedAt: e.target.value })}
-                        className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Read Time (minutes)</label>
                       <input
                         type="number"
@@ -328,16 +443,60 @@ export default function BlogAdminPage() {
                         className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500"
                       />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Tags (comma separated)</label>
                       <input
                         type="text"
-                        value={editingPost.tags.join(', ')}
+                        value={editingPost.tags?.join(', ')}
                         onChange={(e) => setEditingPost({ ...editingPost, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
                         className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500"
                         placeholder="tag1, tag2, tag3"
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Published Date</label>
+                      <input
+                        type="date"
+                        value={editingPost.publishedAt?.split('T')[0] || ''}
+                        onChange={(e) => setEditingPost({ ...editingPost, publishedAt: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Language Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">Available Languages</label>
+                    <div className="flex flex-wrap gap-3">
+                      {SUPPORTED_LOCALES.map((locale) => {
+                        const isChecked = editingPost.locales?.includes(locale.code) || false;
+                        return (
+                          <label
+                            key={locale.code}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
+                              isChecked
+                                ? 'bg-sky-500/20 border-sky-500 text-sky-300'
+                                : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => handleLocaleChange(locale.code, e.target.checked)}
+                              className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-sky-500 focus:ring-sky-500"
+                            />
+                            <span className="text-lg">{locale.flag}</span>
+                            <span className="text-sm">{locale.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Select the languages in which this blog post will be available.
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -371,9 +530,10 @@ export default function BlogAdminPage() {
                   </button>
                   <button
                     onClick={handleSave}
-                    className="bg-sky-500 hover:bg-sky-400 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+                    disabled={saving}
+                    className="bg-sky-500 hover:bg-sky-400 text-white px-6 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Save Post
+                    {saving ? 'Saving...' : 'Save Post'}
                   </button>
                 </div>
               </motion.div>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BLOG_POSTS, BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-data";
+import { BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-data";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -67,20 +67,52 @@ function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boole
 }
 
 export default function BlogPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredPosts = BLOG_POSTS.filter(post => {
+  useEffect(() => {
+    fetchPosts();
+  }, [locale]);
+
+  async function fetchPosts() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/blog?locale=${locale}`);
+      if (!res.ok) throw new Error("Failed to fetch posts");
+      const data = await res.json();
+      setPosts(data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const filteredPosts = posts.filter(post => {
     const matchCategory = activeCategory === "all" || post.category === activeCategory;
     const matchSearch = searchQuery === "" || 
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+      post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchSearch;
   });
 
-  const featuredPosts = BLOG_POSTS.filter(p => p.featured);
+  const featuredPosts = posts.filter(p => p.featured);
   const nonFeaturedPosts = filteredPosts.filter(p => !p.featured);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white text-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-slate-500">Loading blog posts...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white text-slate-800">

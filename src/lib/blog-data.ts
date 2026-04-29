@@ -12,6 +12,8 @@ export interface BlogPost {
   publishedAt: string;
   readTime: number;
   featured?: boolean;
+  locales?: string[]; // Added for language visibility
+  isPublished?: boolean;
 }
 
 export const BLOG_CATEGORIES = [

@@ -1,9 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { use } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { getBlogPostBySlug, BLOG_POSTS, BLOG_CATEGORIES } from "@/lib/blog-data";
+import { BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-data";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 interface PageProps {
@@ -12,9 +13,63 @@ interface PageProps {
 
 export default function BlogPostPage({ params }: PageProps) {
   const { slug } = use(params);
-  const { t } = useI18n();
-  const post = getBlogPostBySlug(slug);
-  const category = post ? BLOG_CATEGORIES.find(c => c.id === post.category) : null;
+  const { t, locale } = useI18n();
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPost();
+  }, [slug, locale]);
+
+  async function fetchPost() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/blog/${slug}?locale=${locale}`);
+      if (!res.ok) {
+        if (res.status === 404) {
+          setPost(null);
+        } else {
+          throw new Error("Failed to fetch post");
+        }
+      } else {
+        const data: BlogPost = await res.json();
+        setPost(data);
+        // Also fetch related posts
+        await fetchRelatedPosts(data);
+      }
+    } catch (error) {
+      console.error("Error fetching post:", error);
+      setPost(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchRelatedPosts(currentPost: BlogPost) {
+    try {
+      const res = await fetch(`/api/blog?locale=${locale}`);
+      if (!res.ok) throw new Error("Failed to fetch posts");
+      const allPosts: BlogPost[] = await res.json();
+      const related = allPosts
+        .filter(p => p.id !== currentPost.id && p.category === currentPost.category)
+        .slice(0, 3);
+      setRelatedPosts(related);
+    } catch (error) {
+      console.error("Error fetching related posts:", error);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white text-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-slate-500">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -22,7 +77,7 @@ export default function BlogPostPage({ params }: PageProps) {
         <div className="text-center">
           <p className="text-6xl mb-4">404</p>
           <h1 className="text-2xl font-bold text-slate-800 mb-2">Article Not Found</h1>
-          <p className="text-slate-500 mb-6">The article you&apos;re looking for doesn&apos;t exist.</p>
+          <p className="text-slate-500 mb-6">The article you&apos;re looking for doesn&apos;t exist or is not available in your language.</p>
           <Link href="/blog" className="text-orange-500 hover:text-orange-600">
             ← {t("common.back")}
           </Link>
@@ -31,9 +86,7 @@ export default function BlogPostPage({ params }: PageProps) {
     );
   }
 
-  const relatedPosts = BLOG_POSTS
-    .filter(p => p.id !== post.id && p.category === post.category)
-    .slice(0, 3);
+  const category = BLOG_CATEGORIES.find(c => c.id === post.category);
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
@@ -125,7 +178,7 @@ export default function BlogPostPage({ params }: PageProps) {
 
             <div className="mt-12 pt-8 border-t border-slate-200">
               <div className="flex flex-wrap gap-2">
-                {post.tags.map(tag => (
+                {(post.tags || []).map(tag => (
                   <span key={tag} className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
                     #{tag}
                   </span>

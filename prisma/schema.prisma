@@ -244,17 +244,22 @@ model BlogPost {
   slug        String   @unique
   excerpt     String?
   content     String
-  image       String?
+  coverImage  String?
   category    String?
+  tags        String[] // Array of tag strings
   author      String?
+  authorAvatar String?
+  readTime    Int      @default(5) // Reading time in minutes
   isPublished Boolean  @default(true)
   isFeatured  Boolean  @default(false)
+  locales     String[] @default(["en"]) // Supported locales: ["en", "vi", "de", "fr"]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([slug])
   @@index([isPublished])
+  @@index([isFeatured])
 }
 
 model Setting {
