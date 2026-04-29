@@ -434,15 +434,29 @@ export default function OrdersPage() {
                             )}
                           </div>
                           {order.status === "pending" && (
-                            <button
-                              onClick={() => window.location.href = `/checkout?planId=${order.orderItems[0]?.planId || ''}`}
-                              className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
-                            >
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l3 3-3 3m0 0l-3-3 3-3" />
-                              </svg>
-                              Pay Now
-                            </button>
+                            (() => {
+                              const firstItem = order.orderItems[0];
+                              const planId = firstItem?.planId || '';
+                              const isTopup = order.isTopupMode && order.selectedDuration && order.selectedDuration > (firstItem?.basePlanDays || 0);
+                              const days = order.selectedDuration || '';
+                              const topupPkgCode = order.topupPackageCode || '';
+                              const query = new URLSearchParams({
+                                planId,
+                                ...(isTopup && { mode: 'topup', days: String(days) }),
+                                ...(topupPkgCode && { topupId: topupPkgCode })
+                              });
+                              return (
+                                <button
+                                  onClick={() => window.location.href = `/checkout?${query.toString()}`}
+                                  className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l3 3-3 3m0 0l-3-3 3-3" />
+                                  </svg>
+                                  Pay Now
+                                </button>
+                              );
+                            })()
                           )}
                         </div>
                       </div>

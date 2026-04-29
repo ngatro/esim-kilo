@@ -119,6 +119,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No items" }, { status: 400 });
     }
 
+    // If user is authenticated, clean up any existing pending orders for the same plan(s)
+    // to avoid duplicate pending orders when user retries payment
+    if (userId) {
+      for (const item of items) {
+        if (item.planId) {
+          const existingPending = await prisma.order.findFirst({
+            where: {
+              userId,
+              status: "pending",
+              orderItems: {
+                some: { planId: item.planId }
+              }
+            },
+            include: { orderItems: true }
+          });
+          if (existingPending) {
+            console.log(`[Orders] Cleaning up duplicate pending order ${existingPending.id} for plan ${item.planId}`);
+            await prisma.order.delete({ where: { id: existingPending.id } });
+          }
+        }
+      }
+    }
+
     let totalAmount = 0;
     let totalExtraDays = 0;
     let hasTopupMode = false;

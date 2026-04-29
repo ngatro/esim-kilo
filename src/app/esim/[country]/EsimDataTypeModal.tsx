@@ -357,12 +357,12 @@ return (
 
               {exactPlan ? (
                 <Link 
-                 href={`/checkout?planId=${exactPlan.id}&qty=${quantity}${
-      // Nếu số ngày chọn khác số ngày gốc của plan, hoặc đang ở chế độ Topup
-      (selectedDuration !== exactPlan.durationDays || isUsingTopUp) 
-        ? `&mode=topup&days=${selectedDuration}${topupPackage ? `&topupId=${topupPackage.id}` : ''}` 
-        : ''
-    }`}
+                  href={`/checkout?planId=${exactPlan.id}&qty=${quantity}${
+                  // Nếu số ngày chọn khác số ngày gốc của plan, hoặc đang ở chế độ Topup
+                  (selectedDuration !== exactPlan.durationDays || isUsingTopUp) 
+                    ? `&mode=topup&days=${selectedDuration}${topupPackage ? `&topupId=${topupPackage.id}` : ''}` 
+                    : ''
+                }`}
                   className="w-full py-4 rounded-2xl bg-orange-500 text-white font-bold text-base text-center block hover:bg-orange-600 transition-all shadow-lg shadow-orange-100 active:scale-[0.98]"
                 >
                   Buy Now

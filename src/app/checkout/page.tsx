@@ -74,6 +74,8 @@ export default function CheckoutPage() {
   async function createPendingOrder(planId: string, qty: number) {
     if (!planId) return null;
     try {
+      // Determine actual selected duration: use topupDays if in topup mode, otherwise use plan's duration
+      const actualDuration = topupMode && topupDays > 0 ? topupDays : (plan?.durationDays || 0);
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -83,7 +85,7 @@ export default function CheckoutPage() {
           customerEmail,
           status: "pending",
           isTopupMode: topupMode,
-          selectedDuration: topupDays,
+          selectedDuration: actualDuration,
         }),
       });
       return res.ok ? (await res.json()).order : null;
@@ -310,7 +312,7 @@ export default function CheckoutPage() {
           customerName,
           customerEmail,
           isTopupMode: topupMode,
-          selectedDuration: topupDays,
+          selectedDuration: topupMode && topupDays > 0 ? topupDays : (plan?.durationDays || 0),
         }),
       });
 

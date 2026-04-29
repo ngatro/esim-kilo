@@ -13,6 +13,8 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 - [x] **PayPal flow fix**: Store topupPackageCode in localStorage before redirect, pass to webhook on payment confirm
 - [x] **Day selection for flexible top-up**: Added +/- day selector UI (1-30 days) on /topup page for supportTopUpType=3
 - [x] **Comprehensive logging**: Added detailed request/response logging to eSIM Access API for debugging
+- [x] **Fix Google OAuth userId null**: Updated PayPal webhook PUT handler to use NextAuth session for user identification, ensuring userId is set for Google OAuth users.
+- [x] **Fix pending order selectedDuration**: Added top-level `isTopupMode` and `selectedDuration` to order creation requests to preserve top-up data across cancellations.
 
 ## Recently Completed
 
