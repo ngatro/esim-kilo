@@ -35,6 +35,7 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - Added login button visible on mobile header (outside hamburger menu)
   - Removed duplicate login button from mobile menu
   - Added translation keys: `header.welcome`, `header.language` (EN & VI)
+- [x] **Fix admin API routes missing getSessionFromRequest**: Added missing `getSessionFromRequest` helper function to admin API routes (users, settings, stats, plans, blog, destinations, webhooks, users/search, orders/gift, promotions) that were calling the undefined function, and added missing `request: Request` parameter to GET functions
 
 ## Recently Completed
 

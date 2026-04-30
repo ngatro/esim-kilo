@@ -15,6 +15,8 @@ import ResetPasswordModal from "@/components/ui/ResetPasswordModal";
 import CartModal from "@/components/ui/CartModal";
 import SupportWidget from "@/components/ui/SupportWidget";
 import PromotionPopup from "@/components/promotions/PromotionPopup";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,6 +57,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const rates = await getRates();
+  const session = await getServerSession(authOptions);
   
   return (
     <html lang="en" suppressHydrationWarning>
@@ -62,7 +65,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <I18nProvider initialRates={rates}>
-          <AuthProvider>
+          <AuthProvider session={session}>
             <CartProvider>
               <UIProvider>
                 <Header />

@@ -6,7 +6,7 @@ interface CountryWithPlan {
   code: string;
   name: string;
   emoji: string;
-  plans: { regionName: string | null }[];
+  regionName: string | null;
 }
 
 export async function GET(request: Request) {
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       orderBy: { name: "asc" },
     });
 
-    const results: CountryWithPlan[] = countries.map((c: typeof countries[number]) => ({
+    const results: CountryWithPlan[] = countries.map((c) => ({
       id: c.id,
       code: c.code,
       name: c.name,

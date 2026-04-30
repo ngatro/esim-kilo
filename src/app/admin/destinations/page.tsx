@@ -98,7 +98,9 @@ export default function AdminDestinationsPage() {
 
   async function fetchData() {
     try {
-      const res = await fetch("/api/admin/destinations");
+      const res = await fetch("/api/admin/destinations", {
+        credentials: 'include'
+      });
       const data = await res.json();
       setDestinations(data.destinations || []);
       setRegions(data.regions || []);
@@ -117,6 +119,7 @@ export default function AdminDestinationsPage() {
       const res = await fetch("/api/admin/destinations", {
         method: "POST",
         body: data,
+        credentials: 'include'
       });
 
       const result = await res.json();

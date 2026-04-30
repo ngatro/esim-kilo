@@ -60,7 +60,9 @@ export default function AdminDashboardPage() {
 
   async function fetchStats() {
     try {
-      const res = await fetch("/api/admin/stats");
+      const res = await fetch("/api/admin/stats", {
+        credentials: 'include'
+      });
       const result = await res.json();
       setData(result);
     } catch (error) {

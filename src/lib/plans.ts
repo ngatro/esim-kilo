@@ -32,9 +32,9 @@ export async function getPlanById(id: string) {
 }
 
 export async function getRegions() {
-  return prisma.region.findMany({ orderBy: { name: "asc" }, include: { countries: true } });
+  return prisma.region.findMany({ orderBy: { name: "asc" } });
 }
 
 export async function getCountries() {
-  return prisma.country.findMany({ orderBy: { name: "asc" }, include: { region: true } });
+  return prisma.country.findMany({ orderBy: { name: "asc" } });
 }

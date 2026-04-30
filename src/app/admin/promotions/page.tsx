@@ -51,7 +51,9 @@ export default function AdminPromotionsPage() {
 
   async function fetchData() {
     try {
-      const res = await fetch("/api/admin/promotions");
+      const res = await fetch("/api/admin/promotions", {
+        credentials: 'include'
+      });
       const data = await res.json();
       setPromotions(data.promotions || []);
     } catch (error) {

@@ -9,6 +9,7 @@ import { useUI } from "@/components/providers/UIProvider";
 import { useI18n, SUPPORTED_LOCALES } from "@/components/providers/I18nProvider";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import EsimIcon from "../ui/EsimIcon";
 
 const DEFAULT_HOT_COUNTRIES = [
   { code: "JP", name: "Japan", emoji: "🇯🇵" },

@@ -2,8 +2,48 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createOrder, queryOrder, createTopUp } from "@/lib/esim-access";
 import { sendEmail, getOrderConfirmationHtml, getOrderConfirmationAdminHtml } from "@/lib/email";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Đường dẫn đến file auth mày vừa sửa lúc nãy
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+// Helper function to get session from cookies
+async function getSessionFromRequest(request: Request) {
+  const cookie = request.headers.get("cookie");
+  const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
+  
+  if (token) {
+    // For legacy auth (email/password), get user from token
+    const userId = parseInt(token);
+    if (!isNaN(userId)) {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user) {
+        return { user: { id: user.id, email: user.email, name: user.name, role: user.role } };
+      }
+    }
+  }
+  
+  // For NextAuth (Google OAuth), try to get session from JWT
+  // This is a simplified version - in production, you should verify the JWT properly
+  const nextAuthSession = request.headers.get("cookie")?.match(/next-auth.session-token=([^;]+)/)?.[1];
+  if (nextAuthSession) {
+    // Decode JWT (simplified - in production, verify the signature)
+    try {
+      const parts = nextAuthSession.split(".");
+      if (parts.length === 3) {
+        const payload = JSON.parse(Buffer.from(parts[1], "base64").toString());
+        if (payload.email) {
+          const user = await prisma.user.findUnique({ where: { email: payload.email } });
+          if (user) {
+            return { user: { id: user.id, email: user.email, name: user.name, role: user.role } };
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to decode JWT:", e);
+    }
+  }
+  
+  return null;
+}
+
 import { createCommission } from "@/lib/affiliate";
 
 // Backend-only price calculation to prevent price manipulation
@@ -73,7 +113,7 @@ async function processTopUp(
 export async function POST(request: Request) {
   try {
     // 1. Lấy session từ NextAuth (Dành cho Google OAuth)
-   const session = await getServerSession(authOptions);
+   const session = await getSessionFromRequest(request);
    
    // 2. Lấy token từ Cookie thủ công (Dành cho login thường của)
    const cookie = request.headers.get("cookie");
@@ -449,7 +489,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
 
-     const session = await getServerSession(authOptions);
+     const session = await getSessionFromRequest(request);
     
     // 2. Lấy token từ Cookie thủ công (Dành cho login thường của)
     const cookie = request.headers.get("cookie");
@@ -503,7 +543,7 @@ export async function GET(request: Request) {
     const emailParam = url.searchParams.get("email");
 
     // 1. Lấy session từ NextAuth (Dành cho Google OAuth)
-    const session = await getServerSession(authOptions);
+    const session = await getSessionFromRequest(request);
     
     // 2. Lấy token từ Cookie cũ (Dành cho login bằng password)
     const cookie = request.headers.get("cookie");

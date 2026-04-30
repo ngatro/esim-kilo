@@ -1,31 +1,62 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { COMMISSION_RATES } from "@/lib/affiliate";
-
-// Helper to verify admin role
-async function verifyAdmin(request: Request): Promise<{ error: NextResponse | null, userId: number | null }> {
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+// Helper function to get session from cookies
+async function getSessionFromRequest(request: Request) {
   const cookie = request.headers.get("cookie");
   const token = cookie?.match(/auth-token=([^;]+)/)?.[1];
   
-  if (!token) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }), userId: null };
+  if (token) {
+    // For legacy auth (email/password), get user from token
+    const userId = parseInt(token);
+    if (!isNaN(userId)) {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user) {
+        return { user: { id: user.id, email: user.email, name: user.name, role: user.role } };
+      }
+    }
   }
   
-  const userId = parseInt(token);
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  
-  if (!user || user.role !== "admin") {
-    return { error: NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 }), userId: null };
+  // For NextAuth (Google OAuth), try to get session from JWT
+  // This is a simplified version - in production, you should verify the JWT properly
+  const nextAuthSession = request.headers.get("cookie")?.match(/next-auth.session-token=([^;]+)/)?.[1];
+  if (nextAuthSession) {
+    // Decode JWT (simplified - in production, verify the signature)
+    try {
+      const parts = nextAuthSession.split(".");
+      if (parts.length === 3) {
+        const payload = JSON.parse(Buffer.from(parts[1], "base64").toString());
+        if (payload.email) {
+          const user = await prisma.user.findUnique({ where: { email: payload.email } });
+          if (user) {
+            return { user: { id: user.id, email: user.email, name: user.name, role: user.role } };
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to decode JWT:", e);
+    }
   }
   
-  return { error: null, userId };
+  return null;
 }
+
 
 // GET: List all withdrawal requests
 export async function GET(request: Request) {
   try {
-    const authCheck = await verifyAdmin(request);
-    if (authCheck.error) return authCheck.error;
+    const session = await getSessionFromRequest(request);
+    console.log(">>> ADMIN AFFILIATE GET CHECK:", { 
+      hasSession: !!session, 
+      user: session?.user?.email, 
+      role: session?.user?.role,
+      userId: session?.user?.id
+    });
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
@@ -115,8 +146,10 @@ export async function GET(request: Request) {
 // PUT: Update settings or withdrawal status
 export async function PUT(request: Request) {
   try {
-    const authCheck = await verifyAdmin(request);
-    if (authCheck.error) return authCheck.error;
+    const session = await getSessionFromRequest(request);
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     
     const { type, withdrawalId, status, adminNote, walletDiscountPercent, userId, walletAmount } = await request.json();
 

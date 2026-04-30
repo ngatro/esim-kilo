@@ -9,6 +9,14 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
+  session: {
+    strategy: "jwt" as const,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  // Disable automatic session refetching to prevent lag on F5
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  refetchInterval: 0,
   callbacks: {
     async signIn({ user }: { user: any }) {
       console.log("[NextAuth] signIn callback called with user:", JSON.stringify(user, null, 2));

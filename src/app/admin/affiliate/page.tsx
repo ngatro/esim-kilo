@@ -54,7 +54,9 @@ export default function AdminAffiliatePage() {
       const params = new URLSearchParams();
       if (filter) params.append("status", filter);
       
-      const res = await fetch(`/api/admin/affiliate?${params}`);
+      const res = await fetch(`/api/admin/affiliate?${params}`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setWithdrawals(data.withdrawals);
@@ -81,6 +83,7 @@ export default function AdminAffiliatePage() {
           status: actionStatus,
           adminNote,
         }),
+        credentials: 'include'
       });
       
       if (res.ok) {
@@ -106,6 +109,7 @@ export default function AdminAffiliatePage() {
           type: "walletDiscount",
           walletDiscountPercent: parseFloat(walletDiscount) || 0,
         }),
+        credentials: 'include'
       });
       
       if (res.ok) {

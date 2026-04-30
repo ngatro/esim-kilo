@@ -16,29 +16,32 @@ export async function GET(request: Request) {
       where: {
         name: { contains: query, mode: "insensitive" },
       },
-      include: {
-        region: {
-          select: { id: true, name: true, emoji: true },
+      select: {
+        id: true,
+        name: true,
+        emoji: true,
+        plans: {
+          where: { isActive: true },
+          select: { regionName: true },
+          take: 1,
         },
       },
       take: limit,
       orderBy: { name: "asc" },
     });
 
-    // Format response with country info + plan count
+    // Format response with country info + plan count + regionName
     const result = await Promise.all(
-      countries.map(async (country: { id: string; name: string; emoji: string; regionId: string | null; region: { id: string; name: string; emoji: string } | null }) => {
+      countries.map(async (country) => {
         const planCount = await prisma.plan.count({
           where: { countryId: country.id, isActive: true },
         });
         return {
           id: country.id,
-          code: country.id, // Add code field for compatibility
+          code: country.id,
           name: country.name,
           emoji: country.emoji,
-          regionId: country.regionId,
-          regionName: country.region?.name,
-          regionEmoji: country.region?.emoji,
+          regionName: country.plans[0]?.regionName || null,
           planCount,
         };
       })

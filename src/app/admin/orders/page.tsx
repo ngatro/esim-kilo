@@ -178,7 +178,9 @@ export default function AdminOrdersPage() {
   async function fetchOrders() {
     try {
       const params = statusFilter ? `?status=${statusFilter}` : "";
-      const res = await fetch(`/api/admin/orders${params}`);
+      const res = await fetch(`/api/admin/orders${params}`, {
+        credentials: 'include'
+      });
       const data = await res.json();
       setOrders(data.orders || []);
     } catch (err) {
@@ -195,6 +197,7 @@ export default function AdminOrdersPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderItemId }),
+        credentials: 'include'
       });
       const data = await res.json();
       if (data.success) {
@@ -214,6 +217,7 @@ export default function AdminOrdersPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderItemId }),
+        credentials: 'include'
       });
       const data = await res.json();
       if (data.success) {
@@ -273,6 +277,7 @@ export default function AdminOrdersPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(giftForm),
+        credentials: 'include'
       });
       const data = await res.json();
       if (data.success) {

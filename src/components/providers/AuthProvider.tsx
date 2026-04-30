@@ -2,8 +2,21 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { SessionProvider, useSession, signOut as nextAuthSignOut } from "next-auth/react";
+import type { Session } from "next-auth";
 
-interface User {
+// Extend NextAuth session type to include our custom user fields
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: number;
+      name: string;
+      email: string;
+      role: string;
+    };
+  }
+}
+
+export interface User {
   id: number;
   name: string;
   email: string;
@@ -26,26 +39,20 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { data: session, status } = useSession();
 
-  // Check old auth system (email/password) on mount
+  // Sync NextAuth session -> custom user state immediately
   useEffect(() => {
-    checkOldAuth();
-  }, []);
-
-  // Sync NextAuth session -> custom user state
-  useEffect(() => {
-    console.log("[AuthProvider] useEffect triggered", { status, session, user });
-    if (status === "authenticated" && session?.user?.email) {
-      console.log("[AuthProvider] NextAuth authenticated, session.user.email:", session.user.email);
-      // If NextAuth is authenticated but custom user is null, fetch from DB
-      if (!user) {
-        console.log("[AuthProvider] Fetching user from DB");
-        fetchUserFromNextAuth(session.user.email);
-      } else {
-        console.log("[AuthProvider] User already set:", user);
-      }
-    } else if (status === "unauthenticated" && !user) {
-      console.log("[AuthProvider] Unauthenticated, setting loading to false");
+    if (status === "authenticated" && session?.user) {
+      // Session already contains user with role from server-side session callback
+      setUser({
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        role: session.user.role,
+      });
       setLoading(false);
+    } else if (status === "unauthenticated") {
+      // Check old auth system (email/password) as fallback
+      checkOldAuth();
     }
   }, [status, session]);
 
@@ -59,38 +66,9 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
     } catch {
       // Ignore - user might be using NextAuth
     } finally {
-      // Only set loading false if NextAuth is also done
-      if (status !== "loading") {
-        setLoading(false);
-      }
-    }
-  }
-
-  async function fetchUserFromNextAuth(email: string) {
-    try {
-      console.log("[AuthProvider] Fetching user from /api/auth/me?email=", email);
-      const res = await fetch(`/api/auth/me?email=${encodeURIComponent(email)}`);
-      console.log("[AuthProvider] Response status:", res.status);
-      if (res.ok) {
-        const data = await res.json();
-        console.log("[AuthProvider] User data:", data.user);
-        setUser(data.user);
-      } else {
-        console.log("[AuthProvider] Response not ok");
-      }
-    } catch (error) {
-      console.error("Failed to fetch user from NextAuth session", error);
-    } finally {
       setLoading(false);
     }
   }
-
-  // Update loading state when NextAuth status changes
-  useEffect(() => {
-    if (status !== "loading" && !user) {
-      setLoading(false);
-    }
-  }, [status]);
 
   async function login(email: string, password: string, rememberMe?: boolean): Promise<boolean> {
     const res = await fetch("/api/auth/login", {
@@ -151,9 +129,14 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
 }
 
 // Outer wrapper that provides both SessionProvider and AuthProvider
-export function AuthProvider({ children }: { children: ReactNode }) {
+interface AuthProviderProps {
+  children: ReactNode;
+  session: Session | null;
+}
+
+export function AuthProvider({ children, session }: AuthProviderProps) {
   return (
-    <SessionProvider>
+    <SessionProvider session={session} refetchOnWindowFocus={false} refetchInterval={0}>
       <AuthProviderInner>{children}</AuthProviderInner>
     </SessionProvider>
   );

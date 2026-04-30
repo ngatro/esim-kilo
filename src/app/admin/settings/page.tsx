@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import Link from "next/link";
 
@@ -20,6 +21,7 @@ interface SiteSettings {
 }
 
 export default function AdminSettingsPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [settings, setSettings] = useState<SiteSettings>({
     whatsappNumber: "84912345678",
@@ -49,13 +51,25 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Redirect if not admin
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    if (!authLoading && (!user || user.role !== "admin")) {
+      router.push("/");
+    }
+  }, [user, authLoading, router]);
+
+  // Fetch settings only when admin is authenticated
+  useEffect(() => {
+    if (!authLoading && user?.role === "admin") {
+      fetchSettings();
+    }
+  }, [user, authLoading]);
 
   async function fetchSettings() {
     try {
-      const res = await fetch("/api/admin/settings");
+      const res = await fetch("/api/admin/settings", {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.whatsappNumber) setSettings((prev) => ({ ...prev, whatsappNumber: data.whatsappNumber }));
@@ -79,6 +93,7 @@ export default function AdminSettingsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
+        credentials: 'include'
       });
       if (res.ok) {
         setSaved(true);

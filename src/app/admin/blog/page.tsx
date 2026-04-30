@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-data";
 import { SUPPORTED_LOCALES, type Locale } from "@/components/providers/I18nProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 function generateId(): string {
   return `blog-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -18,6 +20,8 @@ function generateSlug(title: string): string {
 }
 
 export default function BlogAdminPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
@@ -27,14 +31,25 @@ export default function BlogAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Fetch posts from API
+  // Redirect if not admin (after auth loaded)
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (!authLoading && (!user || user.role !== "admin")) {
+      router.push("/");
+    }
+  }, [user, authLoading, router]);
+
+  // Fetch posts from API only when admin is authenticated
+  useEffect(() => {
+    if (!authLoading && user?.role === "admin") {
+      fetchPosts();
+    }
+  }, [user, authLoading]);
 
   async function fetchPosts() {
     try {
-      const res = await fetch("/api/admin/blog");
+      const res = await fetch("/api/admin/blog", {
+        credentials: 'include'
+      });
       if (!res.ok) throw new Error("Failed to fetch posts");
       const data = await res.json();
       setPosts(data);
@@ -113,6 +128,7 @@ export default function BlogAdminPage() {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
+        credentials: 'include'
       });
 
       if (!res.ok) {
@@ -142,7 +158,10 @@ export default function BlogAdminPage() {
     if (!confirm("Are you sure you want to delete this post?")) return;
 
     try {
-      const res = await fetch(`/api/admin/blog?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/blog?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include'
+      });
       if (!res.ok) throw new Error("Failed to delete post");
       setPosts(posts.filter(p => p.id !== id));
       setShowDeleteConfirm(null);

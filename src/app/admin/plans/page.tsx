@@ -54,7 +54,9 @@ export default function AdminPlansPage() {
 
   useEffect(() => {
     if (user?.role === "admin") {
-      fetch("/api/plans")
+      fetch("/api/plans", {
+        credentials: 'include'
+      })
         .then((r) => r.json())
         .then((data) => setPlans(data.plans || []))
         .catch(console.error)
@@ -74,6 +76,7 @@ export default function AdminPlansPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, [field]: newValue }),
+      credentials: 'include'
     });
     setPlans(plans.map((p) => (p.id === id ? { ...p, [field]: newValue } : p)));
   }
@@ -104,14 +107,15 @@ export default function AdminPlansPage() {
         retailPriceUsd,
         retailPriceRaw: Math.round(retailPriceUsd * 10000),
       }),
+      credentials: 'include'
     });
-    setPlans(plans.map((p) => (p.id === id ? { 
-      ...p, 
-      name: editName, 
-      slug: editSlug, 
+    setPlans(plans.map((p) => (p.id === id ? {
+      ...p,
+      name: editName,
+      slug: editSlug,
       destination: editDestination,
-      priceUsd, 
-      retailPriceUsd 
+      priceUsd,
+      retailPriceUsd
     } : p)));
     setEditingId(null);
     setSaving(false);
