@@ -21,7 +21,7 @@ interface Plan {
   dataType: number;
   supportTopUp: boolean;
   supportTopUpType: number;
-  countryId: string | null;
+  countryCode: string | null;
   countryName: string | null;
   regionId: string | null;
   regionName: string | null;
@@ -29,7 +29,7 @@ interface Plan {
   topupPackageId?: number;
   speed?: string | null;
   networkType?: string | null;
-  locationNetworkList?: unknown;
+  locationNetworkList?: string | null;
   ipExport?: string | null;
   coverageCount?: number;
   smsStatus?: number;
@@ -83,6 +83,7 @@ export default function EsimDataTypeModal({
   const { t, formatPrice } = useI18n();
   const [imgError, setImgError] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  
   
   // Initialize state from config, but allow user to change selection in modal
   const [selectedData, setSelectedData] = useState(config?.selectedData ?? 0);
@@ -186,10 +187,7 @@ export default function EsimDataTypeModal({
     return !exactPlan && supportTopUpType === 3 && canMultiply && basePlan !== null && topupPackage !== null;
   }, [exactPlan, supportTopUpType, canMultiply, basePlan, topupPackage]);
 
-  console.log("Check Config:", config);
-console.log("Check Regular Plans:", regularPlans);
-console.log("Check Exact Plan:", exactPlan);
-  
+
   // All durations are enabled - topup allows any duration
   const isDurationDisabled = (_duration: number) => false;
   
@@ -198,6 +196,9 @@ console.log("Check Exact Plan:", exactPlan);
   const heroImage = imgError 
     ? "/favicon.ico" 
     : getDestinationImage(countryId?.toLowerCase() || countryName.toLowerCase());
+    
+  
+    
 
 return (
   <AnimatePresence>
@@ -229,18 +230,18 @@ return (
               <Image src={heroImage} alt={countryName} fill className="object-cover" unoptimized />
               <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 lg:bottom-8 lg:left-10">
-                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 tracking-tighter drop-shadow-sm">{countryId}11</h2>
+                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 tracking-tighter drop-shadow-sm">{t(`countries.${countryId}`)}</h2>
               </div>
             </div>
 
             <div className="px-6 lg:px-10 py-8 space-y-8">
               <div>
-                <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-5">Plan Specifications</h3>
+                <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-5">{t("esimDataTypeModal.planSpecs")}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <SpecBoxSimple label="Network" value={exactPlan?.networkType || "4G/5G"} />
-                  <SpecBoxSimple label="Speed" value={exactPlan?.speed || "Max Speed"} />
-                  <SpecBoxSimple label="Activation" value={exactPlan?.activeType === 1 ? "Instant" : "Manual"} />
-                  <SpecBoxSimple label="Top-up" value={exactPlan?.supportTopUp ? "Available" : "No"} />
+                  <SpecBoxSimple label={t("esimDataTypeModal.network")} value={exactPlan?.networkType || "4G/5G"} />
+                  <SpecBoxSimple label={t("esimDataTypeModal.speed")} value={exactPlan?.speed || "Max Speed"} />
+                  <SpecBoxSimple label={t("esimDataTypeModal.activation")} value={exactPlan?.activeType === 1 ? t("esimDataTypeModal.instant") : t("esimDataTypeModal.manual")} />
+                  <SpecBoxSimple label={t("esimDataTypeModal.topUp")} value={exactPlan?.supportTopUp ? t("esimDataTypeModal.available") : t("esimDataTypeModal.no")} />
                 </div>
               </div>
 
@@ -250,13 +251,28 @@ return (
                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Fair Usage Policy (FUP)</h4>
                 </div>
                 <p className="text-sm text-slate-500 leading-relaxed">
-                  {exactPlan?.fupPolicy 
-                    ? `After using ${selectedData} of high-speed data, the speed will be limited to ${exactPlan.fupPolicy}. High-speed data will be restored every 24 hours.`
-                    : "This plan offers premium high-speed connectivity. Once the data limit is reached, service may be suspended or speed reduced."}
+                  {exactPlan?.fupPolicy ? (
+                    <>
+                      {t("esimDataTypeModal.afterUsing")}{' '}
+                      <span className="font-bold text-orange-500">
+                        {selectedData}GB
+                      </span>{" "}
+                      {t("esimDataTypeModal.limitTo")}{" "}
+                      <span className="font-bold text-orange-500">
+                        {exactPlan.fupPolicy}
+                      </span>
+                      . {t("esimDataTypeModal.restore")}
+                    </>
+                  ) : (
+                    `${t("esimDataTypeModal.fupDesc")}`
+                  )}
                 </p>
               </div>
             </div>
           </div>
+
+          {/* CỘT PHẢI: Selections & Checkout (Layout Flex để giữ chân Footer) */}
+                   
 
           {/* CỘT PHẢI: Selections & Checkout (Layout Flex để giữ chân Footer) */}
           <div className="lg:w-[40%] xl:w-[35%] flex flex-col h-[65vh] lg:h-auto bg-white overflow-hidden">
@@ -264,7 +280,7 @@ return (
             <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 custom-scrollbar">
               {/* 1. Data Selection */}
               <div>
-                <label className="text-[11px] font-bold text-slate-900 uppercase mb-4 block tracking-wider">01. Select Data Amount</label>
+                <label className="text-[11px] font-bold text-slate-900 uppercase mb-4 block tracking-wider">{t("esimDataTypeModal.step1")}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(dataCategory === 'fup' ? fupDataOptions : dataOptions).map((data) => (
                     <button
@@ -276,7 +292,7 @@ return (
                           : "border-slate-100 text-slate-500 hover:border-slate-200"
                       }`}
                     >
-                      {dataType === 1 ? formatData(data) : `${formatData(data)}/Day`}
+                      {dataType === 1 ? formatData(data) : `${formatData(data)}/${t("esimDataTypeModal.day")}`}
                     </button>
                   ))}
                 </div>
@@ -284,7 +300,7 @@ return (
 
               {/* 2. Duration Selection */}
               <div>
-                <label className="text-[11px] font-bold text-slate-900 uppercase mb-4 block tracking-wider">02. Select Duration</label>
+                <label className="text-[11px] font-bold text-slate-900 uppercase mb-4 block tracking-wider">{t("esimDataTypeModal.step2")}</label>
                 {dataCategory === 'fup' ? (
                   <div className="grid grid-cols-3 gap-2">
                     {[1, 3, 5, 10, 15, 30].map((d) => (
@@ -312,7 +328,7 @@ return (
                         }}
                         className="w-full py-3.5 px-5 rounded-xl text-sm font-medium border-2 border-slate-100 focus:border-orange-500 outline-none transition-all bg-slate-50/50"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300">DAYS</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300">{t("esimDataTypeModal.day")}</span>
                     </div>
                   </div>
                 ) : (
@@ -334,7 +350,7 @@ return (
 
               {/* Quantity */}
               <div className="flex items-center justify-between pt-2 pb-4">
-                <span className="text-sm font-bold text-slate-700">Quantity</span>
+                <span className="text-sm font-bold text-slate-700">{t("esimDataTypeModal.qty")}</span>
                 <div className="flex items-center bg-slate-50 rounded-xl p-1 border border-slate-100">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center text-slate-500 hover:bg-white rounded-lg transition-all">—</button>
                   <span className="w-10 text-center font-bold text-slate-800">{quantity}</span>
@@ -348,10 +364,10 @@ return (
               <div className="flex justify-between items-center mb-5">
                 <div className="leading-tight">
                   <p className="text-2xl font-bold text-slate-900">{formatPrice(pricePreview * quantity)}</p>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Total for {selectedDuration} days</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t("esimDataTypeModal.total")} {selectedDuration} {t("esimDataTypeModal.day")}</p>
                 </div>
                 <button className="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 text-xs hover:bg-slate-50 transition-all active:scale-95">
-                  Add to Cart
+                  {t("esimDataTypeModal.addToCart")}
                 </button>
               </div>
 
@@ -365,10 +381,10 @@ return (
                 }`}
                   className="w-full py-4 rounded-2xl bg-orange-500 text-white font-bold text-base text-center block hover:bg-orange-600 transition-all shadow-lg shadow-orange-100 active:scale-[0.98]"
                 >
-                  Buy Now
+                  {t("esimDataTypeModal.buyNow")}
                 </Link>
               ) : (
-                <button disabled className="w-full py-4 rounded-2xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed">Plan Unavailable</button>
+                <button disabled className="w-full py-4 rounded-2xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed">{t("esimDataTypeModal.planUnavailable")}</button>
               )}
             </div>
           </div>

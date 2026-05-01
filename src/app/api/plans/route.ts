@@ -2,144 +2,6 @@ import { NextResponse } from "next/server";
 import { getPackageList } from "@/lib/esim-access";
 import { prisma } from "@/lib/prisma";
 
-// Sync top-up packages after base plans are synced
-// Optimized to use locationCode batching for faster sync
-// async function syncTopupPackages() {
-//   try {
-//     // Get ONLY plans with supportTopUpType = 3 (flexible period topup)
-//     const allPlansWithTopup = await prisma.plan.findMany({
-//       where: { supportTopUp: true, supportTopUpType: 3 },
-//       select: { id: true, packageCode: true, supportTopUpType: true, locationCode: true },
-//     });
-//     // Filter out null/empty packageCode in JS
-//     const basePlans = allPlansWithTopup.filter(p => p.packageCode);
-
-//     let created = 0, updated = 0, total = 0;
-
-//     // Fetch by packageCode
-//     const planCodes = Array.from(new Set(basePlans.map(p => p.packageCode).filter(Boolean)));
-//     const BATCH_SIZE = 10;
-//     const DELAY_MS = 500;
-    
-//     for (let i = 0; i < planCodes.length; i += BATCH_SIZE) {
-//       const batch = planCodes.slice(i, i + BATCH_SIZE);
-      
-//     // Fetch using Promise.allSettled - continues even if some fail
-//       // Also track which plan each response belongs to
-//       const batchPlans = batch.map(pkgCode => basePlans.find(p => p.packageCode === pkgCode));
-//       const results = await Promise.allSettled(
-//         batch.map(async (pkgCode, idx) => {
-//           if (!pkgCode) return { topups: [], planId: batchPlans[idx]?.id };
-//           const res = await getPackageList({ type: "BASE", packageCode: pkgCode });
-//           return { topups: res.packageList || [], planId: batchPlans[idx]?.id };
-//         })
-//       );
-      
-//       // Extract successful results
-//       const successfulResults = results
-//         .filter((r): r is PromiseFulfilledResult<{ topups: any[]; planId: string | undefined }> => r.status === "fulfilled")
-//         .map(r => r.value);
-
-//       // Just log batch progress
-//       const batchNum = Math.ceil((i + BATCH_SIZE) / BATCH_SIZE);
-//       // const totalBatches = Math.ceil(planCodes.length / BATCH_SIZE);
-//       // 
-
-//       // Wait 1 second between batches
-//       await new Promise(r => setTimeout(r, DELAY_MS));
-
-//       // Process results
-//       for (const result of successfulResults) {
-//         const topupPackages = result.topups;
-//         const sourcePlanId = result.planId;
-//         for (const topupPkg of topupPackages) {
-//           const topupLocationCode = topupPkg.locationCode;
-          
-//           // Find matching plan - PRIORITY: use sourcePlanId (the plan that called this API)
-//           let matchingPlan = null;
-//           if (sourcePlanId) {
-//             matchingPlan = basePlans.find(p => p.id === sourcePlanId);
-//           }
-//           // Fallback: find by locationCode
-//           if (!matchingPlan && topupLocationCode) {
-//             matchingPlan = basePlans.find(p => 
-//               p.locationCode && topupLocationCode && 
-//               p.locationCode.toUpperCase() === topupLocationCode.toUpperCase()
-//             );
-//           }
-//           // If still no match, try partial
-//           if (!matchingPlan && topupLocationCode) {
-//             matchingPlan = basePlans.find(p => 
-//               p.locationCode && topupLocationCode &&
-//               p.locationCode.toUpperCase().includes(topupLocationCode.toUpperCase())
-//             );
-//           }
-          
-//           const priceRaw = topupPkg.price || 0;
-//           const retailPriceRaw = topupPkg.retailPrice || topupPkg.price || 0;
-//           const priceUsd = priceRaw / 10000;
-//           const retailPriceUsd = retailPriceRaw / 10000;
-//           const isFlexible = matchingPlan ? matchingPlan.supportTopUpType === 3 : true;
-
-//           const existing = await prisma.topupPackage.findUnique({ where: { packageCode: topupPkg.packageCode } });
-
-//           if (existing) {
-//             await prisma.topupPackage.update({
-//               where: { id: existing.id },
-//               data: { 
-//                 planId: matchingPlan?.id || null, 
-//                 name: topupPkg.name, 
-//                 priceUsd,
-//                 priceRaw,
-//                 retailPriceRaw,
-//                 retailPriceUsd,
-//                 isFlexible, 
-//                 isActive: true 
-//               },
-//             });
-//             updated++;
-//             // Link to plan's topupPackageId if flexible
-//             if (matchingPlan && isFlexible && existing.id) {
-//               await prisma.plan.update({
-//                 where: { id: matchingPlan.id },
-//                 data: { topupPackageId: existing.id } as any
-//               });
-//             }
-//           } else {
-//             const newTopup = await prisma.topupPackage.create({
-//               data: { 
-//                 planId: matchingPlan?.id || null,
-//                 packageCode: topupPkg.packageCode, 
-//                 name: topupPkg.name, 
-//                 priceUsd,
-//                 priceRaw,
-//                 retailPriceRaw,
-//                 retailPriceUsd,
-//                 isFlexible, 
-//                 isActive: true 
-//               },
-//             });
-//             created++;
-//             // Link to plan's topupPackageId if flexible
-//             if (matchingPlan && isFlexible && newTopup.id) {
-//               await prisma.plan.update({
-//                 where: { id: matchingPlan.id },
-//                 data: { topupPackageId: newTopup.id } as any
-//               });
-//             }
-//           }
-//         }
-//         total += topupPackages.length;
-//       }
-//     }
-
-//     // console.log(`[TOPUP] ✓ Done: created=${created}, updated=${updated}, total=${total}`);
-//     return { created, updated, total };
-//   } catch (error) {
-//     console.error("[TOPUP] ✗ Error:", error);
-//     return { created: 0, updated: 0, total: 0, error: String(error) };
-//   }
-// }
 
 function bytesToGB(bytes: number): number {
   if (!bytes || bytes <= 0) return 0;
@@ -249,29 +111,6 @@ function resolveLocation(pkg: Record<string, unknown>) {
   return { regionId: "global", regionName: "Global", countryId: null, countryName: "", destination: pkgName || locationCode };
 }
 
-// Export standalone topup sync API - runs completely in background, returns immediately
-// export async function POST(request: Request) {
-//   try {
-//     const { type } = await request.json().catch(() => ({}));
-    
-//     if (type === "topup") {
-//       // Run completely in background - fire and forget
-//       syncTopupPackages().then(result => {
-//         // console.log(`[TOPUP Sync] ✓ Done`);
-//       }).catch(err => {
-//         console.error(`[TOPUP Sync] ✗ Error:`, err);
-//       });
-      
-//       return NextResponse.json({ status: "started", message: "Topup sync started" });
-//     }
-    
-//     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-//   } catch (error) {
-//     console.error("[Topup Sync] Error:", error);
-//     return NextResponse.json({ error: String(error) }, { status: 500 });
-//   }
-// }
-
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -294,7 +133,7 @@ export async function GET(request: Request) {
             return;
           }
 
-          console.log(`[Sync] Fetched ${packages.length} packages, processing...`);
+          // console.log(`[Sync] Fetched ${packages.length} packages, processing...`);
 
           const regionMap: Record<string, { id: string; name: string; emoji: string }> = {};
           const countryMap: Record<string, { id: string; name: string; code: string; emoji: string; slug: string }> = {};

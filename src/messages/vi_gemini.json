@@ -585,6 +585,14 @@
     "contactUs": "Liên hệ với chúng tôi",
     "faq": "Câu hỏi thường gặp"
   },
+  "regions": {
+    "NA": "Bắc Mỹ",
+    "SA": "Nam Mỹ",
+    "EU": "Châu Âu",
+    "AS": "Châu Á",
+    "AF": "Châu Phi",
+    "OC": "Châu Đại Dương"
+  },
   "countries": {
     "AF": "Afghanistan",
     "AL": "Albania",

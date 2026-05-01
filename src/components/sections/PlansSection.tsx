@@ -59,7 +59,7 @@ export default function PlansSection() {
           <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">{t("coverage.popular")}</h3>
           <div className="flex flex-wrap justify-center gap-3">
             {REGIONS.map((region) => (
-              <Link key={region.id} href={`/plans?regionId=${region.id}`}>
+              <Link key={region.id} href={`/esim/${region.name}`}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -78,7 +78,7 @@ export default function PlansSection() {
           <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">{t("coverage.title")}</h3>
           <div className="flex flex-wrap justify-center gap-3">
             {HOT_COUNTRIES.map((country) => (
-              <Link key={country.code} href={`/plans?countryId=${country.code}`}>
+              <Link key={country.code} href={`/esim/${country.code}`}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -100,7 +100,7 @@ export default function PlansSection() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
-              {t("browsePlans")} →
+              {t("hero.browsePlans")} →
             </motion.button>
           </Link>
         </div>

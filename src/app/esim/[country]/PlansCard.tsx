@@ -247,7 +247,7 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
         <div className="absolute top-4 left-4 z-20">
           <div className="bg-orange-500 text-white text-[9px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md border border-white/10 tracking-wider">
             <span className="w-1 h-1 bg-white rounded-full animate-ping" />
-            UNLIMITED
+            {t('plans.unlimited')}
           </div>
         </div>
       )}
@@ -276,9 +276,9 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
         {/* Hàng Dung lượng */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Data</label>
+            <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">{t('plansCard.data')}</label>
             <p className="text-[12px] text-slate-600 font-medium leading-tight">
-              {dataType === 1 ? "Fixed" : "Daily"}
+              {dataType === 1 ? `${t('plansCard.fixed')}` : `${t('plansCard.daily')}`}
             </p>
           </div>
           <div className="relative">
@@ -300,8 +300,8 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
         {/* Hàng Số ngày */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Duration</label>
-            <p className="text-[12px] text-slate-600 font-medium leading-tight">Validity</p>
+            <label className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">{t('plansCard.duration')}</label>
+            <p className="text-[12px] text-slate-600 font-medium leading-tight">{t('plansCard.validity')}</p>
           </div>
           <div className="relative">
             <select 
@@ -310,7 +310,7 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
               className="pl-3 pr-8 py-2 rounded-xl bg-slate-50 border-none text-slate-800 font-semibold text-xs appearance-none outline-none ring-1 ring-slate-100 focus:ring-2 focus:ring-orange-500 transition-all cursor-pointer"
             >
               {durationOptions.map(day => (
-                <option key={day} value={day}>{day} Days</option>
+                <option key={day} value={day}>{day} {t('plansCard.days')}</option>
               ))}
             </select>
             <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 scale-75">
@@ -323,7 +323,7 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
         <div className="mt-2 pt-5 border-t border-slate-50">
           <div className="flex items-center justify-between mb-5">
             <div className="flex flex-col">
-              <span className="text-[8px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded w-fit mb-1 tracking-tighter">OFFER -40%</span>
+              <span className="text-[8px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded w-fit mb-1 tracking-tighter">{t('plansCard.offer')} -40%</span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-semibold text-slate-900 tracking-tighter leading-none">
                   {formatPrice(pricePreview)}
@@ -334,7 +334,7 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
               </div>
             </div>
             {dataCategory === 'fup' && (
-              <div className="text-orange-500 font-semibold text-[8px] uppercase tracking-widest">FUP Active</div>
+              <div className="text-orange-500 font-semibold text-[8px] uppercase tracking-widest">{t('plansCard.fupActive')}</div>
             )}
           </div>
 
@@ -349,7 +349,7 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
             })} 
             className="w-full h-12 rounded-[18px] bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs uppercase tracking-[0.15em] transition-all shadow-lg shadow-orange-100 active:scale-[0.96]"
           >
-            View Details
+            {t('plansCard.viewDetails')}
           </button>
         </div>
       </div>

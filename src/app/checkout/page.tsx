@@ -12,6 +12,7 @@ interface Plan {
   id: string;
   name: string;
   destination: string;
+  locationCode: string | null;
   dataAmount: number;
   durationDays: number;
   priceUsd: number;
@@ -615,6 +616,7 @@ if (topupMode && topupDays > 0 && topupPackage && plan) {
 const totalPrice = unitPrice * quantity;
 // DEBUG: Log final calculation results
 console.log('[Checkout] FinalCalc:', { topupMode, unitPrice, totalPrice, quantity });
+console.log('plan location:', { locationCode: plan.locationCode });
 const isUnlimited = plan.dataAmount >= 999;
 
   return (
@@ -636,18 +638,21 @@ const isUnlimited = plan.dataAmount >= 999;
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
               <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3">{t("checkout.yourEsimPlan")}</h2>
               <div className="flex items-center gap-3 sm:gap-4">
-                {plan.locationLogo ? (
-                  <img src={plan.locationLogo} alt={plan.destination} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+                {plan.locationCode ? (
+                  <img src={`https://p.qrsim.net/img/flags/${plan.locationCode?.toLowerCase()}.png`} alt={plan.destination} className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
                 ) : (
                   <span className="text-3xl sm:text-4xl">{plan.country?.emoji || plan.region?.emoji || "🌍"}</span>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-slate-800 font-semibold text-sm sm:text-base truncate">{plan.destination} eSIM</h3>
+                  <h3 className="text-slate-800 font-semibold text-sm sm:text-base truncate">
+                    eSIM {plan.destination}
+                    {topupMode && topupDays > 0 ? ` x ${topupDays} Days` : ""}
+                  </h3>
                   <p className="text-slate-500 text-xs sm:text-sm">
-                    {isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`} · {plan.durationDays} days · {plan.speed || "4G LTE"}
+                    {isUnlimited ? "Unlimited" : `${plan.dataAmount}GB`}/{plan.durationDays} days · {plan.speed || "4G LTE"}
                   </p>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold text-slate-800 flex-shrink-0">{formatPrice(plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-800 flex-shrink-0">{formatPrice(unitPrice)}</p>
               </div>
             </div>
 
@@ -741,19 +746,16 @@ const isUnlimited = plan.dataAmount >= 999;
                 {topupMode && topupDays > 0 ? (
                   <>
                     {/* Extension breakdown for top-up mode */}
-                    <div className="flex justify-between text-slate-500 text-xs">
-                      <span>• Base: {plan.durationDays} days</span>
-                      <span className="text-slate-400">{formatPrice(plan.retailPriceUsd && plan.retailPriceUsd > 0 ? plan.retailPriceUsd : plan.priceUsd)}</span>
+                    <div className="flex justify-between text-slate-500 text-xs font-medium">
+                      <span>•  {plan.destination}
+                        {topupMode && topupDays > 0 ? ` x ${topupDays} Days` : ""}
+                      </span>
+                      <span className="text-slate-400">{formatPrice(unitPrice)}</span>
                     </div>
-                    <div className="flex justify-between text-orange-600 text-xs font-medium">
-                      <span>• +{Math.max(0, topupDays - plan.durationDays)} days extension</span>
+                    <div className="flex justify-between text-slate-500 text-xs font-medium">
+                      <span>•  Quantity</span>
                       <span className="font-bold text-red-600">
-                        {/* TEMP DEBUG - force show price */}
-                        {(() => {
-                          const DEBUG_PRICE = 1;
-                          const ext = Math.max(0, topupDays - plan.durationDays);
-                          return `${(DEBUG_PRICE * ext * quantity).toFixed(2)}`;
-                        })()}
+                       {quantity}
                       </span>
                     </div>
                   </>
@@ -802,7 +804,7 @@ const isUnlimited = plan.dataAmount >= 999;
                     {t("checkout.processing")}
                   </span>
                 ) : (
-                  `${t("checkout.pay")} - ${formatPrice(totalPrice)}`
+                  `${t("checkout.pay")} ${formatPrice(totalPrice)}`
                 )}
               </motion.button>
 

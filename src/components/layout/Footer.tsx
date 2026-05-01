@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useI18n } from "@/components/providers/I18nProvider";
+import Image from "next/image";
 
 export default function Footer() {
   const { t } = useI18n();
@@ -12,10 +13,17 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">🌍</span>
-              <span className="text-xl font-bold text-white">
-                OW<span className="text-sky-400">SIM</span>
+            <Link href="/" className="flex items-center gap-2 mb-4">            
+              <Image
+                src="/esim.svg"
+                alt="eSIM Logo"
+                width={50}
+                height={50}
+                priority
+                
+              />
+              <span className="text-2xl font-bold text-white">
+                Open<span className="text-orange-500">World</span>
               </span>
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed">

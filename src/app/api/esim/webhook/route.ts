@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    console.log("[eSIM Webhook] notifyType=" + notifyType + ", orderNo=" + orderNo + ", smdpStatus=" + smdpStatus);
+    // console.log("[eSIM Webhook] notifyType=" + notifyType + ", orderNo=" + orderNo + ", smdpStatus=" + smdpStatus);
 
     let order = null;
     let orderItems = null;
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     }
 
     if (!order) {
-      console.log("[eSIM Webhook] Order not found for orderNo=" + orderNo + ", iccid=" + iccid);
+      // console.log("[eSIM Webhook] Order not found for orderNo=" + orderNo + ", iccid=" + iccid);
       return NextResponse.json({ received: true }, { status: 200 });
     }
 

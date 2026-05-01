@@ -11,6 +11,7 @@ import EsimDataTypeModal from "./EsimDataTypeModal";
 import WifiLoader from "@/components/animations/WifiLoader";
 import FadeIn from "@/components/animations/FadeIn";
 import PlansCard, { PlanCardConfig } from "./PlansCard";
+import Countries from "@/data/country-to-region.json"
 interface OperatorInfo {
   operatorName: string;
   networkType: string;
@@ -76,72 +77,94 @@ interface GroupedPlan {
 
 const regions = ["global", "asia", "europe", "americas", "oceania"];
 
+const countryNameToSlug = (str: string) =>
+  str
+    .toLowerCase()
+    .normalize("NFD") // xử lý dấu
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const slugToCodeMap: Record<string, string> = Object.entries(Countries)
+  .reduce((acc, [code, value]) => {
+    const slug = countryNameToSlug(value.countryName);
+    acc[slug] = code;
+    return acc;
+  }, {} as Record<string, string>);
+
 // Map slug to ISO country code
-const slugToCodeMap: Record<string, string> = {
-  "united-arab-emirates": "AE",
-  "united-kingdom": "GB",
-  "united-states": "US",
-  "south-korea": "KR",
-  "hong-kong": "HK",
-  "czech-republic": "CZ",
-  "new-zealand": "NZ",
-  "saudi-arabia": "SA",
-  "germany": "DE",
-  "japan": "JP",
-  "france": "FR",
-  "italy": "IT",
-  "spain": "ES",
-  "thailand": "TH",
-  "singapore": "SG",
-  "australia": "AU",
-  "india": "IN",
-  "china": "CN",
-  "vietnam": "VN",
-  "taiwan": "TW",
-  "malaysia": "MY",
-  "indonesia": "ID",
-  "philippines": "PH",
-  "mexico": "MX",
-  "brazil": "BR",
-  "argentina": "AR",
-  "canada": "CA",
-  "russia": "RU",
-  "turkey": "TR",
-  "egypt": "EG",
-  "south-africa": "ZA",
-  "netherlands": "NL",
-  "switzerland": "CH",
-  "austria": "AT",
-  "belgium": "BE",
-  "sweden": "SE",
-  "norway": "NO",
-  "denmark": "DK",
-  "finland": "FI",
-  "portugal": "PT",
-  "greece": "GR",
-  "poland": "PL",
-  "ireland": "IE",
-  "luxembourg": "LU",
-  "israel": "IL",
-  "qatar": "QA",
-  "kuwait": "KW",
-  "bahrain": "BH",
-  "oman": "OM",
-  "jordan": "JO",
-  "lebanon": "LB",
-  "pakistan": "PK",
-  "bangladesh": "BD",
-  "sri-lanka": "LK",
-  "nepal": "NP",
-  "cambodia": "KH",
-  "myanmar": "MM",
-  "laos": "LA",
-  "brunei": "BN",
-};
+// const slugToCodeMap: Record<string, string> = {
+//   "united-arab-emirates": "AE",
+//   "united-kingdom": "GB",
+//   "united-states": "US",
+//   "south-korea": "KR",
+//   "hong-kong": "HK",
+//   "czech-republic": "CZ",
+//   "new-zealand": "NZ",
+//   "saudi-arabia": "SA",
+//   "germany": "DE",
+//   "japan": "JP",
+//   "france": "FR",
+//   "italy": "IT",
+//   "spain": "ES",
+//   "thailand": "TH",
+//   "singapore": "SG",
+//   "australia": "AU",
+//   "india": "IN",
+//   "china": "CN",
+//   "vietnam": "VN",
+//   "taiwan": "TW",
+//   "malaysia": "MY",
+//   "indonesia": "ID",
+//   "philippines": "PH",
+//   "mexico": "MX",
+//   "brazil": "BR",
+//   "argentina": "AR",
+//   "canada": "CA",
+//   "russia": "RU",
+//   "turkey": "TR",
+//   "egypt": "EG",
+//   "south-africa": "ZA",
+//   "netherlands": "NL",
+//   "switzerland": "CH",
+//   "austria": "AT",
+//   "belgium": "BE",
+//   "sweden": "SE",
+//   "norway": "NO",
+//   "denmark": "DK",
+//   "finland": "FI",
+//   "portugal": "PT",
+//   "greece": "GR",
+//   "poland": "PL",
+//   "ireland": "IE",
+//   "luxembourg": "LU",
+//   "israel": "IL",
+//   "qatar": "QA",
+//   "kuwait": "KW",
+//   "bahrain": "BH",
+//   "oman": "OM",
+//   "jordan": "JO",
+//   "lebanon": "LB",
+//   "pakistan": "PK",
+//   "bangladesh": "BD",
+//   "sri-lanka": "LK",
+//   "nepal": "NP",
+//   "cambodia": "KH",
+//   "myanmar": "MM",
+//   "laos": "LA",
+//   "brunei": "BN",
+// };
 
 async function loadPlans(countrySlug: string): Promise<Plan[]> {
+   const normalizedSlug = countryNameToSlug(countrySlug);
   const isRegion = regions.includes(countrySlug.toLowerCase());
-  const countryCode = slugToCodeMap[countrySlug] || countrySlug.toUpperCase();
+  const countryCode =
+    slugToCodeMap[normalizedSlug] ??
+    (normalizedSlug.length === 2 ? normalizedSlug.toUpperCase() : undefined);
+
+  if (!isRegion && !countryCode) {
+    throw new Error(`Invalid country slug: ${countrySlug}`);
+  }
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const url = isRegion 
     ? `${baseUrl}/api/plans?regionId=${countrySlug.toLowerCase()}`
@@ -193,6 +216,7 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
   const resolvedParams = use(params);
   const { t, formatPrice } = useI18n();
   const [country, setCountry] = useState<string>("");
+  const [countryCode, setCountryCode] = useState<string | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [heroImage, setHeroImage] = useState<string>(getDestinationImage("global"));
@@ -209,6 +233,12 @@ export default function EsimCountryPage({ params }: { params: Promise<{ country:
   const [selectedDataType, setSelectedDataType] = useState<number>(0);
   const [plansForDataType, setPlansForDataType] = useState<Plan[]>([]);
   const [activeConfig, setActiveConfig] = useState<PlanCardConfig | null>(null);
+
+useEffect(() => {
+  const slug = countryNameToSlug(country);
+
+  setCountryCode(slugToCodeMap[slug]);
+}, [country]);
 
 useEffect(() => {
   async function load() {
@@ -366,7 +396,7 @@ return (
       
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
         <p className="text-white/80 text-[10px] font-bold uppercase tracking-[0.4em] mb-3 drop-shadow-sm">
-          Premium Connectivity
+          {t("plans.premiumConnectivity")}
         </p>
         <h1 className="text-5xl md:text-7xl font-medium text-white mb-2 tracking-tighter drop-shadow-xl">
           {t(`countries.${displayNameId}`)}
@@ -398,7 +428,7 @@ return (
     {/* Footer trang - Nếu cần thông tin thêm thì để ở đây nhẹ nhàng */}
     <div className="max-w-2xl mx-auto text-center pb-20 px-6">
       <p className="text-slate-400 text-sm leading-relaxed">
-        {t("countryPage.esimPlansAvailableDescription")}
+        {t("countryPage.esimPlansAvailableDesc")}
       </p>
     </div>
 
@@ -406,7 +436,7 @@ return (
     <EsimDataTypeModal
       dataType={selectedDataType}
       countryName={country}
-      countryId={country}
+      countryId={countryCode!}
       isOpen={isDataTypeModalOpen}
       onClose={handleCloseDataTypeModal}
       config={activeConfig}
