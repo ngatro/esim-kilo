@@ -36,6 +36,16 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - Removed duplicate login button from mobile menu
   - Added translation keys: `header.welcome`, `header.language` (EN & VI)
 - [x] **Fix admin API routes missing getSessionFromRequest**: Added missing `getSessionFromRequest` helper function to admin API routes (users, settings, stats, plans, blog, destinations, webhooks, users/search, orders/gift, promotions) that were calling the undefined function, and added missing `request: Request` parameter to GET functions
+- [x] **Full Cart System Implementation**:
+  - Created RESTful API endpoints: GET/POST /api/cart, PATCH/DELETE /api/cart/[id]
+  - Server-side price validation using Plan table to prevent price manipulation
+  - CartProvider now uses SWR for data fetching with caching
+  - Implemented optimistic UI updates for instant feedback on add/update/remove
+  - Added loading states (isProcessing, isSyncing) for better UX
+  - Auto-sync localStorage cart to database on user login with smart merge logic
+  - CartModal displays loading skeletons and disables buttons during operations
+  - Fixed TypeScript errors in countries and plans APIs
+  - Removed unused legacy page file causing module error
 
 ## Recently Completed
 
@@ -120,22 +130,23 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   - Updated frontend (EsimDataTypeModal.tsx) and checkout with new formula
   - Updated order API to calculate correct price on server-side
 
- - [x] **Sync Topup Packages** - Admin can sync top-up packages from eSIM Access:
-   - Button "Sync Topup Packages" in admin dashboard with loading state
-   - POST /api/admin/plans handler with action 'sync_topup'
-   - Deletes all existing TopupPackage records before sync
-   - Filters plans with supportTopUpType === 3 (flexible day-based top-up)
-   - Fetches topup packages in batches of 7 with 1s delay (safe for 8 req/s API limit)
-   - Uses Promise.allSettled for concurrent processing within each batch
-   - Individual try-catch per plan ensures one failure doesn't stop entire sync
-   - Error messages collected and displayed in admin UI (up to 5 shown)
-   - Saves each topup package with planId reference and updates Plan.topupPackageId
-   - Returns synced count, total plans, elapsed time, and any errors
+  - [x] **Sync Topup Packages** - Admin can sync top-up packages from eSIM Access:
+    - Button "Sync Topup Packages" in admin dashboard with loading state
+    - POST /api/admin/plans handler with action 'sync_topup'
+    - Deletes all existing TopupPackage records before sync
+    - Filters plans with supportTopUpType === 3 (flexible day-based top-up)
+    - Fetches topup packages in batches of 7 with 1s delay (safe for 8 req/s API limit)
+    - Uses Promise.allSettled for concurrent processing within each batch
+    - Individual try-catch per plan ensures one failure doesn't stop entire sync
+    - Error messages collected and displayed in admin UI (up to 5 shown)
+    - Saves each topup package with planId reference and updates Plan.topupPackageId
+    - Returns synced count, total plans, elapsed time, and any errors
 - [x] **Fixed Google OAuth userId issue** - Updated order API to properly extract userId from Google OAuth session
    - Enhanced userId extraction logic in POST /api/orders route
    - Prioritizes session user ID (Google OAuth) > token (legacy) > email lookup
    - Fixes null userId issue when logging in with Google OAuth
    - Fixed variable naming error (customerEmail -> bodyCustomerEmail)
+
 ## Current Structure
 
 | File/Directory | Purpose | Status |
@@ -156,6 +167,8 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 | `src/app/api/affiliate/stats/route.ts` | Affiliate stats API | ✅ Ready |
 | `src/app/api/affiliate/withdraw/route.ts` | Withdrawal request API | ✅ Ready |
 | `src/app/api/admin/affiliate/route.ts` | Admin affiliate API | ✅ Ready |
+| `src/app/api/cart/route.ts` | Cart API (GET, POST) | ✅ Ready |
+| `src/app/api/cart/[id]/route.ts` | Cart item API (PATCH, DELETE) | ✅ Ready |
 | `src/app/api/countries/search/route.ts` | Country autocomplete search (max 20) | ✅ Ready |
 | `src/app/api/countries/[id]/filters/route.ts` | Country dynamic filters API | ✅ Ready |
 | `src/db/schema.ts` | Database schema | ✅ Ready |
@@ -164,18 +177,21 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 | `src/lib/referral-tracking.ts` | Referral cookie handling | ✅ Ready |
 | `src/middleware.ts` | Referral cookie middleware | ✅ Ready |
 | `src/components/providers/AuthProvider.tsx` | Auth context | ✅ Ready |
-| `src/components/providers/CartProvider.tsx` | Cart context | ✅ Ready |
+| `src/components/providers/CartProvider.tsx` | Cart context with SWR, optimistic UI | ✅ Ready |
 | `src/components/ui/LanguageSwitcher.tsx` | Language switcher | ✅ Ready |
 | `messages/` | Translation files | ✅ Ready |
 
 ## Database Schema
 
 - **users**: id, name, email, password, role, createdAt, affiliateCode, affiliateBalance, rank, referredById
-- **orders**: id, userId, totalAmount, status, createdAt
-- **orderItems**: id, orderId, planId, planName, price, quantity
+- **orders**: id, userId, totalAmount, status, createdAt, isTopupMode, selectedDuration, basePlanDays, extraDays, topupPackageCode
+- **orderItems**: id, orderId, planId, planName, price, quantity, extraDays, topupPackageCode, basePlanDays
 - **cartItems**: id, userId, planId, planName, price, quantity, createdAt
 - **commissions**: id, referrerId, buyerId, orderId, amount, percentage, rank, status, createdAt
 - **withdrawals**: id, userId, amount, paymentMethod, paymentDetails, status, createdAt
+- **topupPackages**: id, planId, packageCode, name, priceUsd, retailPriceUsd, isFlexible, isActive
+- **destinations**: id, name, slug, emoji, landmark, imageUrl, isVisible, priority
+- **destinationRegions**: id, name, emoji, imageUrl, isVisible, priority
 
 ## Affiliate Commission Rates
 
@@ -188,7 +204,6 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 
 ## Current Focus
 
-- Run `npx prisma generate` to update Prisma types (done)
 - Add real payment integration (Stripe)
 - Add email notifications
 
@@ -257,3 +272,4 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-29 | Fixed pending order top-up preservation: order API now computes extraDays directly, saves topupPackageCode, basePlanDays, extraDays; checkout fetch handles both ID and code; ensures correct pricing on resume |
 | 2026-04-29 | Implemented order update flow: Checkout creates pending order before PayPal redirect, stores pendingOrderId; PayPal webhook updates existing pending order instead of creating duplicate, eliminating duplicate orders |
 | 2026-04-29 | Header redesign: replaced avatar with Welcome text, moved hamburger to left, added mobile language dropdown, mobile login button, removed duplicate login from mobile menu |
+| 2026-04-30 | Full cart system: API routes with validation, SWR integration, optimistic UI, localStorage sync on login, loading states in CartModal |
