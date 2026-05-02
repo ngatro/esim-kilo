@@ -9,6 +9,7 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 ## Recently Completed
 
 - [x] **Compact multi-country display**: Changed country list in EsimDataTypeModal from vertical blocks to compact inline chips (flex-wrap layout), reducing vertical space usage for multi-country plans
+- [x] **Fix countries.undefined**: Added safe fallback for country name translations across all components (modal heading, PlansCard, plans page, country page) to prevent displaying "countries.undefined" when countryId is missing or translation not found
 - [x] **Fix BigInt issue**: Database schema already uses String for iccid columns (not BigInt) - verified by code review
 - [x] **Remove FLEXIBLE_TOPUP placeholder**: Fixed order API to remove the fake FLEXIBLE_TOPUP code and use real DB data
 - [x] **PayPal flow fix**: Store topupPackageCode in localStorage before redirect, pass to webhook on payment confirm
@@ -267,7 +268,7 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-10 | Added complete Affiliate system with cookie tracking, commission by rank, dashboard, withdrawals, admin management |
 | 2026-04-13 | Added client-side dependent faceted filters to /esim/[country] + converted /plans to landing page + Unsplash images for destinations and regions |
 | 2026-04-21 | Added Sync Topup Packages feature - Admin can sync top-up packages with batching and rate limiting |
-| 2026-04-22 | Fixed top-up issues: removed FLEXIBLE_TOPUP placeholder, added day selection UI, comprehensive eSIM API logging, PayPal flow topupPackageCode tracking |
+| 2026-04-22 | Fixed top-up issues: removed FLEXIBLE_OP placeholder, added day selection UI, comprehensive eSIM API logging, PayPal flow topupPackageCode tracking |
 | 2026-04-23 | Refactored PlansCard & EsimDataTypeModal: 
   - Moved all calculation logic from EsimDataTypeModal to PlansCard
   - Page.tsx now manages state with activeConfig to store calculation results from PlansCard
@@ -279,7 +280,6 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-29 | Header redesign: replaced avatar with Welcome text, moved hamburger to left, added mobile language dropdown, mobile login button, removed duplicate login from mobile menu |
 | 2026-04-30 | Full cart system: API routes with validation, SWR integration, optimistic UI, localStorage sync on login, loading states in CartModal |
 | 2026-05-01 | Fixed language switching URL updates: Updated Header.tsx to use usePathname() hook instead of router.pathname for proper Next.js 16 App Router compatibility. LanguageSwitcher.tsx and middleware.ts already correctly handle language prefix updates. Verified with comprehensive tests. |
-| 2026-05-03 | Compact multi-country display: Changed country list from vertical blocks to inline flex-wrap chips in EsimDataTypeModal (src/app/[lang]/esim/[country]/EsimDataTypeModal.tsx:275-300), reducing vertical space for multi-country plans showing 10+ countries |
 | 2026-05-03 | Multi-country plan display + operator info in EsimDataTypeModal + admin link locale prefix |
    - Fixed admin link in Header.tsx to include locale prefix (`/${locale}/admin` instead of `/admin`) so admin dashboard is accessible with proper i18n routing
    - Added country coverage and operator display to EsimDataTypeModal.tsx:
@@ -289,3 +289,10 @@ Create `src/app/api/[route]/route.ts`
      - Uses i18n translation for country names (falls back to country code if not found)
    - Added `networkList` and `locationsList` state to track parsed location/operator data
    - Added `useEffect` to parse locationNetworkList and locations whenever `basePlan` changes
+| 2026-05-03 | Compact multi-country display: Changed country list from vertical blocks to inline flex-wrap chips in EsimDataTypeModal (src/app/[lang]/esim/[country]/EsimDataTypeModal.tsx:275-300), reducing vertical space for multi-country plans showing 10+ countries |
+| 2026-05-03 | Fixed countries.undefined bug: Added safe fallback for country name translations in 4 files:
+   - EsimDataTypeModal.tsx (heading and network list)
+   - PlansCard.tsx (card title)
+   - src/app/[lang]/esim/[country]/page.tsx (page heading)
+   - src/app/[lang]/plans/page.tsx (destination card title)
+  Now when countryId is undefined or translation missing, displays fallback (countryId, destination name, or "Unknown") instead of raw key "countries.undefined".
