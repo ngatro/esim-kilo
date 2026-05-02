@@ -537,7 +537,7 @@ const userItems = mounted && user ? [
                       <div className="pl-4 space-y-1 mt-1">
                         {item.children.filter((c: { label: string }) => c.label !== "divider").map((child: { label: string; href: string; children?: { label: string; href: string; emoji?: string }[] }, idx: number) => (
                           <div key={idx}>
-{child.children ? (
+                            {child.children ? (
                                <div className="py-1">
                                  <p className="text-xs font-semibold text-slate-400 uppercase mb-1">{child.label}</p>
                                  <div className="space-y-0.5">
@@ -555,7 +555,7 @@ const userItems = mounted && user ? [
                                  </div>
                                </div>
                              ) : (
-<Link
+                                <Link
                                   key={idx}
                                   href={child.href}
                                   onClick={() => setMobileMenuOpen(false)}
