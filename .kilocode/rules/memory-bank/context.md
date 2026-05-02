@@ -151,14 +151,14 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 
 | File/Directory | Purpose | Status |
 |----------------|---------|--------|
-| `src/app/[locale]/page.tsx` | Home page (all sections) | ✅ Ready |
-| `src/app/[locale]/login/page.tsx` | Login page | ✅ Ready |
-| `src/app/[locale]/register/page.tsx` | Registration page | ✅ Ready |
-| `src/app/[locale]/cart/page.tsx` | Shopping cart page | ✅ Ready |
-| `src/app/[locale]/checkout/page.tsx` | Checkout page | ✅ Ready |
-| `src/app/[locale]/orders/page.tsx` | User orders page | ✅ Ready |
-| `src/app/[locale]/admin/page.tsx` | Admin dashboard | ✅ Ready |
-| `src/app/[locale]/admin/plans/page.tsx` | Admin plan management | ✅ Ready |
+| `src/app/[lang]/page.tsx` | Home page (all sections) | ✅ Ready |
+| `src/app/[lang]/login/page.tsx` | Login page | ✅ Ready |
+| `src/app/[lang]/register/page.tsx` | Registration page | ✅ Ready |
+| `src/app/[lang]/cart/page.tsx` | Shopping cart page | ✅ Ready |
+| `src/app/[lang]/checkout/page.tsx` | Checkout page | ✅ Ready |
+| `src/app/[lang]/orders/page.tsx` | User orders page | ✅ Ready |
+| `src/app/[lang]/admin/page.tsx` | Admin dashboard | ✅ Ready |
+| `src/app/[lang]/admin/plans/page.tsx` | Admin plan management | ✅ Ready |
 | `src/app/plans/page.tsx` | Plans browse page with country search & dynamic filters | ✅ Ready |
 | `src/app/affiliate/page.tsx` | User affiliate dashboard | ✅ Ready |
 | `src/app/admin/affiliate/page.tsx` | Admin affiliate management | ✅ Ready |
@@ -228,6 +228,10 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
   1. **Background Task**: Backend returns immediately with `{status: "started"}` and runs sync in background fire-and-forget pattern
   2. **Promise.all**: Used for parallel DB operations (regions + countries upsert in single Promise.all call)
   3. **Reduced Polling**: Changed from 200ms to 1000ms polling interval in admin dashboard to decrease server load
+
+## Changes (2026-05-02)
+
+- **Fixed Next.js 16 async params type errors** in `src/app/[lang]/layout.tsx` - Updated `generateMetadata` to use `Promise<{ lang: string }>` with `await` for resolving `lang`, ensuring TypeScript compatibility with Next.js 16's async server component params.
 
 ## Quick Start Guide
 

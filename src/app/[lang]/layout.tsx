@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_RATES, type ExchangeRates } from "@/lib/currency";
-import { I18nProvider } from "@/components/providers/I18nProvider";
+import { I18nProvider, type Locale } from "@/components/providers/I18nProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/components/providers/CartProvider";
 import { UIProvider } from "@/components/providers/UIProvider";
@@ -28,10 +28,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
-  const locale = params.locale;
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://domain.com';
-  
+   
   // Define URLs for each language
   const urls = {
     en: `${baseUrl}/en`,
@@ -56,14 +56,14 @@ export async function generateMetadata({ params }: { params: { locale: string } 
   };
 
   return {
-    title: titles[locale] || titles.en,
-    description: descriptions[locale] || descriptions.en,
+    title: titles[lang] || titles.en,
+    description: descriptions[lang] || descriptions.en,
     icons: {
       icon: "/esim.svg",
       apple: "/apple-touch-icon.png",
     },
     alternates: {
-      canonical: `${baseUrl}/${locale}`,
+      canonical: `${baseUrl}/${lang}`,
       languages: {
         en: urls.en,
         de: urls.de,
@@ -93,17 +93,18 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ lang: string }>;
 }) {
+  const { lang } = await params;
   const rates = await getRates();
   const session = await getServerSession(authOptions);
-  
+   
   return (
-    <html lang={params.locale} suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <I18nProvider initialRates={rates}>
+        <I18nProvider initialRates={rates} initialLocale={lang as Locale}>
           <AuthProvider session={session}>
             <CartProvider>
               <UIProvider>
