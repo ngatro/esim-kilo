@@ -128,7 +128,7 @@ interface Order {
 
 export default function OrdersPage() {
   const { user } = useAuth();
-  const { formatPrice } = useI18n();
+  const { formatPrice, locale } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -210,7 +210,7 @@ export default function OrdersPage() {
               View
             </button>
           </div>
-          <p className="text-slate-500 text-xs mt-4">or <Link href="/login" className="text-orange-500 hover:text-orange-400">Login</Link> to see all orders</p>
+          <p className="text-slate-500 text-xs mt-4">or <Link href={`/${locale}/login`} className="text-orange-500 hover:text-orange-400">Login</Link> to see all orders</p>
         </div>
       </div>
     );
@@ -225,10 +225,10 @@ export default function OrdersPage() {
             <p className="text-slate-600 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
           </div>
           <div className="flex gap-2">
-            <Link href="/plans">
-              <motion.button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors" whileHover={{ scale: 1.02 }}>
-                Buy New eSIM
-              </motion.button>
+            <Link href={`/${locale}/plans`}>
+              <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+                {t("common.browsePlans")}
+              </button>
             </Link>
           </div>
         </div>
@@ -249,9 +249,9 @@ export default function OrdersPage() {
             <p className="text-5xl mb-4">📱</p>
             <h3 className="text-xl font-semibold text-slate-800 mb-2">No orders found</h3>
             <p className="text-slate-600 mb-6 text-sm">Your eSIM orders will appear here after purchase</p>
-            <Link href="/plans">
-              <button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors text-sm">
-                Browse Plans
+            <Link href={`/${locale}/plans`}>
+              <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+                {t("common.browsePlans")}
               </button>
             </Link>
           </div>

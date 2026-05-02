@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useI18n } from "@/components/providers/I18nProvider";
 import Link from "next/link";
 
 interface SiteSettings {
@@ -21,8 +22,9 @@ interface SiteSettings {
 }
 
 export default function AdminSettingsPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+   const { locale } = useI18n();
+   const router = useRouter();
+   const { user, loading: authLoading } = useAuth();
   const [settings, setSettings] = useState<SiteSettings>({
     whatsappNumber: "84912345678",
     supportEmail: "support@openworldesim.com",
@@ -130,11 +132,11 @@ export default function AdminSettingsPage() {
       <div className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-xl font-bold text-slate-800">Admin Dashboard</Link>
+            <Link href={`/${locale}/admin`} className="text-xl font-bold text-slate-800">Admin Dashboard</Link>
             <span className="text-slate-400">/</span>
             <span className="text-sm text-slate-500">Settings</span>
           </div>
-          <Link href="/" className="text-slate-500 hover:text-slate-700 text-sm">View Site</Link>
+          <Link href={`/${locale}`} className="text-slate-500 hover:text-slate-700 text-sm">View Site</Link>
         </div>
       </div>
 

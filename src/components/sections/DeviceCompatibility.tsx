@@ -4,10 +4,11 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import FadeIn from "../animations/FadeIn";
 import { useI18n } from "../providers/I18nProvider";
+import Link from "next/link";
 
 
 export default function DeviceCompatibility() {
-  const { t } = useI18n();
+   const { t, locale } = useI18n();
   const devices = [
     { icon: "📱", name: "iPhone", models: "XS, XS Max, XR, 11, 12, 13, 14, 15, SE (2020+)", supported: true },
     { icon: "📱", name: "Samsung", models: "Galaxy S20, S21, S22, S23, S24, Fold, Flip series", supported: true },
@@ -77,12 +78,12 @@ export default function DeviceCompatibility() {
         <FadeIn delay={0.3}>
           <div className="mt-12 bg-orange-50 border border-slate-200 rounded-2xl p-8 text-center">
             <p className="text-slate-600 mb-4">Not sure if your device supports eSIM?</p>
-            <a href="/compatibility" className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium">
+            <Link href={`/${locale}/compatibility`} className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium">
               Check full compatibility list
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-            </a>
+            </Link>
           </div>
         </FadeIn>
       </div>

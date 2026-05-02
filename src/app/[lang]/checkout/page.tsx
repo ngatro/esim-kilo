@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t, formatPrice, currency, rates } = useI18n();
+  const { t, formatPrice, currency, rates, locale } = useI18n();
   const planId = searchParams.get("planId") || "";
 
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -541,14 +541,14 @@ export default function CheckoutPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/orders">
+            <Link href={`/${locale}/orders`}>
               <button className="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-6 py-3 rounded-xl transition-colors">
                 {t("checkout.viewOrders")}
               </button>
             </Link>
-            <Link href="/plans">
-              <button className="w-full sm:w-auto bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
-                {t("checkout.buyAnotherPlan")}
+            <Link href={`/${locale}/plans`}>
+              <button className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+                {t("checkout.continueBrowsing")}
               </button>
             </Link>
           </div>
@@ -564,9 +564,10 @@ export default function CheckoutPage() {
           <p className="text-5xl sm:text-6xl mb-4">🛒</p>
           <h1 className="text-2xl sm:text-3xl font-bold mb-3">{t("checkout.selectPlanFirst")}</h1>
           <p className="text-slate-400 mb-6">{t("checkout.browsePlansDesc")}</p>
-          <Link href="/plans">
+          <Link href={`/${locale}/plans`}>
             <button className="bg-sky-500 hover:bg-sky-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
               {t("checkout.browsePlans")}
+
             </button>
           </Link>
         </div>
@@ -625,7 +626,7 @@ const isUnlimited = plan.dataAmount >= 999;
         <nav className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mb-6 sm:mb-8">
           <Link href="/" className="hover:text-orange-600">{t("common.home")}</Link>
           <span>/</span>
-          <Link href="/plans" className="hover:text-orange-600">{t("common.plans")}</Link>
+          <Link href={`/${locale}/plans`} className="hover:text-orange-600">{t("common.plans")}</Link>
           <span>/</span>
           <span className="text-slate-600">{t("common.checkout")}</span>
         </nav>

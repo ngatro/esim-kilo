@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useCart } from "@/components/providers/CartProvider";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 export default function CartPage() {
+  const { locale } = useI18n();
   const { items, removeItem, updateQuantity, total, clearCart } = useCart();
 
   if (items.length === 0) {
@@ -13,7 +15,7 @@ export default function CartPage() {
           <h1 className="text-3xl font-bold text-slate-800 mb-8">Shopping Cart</h1>
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <p className="text-slate-600 mb-4">Your cart is empty</p>
-            <Link href="/" className="inline-block bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-400">
+            <Link href={`/${locale}`} className="inline-block bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-400">
               Continue Shopping
             </Link>
           </div>
@@ -81,7 +83,7 @@ export default function CartPage() {
               >
                 Clear Cart
               </button>
-              <Link href="/checkout" className="flex-1">
+              <Link href={`/${locale}/checkout`} className="flex-1">
                 <button className="w-full px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-400">
                   Proceed to Checkout
                 </button>

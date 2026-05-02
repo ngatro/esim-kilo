@@ -40,7 +40,7 @@ interface CurrentPlan {
 export default function TopUpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { formatPrice, currency, rates } = useI18n();
+  const { formatPrice, currency, rates, locale } = useI18n();
   
   const initialIccid = searchParams.get("iccid") || "";
   const successParam = searchParams.get("success");
@@ -240,14 +240,14 @@ export default function TopUpPage() {
             <h1 className="text-2xl sm:text-3xl font-bold mb-4">Top-up Successful!</h1>
             <p className="text-slate-600 mb-8">Your eSIM data has been extended. A new QR code has been sent to your email.</p>
             <div className="flex gap-4 justify-center">
-              <Link href="/orders">
-                <button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl">
-                  View Orders
+              <Link href={`/${locale}/orders`}>
+                <button className="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-6 py-3 rounded-xl transition-colors">
+                  {t("common.viewOrders")}
                 </button>
               </Link>
-              <Link href="/plans">
-                <button className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold px-6 py-3 rounded-xl">
-                  Browse More Plans
+              <Link href={`/${locale}/plans`}>
+                <button className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+                  {t("common.browsePlans")}
                 </button>
               </Link>
             </div>
@@ -455,8 +455,8 @@ export default function TopUpPage() {
           ) : null}
 
           <div className="mt-8 text-center">
-            <Link href="/orders" className="text-orange-500 hover:text-orange-400 text-sm">
-              View my orders →
+            <Link href={`/${locale}/orders`} className="text-orange-500 hover:text-orange-400 text-sm">
+              {t("common.viewOrders")}
             </Link>
           </div>
 

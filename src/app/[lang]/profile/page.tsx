@@ -16,7 +16,7 @@ interface Order {
 }
 
 export default function ProfilePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user, loading: authLoading, refreshUser } = useAuth();
   const { openLogin } = useUI();
   
@@ -286,8 +286,8 @@ export default function ProfilePage() {
                       </Link>
                     ))}
                     {orders.length > 5 && (
-                      <Link href="/orders" className="block text-center text-sm text-orange-500 hover:text-orange-600 mt-2">
-                        {t("viewAll")} ({orders.length})
+                      <Link href={`/${locale}/orders`} className="block text-center text-sm text-orange-500 hover:text-orange-600 mt-2">
+                        {t("common.viewOrders")}
                       </Link>
                     )}
                   </div>

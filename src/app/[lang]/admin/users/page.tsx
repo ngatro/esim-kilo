@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useI18n } from "@/components/providers/I18nProvider";
 import Footer from "@/components/layout/Footer";
 
 interface User {
@@ -16,8 +17,9 @@ interface User {
 }
 
 export default function AdminUsersPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+   const { locale } = useI18n();
+   const { user, loading: authLoading } = useAuth();
+   const router = useRouter();
   
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,7 +147,7 @@ export default function AdminUsersPage() {
               <h1 className="text-3xl font-bold text-slate-800">User Management</h1>
               <p className="text-slate-500 mt-1">Manage registered users</p>
             </div>
-            <Link href="/admin" className="text-orange-500 hover:text-orange-600 font-medium">
+            <Link href={`/${locale}/admin`} className="text-orange-500 hover:text-orange-600 font-medium">
               ← Back to Dashboard
             </Link>
           </div>

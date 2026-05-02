@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-data";
-import { SUPPORTED_LOCALES, type Locale } from "@/components/providers/I18nProvider";
+import { SUPPORTED_LOCALES, type Locale, useI18n } from "@/components/providers/I18nProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 function generateId(): string {
@@ -20,8 +20,9 @@ function generateSlug(title: string): string {
 }
 
 export default function BlogAdminPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+   const { locale } = useI18n();
+   const router = useRouter();
+   const { user, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
@@ -222,7 +223,7 @@ export default function BlogAdminPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <Link href="/admin" className="text-sky-400 hover:text-sky-300 text-sm mb-2 inline-flex items-center gap-1">
+            <Link href={`/${locale}/admin`} className="text-sky-400 hover:text-sky-300 text-sm mb-2 inline-flex items-center gap-1">
               ← Back to Admin
             </Link>
             <h1 className="text-3xl font-bold">Blog Management</h1>

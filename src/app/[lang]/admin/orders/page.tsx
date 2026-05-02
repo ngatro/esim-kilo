@@ -5,6 +5,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 interface Plan {
   id: string;
@@ -144,8 +145,9 @@ interface Order {
 }
 
 export default function AdminOrdersPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+   const { locale } = useI18n();
+   const { user, loading: authLoading } = useAuth();
+   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
@@ -325,7 +327,7 @@ export default function AdminOrdersPage() {
               <option value="pending">Pending</option>
               <option value="refunded">Refunded</option>
             </select>
-            <Link href="/admin" className="text-sky-400 hover:text-sky-300 text-sm">← Dashboard</Link>
+            <Link href={`/${locale}/admin`} className="text-sky-400 hover:text-sky-300 text-sm">← Dashboard</Link>
           </div>
         </div>
 

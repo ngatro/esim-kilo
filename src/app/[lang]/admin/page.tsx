@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { useI18n } from "@/components/providers/I18nProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 interface Stats {
@@ -43,7 +46,10 @@ function formatDate(dateStr: string) {
 }
 
 export default function AdminDashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+   const { t, locale } = useI18n();
+   const router = useRouter();
+   const pathname = usePathname();
+   const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -186,11 +192,11 @@ async function syncPlans() {
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-xl font-bold text-slate-800">Admin Dashboard</Link>
-            <span className="text-slate-400">|</span>
-            <span className="text-sm text-slate-500">Welcome, {user.name}</span>
-          </div>
+           <div className="flex items-center gap-4">
+             <Link href="." className="text-xl font-bold text-slate-800">Admin Dashboard</Link>
+             <span className="text-slate-400">|</span>
+             <span className="text-sm text-slate-500">Welcome, {user.name}</span>
+           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={syncPlans}
@@ -218,7 +224,7 @@ async function syncPlans() {
               ) : "⚡ Sync Topup Packages"}
             </button>
             
-            <Link href="/" className="text-slate-500 hover:text-slate-700 text-sm">View Site</Link>
+            <Link href={`/${locale}`} className="text-slate-500 hover:text-slate-700 text-sm">View Site</Link>
           </div>
         </div>
       </div>
@@ -289,85 +295,85 @@ async function syncPlans() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Link href="/admin/plans">
-            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-lg">📱</div>
-                <h3 className="font-semibold text-slate-800">Plans</h3>
-              </div>
-              <p className="text-sm text-slate-500">Manage eSIM plans & pricing</p>
-            </div>
-          </Link>
+<Link href={`/${locale}/admin/plans`}>
+             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-lg">📱</div>
+                 <h3 className="font-semibold text-slate-800">Plans</h3>
+               </div>
+               <p className="text-sm text-slate-500">Manage eSIM plans & pricing</p>
+             </div>
+           </Link>
 
-          <Link href="/admin/orders">
-            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-lg">📦</div>
-                <h3 className="font-semibold text-slate-800">Orders</h3>
-              </div>
-              <p className="text-sm text-slate-500">View & manage customer orders</p>
-            </div>
-          </Link>
+           <Link href={`/${locale}/admin/orders`}>
+             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-lg">📦</div>
+                 <h3 className="font-semibold text-slate-800">Orders</h3>
+               </div>
+               <p className="text-sm text-slate-500">View & manage customer orders</p>
+             </div>
+           </Link>
 
-          <Link href="/admin/blog">
-            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-lg">📝</div>
-                <h3 className="font-semibold text-slate-800">Blog</h3>
-              </div>
-              <p className="text-sm text-slate-500">Manage blog posts & guides</p>
-            </div>
-          </Link>
+           <Link href={`/${locale}/admin/blog`}>
+             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-lg">📝</div>
+                 <h3 className="font-semibold text-slate-800">Blog</h3>
+               </div>
+               <p className="text-sm text-slate-500">Manage blog posts & guides</p>
+             </div>
+           </Link>
 
-          <Link href="/admin/users">
-            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-lg">👥</div>
-                <h3 className="font-semibold text-slate-800">Users</h3>
-              </div>
-              <p className="text-sm text-slate-500">Manage registered users</p>
-            </div>
-          </Link>
+           <Link href={`/${locale}/admin/users`}>
+             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-lg">👥</div>
+                 <h3 className="font-semibold text-slate-800">Users</h3>
+               </div>
+               <p className="text-sm text-slate-500">Manage registered users</p>
+             </div>
+           </Link>
 
-          <Link href="/admin/affiliate">
-            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center text-lg">💰</div>
-                <h3 className="font-semibold text-slate-800">Affiliate</h3>
-              </div>
-              <p className="text-sm text-slate-500">Manage commissions & withdrawals</p>
-            </div>
-          </Link>
+           <Link href={`/${locale}/admin/affiliate`}>
+             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center text-lg">💰</div>
+                 <h3 className="font-semibold text-slate-800">Affiliate</h3>
+               </div>
+               <p className="text-sm text-slate-500">Manage commissions & withdrawals</p>
+             </div>
+           </Link>
 
-          <Link href="/admin/settings">
-            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">⚙️</div>
-                <h3 className="font-semibold text-slate-800">Settings</h3>
-              </div>
-              <p className="text-sm text-slate-500">Site settings & configuration</p>
-            </div>
-          </Link>
+           <Link href={`/${locale}/admin/settings`}>
+             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">⚙️</div>
+                 <h3 className="font-semibold text-slate-800">Settings</h3>
+               </div>
+               <p className="text-sm text-slate-500">Site settings & configuration</p>
+             </div>
+           </Link>
 
-          <Link href="/admin/destinations">
-            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">🌍</div>
-                <h3 className="font-semibold text-slate-800">Destinations</h3>
-              </div>
-              <p className="text-sm text-slate-500">Manage top destinations</p>
-            </div>
-          </Link>
+           <Link href={`/${locale}/admin/destinations`}>
+             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">🌍</div>
+                 <h3 className="font-semibold text-slate-800">Destinations</h3>
+               </div>
+               <p className="text-sm text-slate-500">Manage top destinations</p>
+             </div>
+           </Link>
 
-          <Link href="/admin/promotions">
-            <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">🎉</div>
-                <h3 className="font-semibold text-slate-800">Promotions</h3>
-              </div>
-              <p className="text-sm text-slate-500">Manage promotional popups</p>
-            </div>
-          </Link>
+           <Link href={`/${locale}/admin/promotions`}>
+             <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">🎉</div>
+                 <h3 className="font-semibold text-slate-800">Promotions</h3>
+               </div>
+               <p className="text-sm text-slate-500">Manage promotional popups</p>
+             </div>
+           </Link>
         </div>
 
         {/* Recent Orders */}

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useI18n } from "@/components/providers/I18nProvider";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const HERO_IMAGES = [
@@ -12,7 +13,7 @@ const HERO_IMAGES = [
 ];
 
 export default function Hero() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
@@ -72,12 +73,12 @@ export default function Hero() {
       
       {/* 5. Buttons bo tròn mềm mại */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-        <a
-          href="/plans"
+        <Link
+          href={`/${locale}/plans`}
           className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-3.5 rounded-full shadow-lg transition-all"
         >
           {t("hero.browsePlans")}
-        </a>
+        </Link>
         <a
           href="#how-it-works"
           className="w-full sm:w-auto px-8 py-3.5 rounded-full font-medium text-white border border-white/30 hover:bg-white/10 backdrop-blur-sm transition-all"

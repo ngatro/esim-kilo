@@ -36,7 +36,7 @@ const REGIONS = [
 ];
 
 export default function PlansSection() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [regions, setRegions] = useState<Region[]>([]);
 
   useEffect(() => {
@@ -58,43 +58,43 @@ export default function PlansSection() {
         <div className="mb-10">
           <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">{t("coverage.popular")}</h3>
           <div className="flex flex-wrap justify-center gap-3">
-            {REGIONS.map((region) => (
-              <Link key={region.id} href={`/esim/${region.name}`}>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-5 py-3 bg-slate-100 hover:bg-orange-100 border border-slate-200 hover:border-orange-300 rounded-xl transition-colors"
-                >
-                  <span className="text-xl">{region.emoji}</span>
-                  <span className="font-medium text-slate-700">{region.name}</span>
-                </motion.div>
-              </Link>
-            ))}
-          </div>
-        </div>
+{REGIONS.map((region) => (
+               <Link key={region.id} href={`/${locale}/esim/${region.name}`}>
+                 <motion.div
+                   whileHover={{ scale: 1.05 }}
+                   whileTap={{ scale: 0.95 }}
+                   className="flex items-center gap-2 px-5 py-3 bg-slate-100 hover:bg-orange-100 border border-slate-200 hover:border-orange-300 rounded-xl transition-colors"
+                 >
+                   <span className="text-xl">{region.emoji}</span>
+                   <span className="font-medium text-slate-700">{region.name}</span>
+                 </motion.div>
+               </Link>
+             ))}
+           </div>
+         </div>
 
-        {/* Hot Countries */}
-        <div className="mb-10">
-          <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">{t("coverage.title")}</h3>
-          <div className="flex flex-wrap justify-center gap-3">
-            {HOT_COUNTRIES.map((country) => (
-              <Link key={country.code} href={`/esim/${country.code}`}>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-orange-400 hover:shadow-md rounded-xl transition-all"
-                >
-                  <span className="text-xl">{country.emoji}</span>
-                  <span className="font-medium text-slate-700 text-sm">{country.name}</span>
-                </motion.div>
-              </Link>
-            ))}
-          </div>
-        </div>
+         {/* Hot Countries */}
+         <div className="mb-10">
+           <h3 className="text-lg font-semibold text-slate-700 mb-4 text-center">{t("coverage.title")}</h3>
+           <div className="flex flex-wrap justify-center gap-3">
+             {HOT_COUNTRIES.map((country) => (
+               <Link key={country.code} href={`/${locale}/esim/${country.code}`}>
+                 <motion.div
+                   whileHover={{ scale: 1.05 }}
+                   whileTap={{ scale: 0.95 }}
+                   className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-orange-400 hover:shadow-md rounded-xl transition-all"
+                 >
+                   <span className="text-xl">{country.emoji}</span>
+                   <span className="font-medium text-slate-700 text-sm">{country.name}</span>
+                 </motion.div>
+               </Link>
+             ))}
+           </div>
+         </div>
 
-        {/* View All Button */}
-        <div className="text-center">
-          <Link href="/plans">
+         {/* View All Button */}
+         <div className="text-center">
+           <Link href={`/${locale}/plans`}>
             <motion.button
               className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3.5 rounded-xl text-base transition-colors shadow-lg"
               whileHover={{ scale: 1.03 }}

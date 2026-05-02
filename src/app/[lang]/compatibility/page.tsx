@@ -109,7 +109,7 @@ const ESIM_DEVICES = [
 ];
 
 export default function DeviceCompatibilityPage() {
-  const { t } = useI18n();
+   const { t, locale } = useI18n();
   const [search, setSearch] = useState("");
 
   const filteredDevices = useMemo(() => {
@@ -218,11 +218,11 @@ export default function DeviceCompatibilityPage() {
           {/* CTA */}
           <div className="mt-12 text-center">
             <p className="text-slate-600 mb-4">Ready to get your eSIM?</p>
-            <Link href="/plans">
-              <button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
-                Browse Plans
-              </button>
-            </Link>
+<Link href={`/${locale}/plans`}>
+               <button className="bg-orange-500 hover:bg-orange-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+                 Browse Plans
+               </button>
+             </Link>
           </div>
 
         </div>

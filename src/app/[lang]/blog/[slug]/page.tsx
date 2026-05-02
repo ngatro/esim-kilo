@@ -78,8 +78,8 @@ export default function BlogPostPage({ params }: PageProps) {
           <p className="text-6xl mb-4">404</p>
           <h1 className="text-2xl font-bold text-slate-800 mb-2">Article Not Found</h1>
           <p className="text-slate-500 mb-6">The article you&apos;re looking for doesn&apos;t exist or is not available in your language.</p>
-          <Link href="/blog" className="text-orange-500 hover:text-orange-600">
-            ← {t("common.back")}
+          <Link href={`/${locale}/blog`} className="text-orange-500 hover:text-orange-600">
+            ← {t("common.blog")}
           </Link>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function BlogPostPage({ params }: PageProps) {
           <div className="absolute bottom-0 left-0 right-0 p-8">
             <div className="max-w-4xl mx-auto">
               <Link 
-                href="/blog" 
+                href={`/${locale}/blog`} 
                 className="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 mb-4"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

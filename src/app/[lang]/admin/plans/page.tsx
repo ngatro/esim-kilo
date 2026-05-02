@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 interface Plan {
   id: string;
@@ -35,8 +36,9 @@ function formatData(gb: number): string {
 }
 
 export default function AdminPlansPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+   const { locale } = useI18n();
+   const { user, loading: authLoading } = useAuth();
+   const router = useRouter();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
@@ -139,11 +141,11 @@ export default function AdminPlansPage() {
       <div className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-xl font-bold text-slate-800">Plans Management</Link>
+            <Link href={`/${locale}/admin`} className="text-xl font-bold text-slate-800">Plans Management</Link>
             <span className="text-slate-400">|</span>
             <span className="text-sm text-slate-500">{plans.length} plans</span>
           </div>
-          <Link href="/admin" className="text-orange-500 hover:text-orange-600 text-sm font-medium">← Back to Dashboard</Link>
+          <Link href={`/${locale}/admin`} className="text-orange-500 hover:text-orange-600 text-sm font-medium">← Back to Dashboard</Link>
         </div>
       </div>
 

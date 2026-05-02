@@ -129,11 +129,12 @@ export default function Header() {
      },
    ];
 
-  const userItems = mounted && user ? [
-    { label: t("header.myOrders"), href: "/orders", children: null },
-    { label: t("common.affiliate"), href: "/affiliate", children: null },
-    ...(user.role === "admin" ? [{ label: t("common.admin"), href: `/${locale}/admin`, children: null }] : []),
-  ] : [];
+const userItems = mounted && user ? [
+     { label: t("header.myOrders"), href: `/${locale}/orders`, children: null },
+     { label: t("common.affiliate"), href: `/${locale}/affiliate`, children: null },
+     { label: t("common.wallet"), href: `/${locale}/wallet`, children: null },
+     ...(user.role === "admin" ? [{ label: t("common.admin"), href: `/${locale}/admin`, children: null }] : []),
+   ] : [];
 
   const allItems = [...navItems, ...userItems];
 
@@ -157,7 +158,7 @@ export default function Header() {
               </svg>
             </button>
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3">
+            <Link href={`/${locale}`} className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center">
                 <Image
                   src="/esim.svg"
@@ -209,11 +210,11 @@ export default function Header() {
                       }`}
                     >
                       {item.href === "/plans" ? (
-                        <div className="px-4 pt-3">
-                          <Link href="/plans" className="flex items-center justify-center gap-2 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors mb-3">
-                            <span>🌐</span> {t("header.allPlans")}
-                          </Link>
-                        </div>
+<div className="px-4 pt-3">
+                           <Link href={`/${locale}/plans`} className="flex items-center justify-center gap-2 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors mb-3">
+                             <span>🌐</span> {t("header.allPlans")}
+                           </Link>
+                         </div>
                       ) : (
                         null
                       )}
@@ -223,14 +224,14 @@ export default function Header() {
                             <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{t("header.popularRegions")}</p>
                             <div className="space-y-0.5">
                               {regions.map((r: { id: string; name: string; emoji: string }, idx: number) => (
-                                <Link
-                                  key={idx}
-                                  href={`/plans?regionId=${r.id}`}
-                                  className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
-                                >
-                                  {r.emoji && <span>{r.emoji}</span>}
-                                  {r.name}
-                                </Link>
+<Link
+                                       key={idx}
+                                       href={`/${locale}/plans?regionId=${r.id}`}
+                                       className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
+                                     >
+                                       {r.emoji && <span>{r.emoji}</span>}
+                                       {r.name}
+                                     </Link>
                               ))}
                             </div>
                           </div>
@@ -238,14 +239,14 @@ export default function Header() {
                             <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{t("header.hotCountries")}</p>
                             <div className="space-y-0.5">
                               {hotCountries.map((c: { code: string; name: string; emoji: string }, idx: number) => (
-                                <Link
-                                  key={idx}
-                                  href={`/plans?countryId=${c.code}`}
-                                  className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
-                                >
-                                  {c.emoji && <span>{c.emoji}</span>}
-                                  {c.name}
-                                </Link>
+<Link
+                                       key={idx}
+                                       href={`/${locale}/plans?countryId=${c.code}`}
+                                       className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
+                                     >
+                                       {c.emoji && <span>{c.emoji}</span>}
+                                       {c.name}
+                                     </Link>
                               ))}
                             </div>
                           </div>
@@ -413,30 +414,30 @@ export default function Header() {
                         <p className="text-sm font-medium text-slate-800 truncate">{user.name}</p>
                         <p className="text-xs text-slate-500 truncate">{user.email}</p>
                       </div>
-                      <Link href="/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        {t("common.profile") || "Profile"}
-                      </Link>
-                      <Link href="/orders" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        {t("header.myOrders")}
-                      </Link>
-                      <Link href="/affiliate" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Affiliate
-                      </Link>
-                      <Link href="/wallet" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                        Wallet
-                      </Link>
+<Link href={`/${locale}/profile`} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
+                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                             <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                           </svg>
+                           {t("common.profile") || "Profile"}
+                         </Link>
+                         <Link href={`/${locale}/orders`} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
+                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                           </svg>
+                           {t("header.myOrders")}
+                         </Link>
+                         <Link href={`/${locale}/affiliate`} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
+                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                           </svg>
+                           Affiliate
+                         </Link>
+                         <Link href={`/${locale}/wallet`} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
+                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                           </svg>
+                           Wallet
+                         </Link>
                       <div className="border-t border-slate-100 mt-1 pt-1">
                         <button
                           onClick={() => logout()}
@@ -536,29 +537,32 @@ export default function Header() {
                       <div className="pl-4 space-y-1 mt-1">
                         {item.children.filter((c: { label: string }) => c.label !== "divider").map((child: { label: string; href: string; children?: { label: string; href: string; emoji?: string }[] }, idx: number) => (
                           <div key={idx}>
-                            {child.children ? (
-                              <div className="py-1">
-                                <p className="text-xs font-semibold text-slate-400 uppercase mb-1">{child.label}</p>
-                                {child.children.map((sub: { label: string; href: string; emoji?: string }, subIdx: number) => (
-                                  <Link
-                                    key={subIdx}
-                                    href={sub.href}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="flex items-center gap-2 py-1.5 text-sm text-slate-500"
-                                  >
-                                    {sub.emoji} {sub.label}
-                                  </Link>
-                                ))}
-                              </div>
-                            ) : (
-                              <Link
-                                href={child.href}
-                                onClick={() => setMobileMenuOpen(false)}
-                                className="block py-1.5 text-sm text-slate-500"
-                              >
-                                {child.label}
-                              </Link>
-                            )}
+{child.children ? (
+                               <div className="py-1">
+                                 <p className="text-xs font-semibold text-slate-400 uppercase mb-1">{child.label}</p>
+                                 <div className="space-y-0.5">
+                                   {child.children.map((sub: { label: string; href: string; emoji?: string }, subIdx: number) => (
+                                     <Link
+                                       key={subIdx}
+                                       href={`${locale}${sub.href}`}
+                                       className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
+                                     >
+                                       {sub.emoji && <span>{sub.emoji}</span>}
+                                       {sub.label}
+                                     </Link>
+                                   ))}
+                                 </div>
+                               </div>
+                             ) : (
+                               <Link
+                                 key={idx}
+                                 href={`${locale}${child.href}`}
+                                 onClick={() => setMobileMenuOpen(false)}
+                                 className="block py-1.5 text-sm text-slate-500"
+                               >
+                                 {child.label}
+                               </Link>
+                             )}
                           </div>
                         ))}
                       </div>
