@@ -8,6 +8,7 @@ A full-featured eSIM marketplace built on Next.js 16 with internationalization, 
 
 ## Recently Completed
 
+- [x] **Compact multi-country display**: Changed country list in EsimDataTypeModal from vertical blocks to compact inline chips (flex-wrap layout), reducing vertical space usage for multi-country plans
 - [x] **Fix BigInt issue**: Database schema already uses String for iccid columns (not BigInt) - verified by code review
 - [x] **Remove FLEXIBLE_TOPUP placeholder**: Fixed order API to remove the fake FLEXIBLE_TOPUP code and use real DB data
 - [x] **PayPal flow fix**: Store topupPackageCode in localStorage before redirect, pass to webhook on payment confirm
@@ -255,7 +256,7 @@ Create `src/app/api/[route]/route.ts`
 | Add Database | `.kilocode/recipes/add-database.md` | Data persistence with Drizzle + SQLite |
 
 ## Session History
- 
+  
 | Date | Changes |
 |------|---------|
 | Initial | Template created with base setup |
@@ -268,16 +269,17 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-21 | Added Sync Topup Packages feature - Admin can sync top-up packages with batching and rate limiting |
 | 2026-04-22 | Fixed top-up issues: removed FLEXIBLE_TOPUP placeholder, added day selection UI, comprehensive eSIM API logging, PayPal flow topupPackageCode tracking |
 | 2026-04-23 | Refactored PlansCard & EsimDataTypeModal: 
-   - Moved all calculation logic from EsimDataTypeModal to PlansCard
-   - Page.tsx now manages state with activeConfig to store calculation results from PlansCard
-   - EsimDataTypeModal receives config from PlansCard via page state, allows data/duration selection with interactive buttons
-   - Added detailed plan information display (speed, network type, coverage, IP export, SMS status, activation type, validity period, top-up support, badges, popular/best-seller/hot flags) |
+  - Moved all calculation logic from EsimDataTypeModal to PlansCard
+  - Page.tsx now manages state with activeConfig to store calculation results from PlansCard
+  - EsimDataTypeModal receives config from PlansCard via page state, allows data/duration selection with interactive buttons
+  - Added detailed plan information display (speed, network type, coverage, IP export, SMS status, activation type, validity period, top-up support, badges, popular/best-seller/hot flags) |
 | 2026-04-28 | Fixed Google OAuth userId issue in order API - Enhanced userId extraction logic to prioritize session user ID (Google OAuth) > token (legacy) > email lookup, fixing null userId when logging in with Google OAuth |
 | 2026-04-29 | Fixed pending order top-up preservation: order API now computes extraDays directly, saves topupPackageCode, basePlanDays, extraDays; checkout fetch handles both ID and code; ensures correct pricing on resume |
 | 2026-04-29 | Implemented order update flow: Checkout creates pending order before PayPal redirect, stores pendingOrderId; PayPal webhook updates existing pending order instead of creating duplicate, eliminating duplicate orders |
 | 2026-04-29 | Header redesign: replaced avatar with Welcome text, moved hamburger to left, added mobile language dropdown, mobile login button, removed duplicate login from mobile menu |
 | 2026-04-30 | Full cart system: API routes with validation, SWR integration, optimistic UI, localStorage sync on login, loading states in CartModal |
 | 2026-05-01 | Fixed language switching URL updates: Updated Header.tsx to use usePathname() hook instead of router.pathname for proper Next.js 16 App Router compatibility. LanguageSwitcher.tsx and middleware.ts already correctly handle language prefix updates. Verified with comprehensive tests. |
+| 2026-05-03 | Compact multi-country display: Changed country list from vertical blocks to inline flex-wrap chips in EsimDataTypeModal (src/app/[lang]/esim/[country]/EsimDataTypeModal.tsx:275-300), reducing vertical space for multi-country plans showing 10+ countries |
 | 2026-05-03 | Multi-country plan display + operator info in EsimDataTypeModal + admin link locale prefix |
    - Fixed admin link in Header.tsx to include locale prefix (`/${locale}/admin` instead of `/admin`) so admin dashboard is accessible with proper i18n routing
    - Added country coverage and operator display to EsimDataTypeModal.tsx:
