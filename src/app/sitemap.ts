@@ -1,64 +1,69 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from "next";
 
-// Định nghĩa kiểu dữ liệu cho Plan từ API của bạn
 interface Plan {
   id: string;
   countryName: string;
   updatedAt: string;
-  // ... các trường khác bạn có thể bỏ qua nếu không dùng đến
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://owsim.com';
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://owsim.com";
 
   try {
-    // 1. Fetch dữ liệu từ API plans
     const response = await fetch(`${BASE_URL}/api/plans`, {
-      next: { revalidate: 3600 } // Cache dữ liệu trong 1 tiếng để tăng tốc độ
+      next: { revalidate: 3600 },
     });
-    
+
     const data = await response.json();
     const plans: Plan[] = data.plans || [];
 
-    // 2. Lọc trùng quốc gia và tạo slug
-    const countryMap = new Map();
+    const countryMap = new Map<string, any>();
 
     plans.forEach((plan) => {
-      if (plan.countryName) {
-        const countrySlug = plan.countryName
-          .toLowerCase()
-          .trim()
-          .replace(/\s+/g, '-');
+      if (!plan.countryName) return;
 
-        // Map sẽ ghi đè nếu trùng slug, đảm bảo mỗi nước chỉ xuất hiện 1 lần
-        countryMap.set(countrySlug, {
-          url: `${BASE_URL}/esim/${countrySlug}`,
-          lastModified: new Date(plan.updatedAt),
-          changeFrequency: 'daily' as const,
-          priority: 0.8,
-        });
-      }
+      const slug = plan.countryName
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s]/g, "")
+        .replace(/\s+/g, "-");
+
+      countryMap.set(slug, {
+        en: `${BASE_URL}/en/esim/${slug}`,
+        de: `${BASE_URL}/de/esim/${slug}`,
+        fr: `${BASE_URL}/fr/esim/${slug}`,
+        vi: `${BASE_URL}/vi/esim/${slug}`,
+        updatedAt: plan.updatedAt,
+      });
     });
 
-    // 3. Kết hợp với các trang tĩnh khác (Trang chủ, v.v.)
     const staticPages: MetadataRoute.Sitemap = [
       {
-        url: BASE_URL,
+        url: `${BASE_URL}/en`,
         lastModified: new Date(),
-        changeFrequency: 'daily',
-        priority: 1.0,
+        changeFrequency: "daily",
+        priority: 1,
       },
     ];
 
-    const dynamicPages = Array.from(countryMap.values());
+    const dynamicPages: MetadataRoute.Sitemap = [];
+
+    countryMap.forEach((value) => {
+      ["en", "de", "fr", "vi"].forEach((lang) => {
+        dynamicPages.push({
+          url: value[lang],
+          lastModified: new Date(value.updatedAt),
+          changeFrequency: "daily",
+          priority: 0.9,
+        });
+      });
+    });
 
     return [...staticPages, ...dynamicPages];
   } catch (error) {
-    console.error('Sitemap fetch error:', error);
-    // Nếu lỗi API, vẫn trả về trang chủ để bot không bị 404
     return [
       {
-        url: BASE_URL,
+        url: `${BASE_URL}/en`,
         lastModified: new Date(),
       },
     ];

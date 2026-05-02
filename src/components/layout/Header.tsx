@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCart } from "@/components/providers/CartProvider";
@@ -34,6 +35,7 @@ const DEFAULT_REGIONS = [
 export default function Header() {
   const { t, locale, setLocale } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout, loading: authLoading } = useAuth();
   const { items } = useCart();
   const { openLogin, openCart } = useUI();
@@ -75,47 +77,57 @@ export default function Header() {
     }, 300);
   };
 
-  const handleLanguageChange = (newLocale: string) => {
-    setLocale(newLocale as typeof locale);
-    router.refresh();
-  };
+   const handleLanguageChange = (newLocale: string) => {
+      setLocale(newLocale as typeof locale);
+      
+      // Get current pathname and remove any existing language prefix
+      const currentPathname = pathname;
+      const pathMatch = currentPathname.match(/^\/[a-z]{2}(.*)$/);
+      const basePath = pathMatch ? pathMatch[1] : currentPathname;
+      
+      // Construct new URL with the selected language prefix
+      const newPath = `/${newLocale}${basePath}`;
+      
+      // Navigate to the new URL
+      router.push(newPath);
+    };
 
   const currentLocaleLabel = SUPPORTED_LOCALES.find(l => l.code === locale)?.code.toUpperCase() || "EN";
 
   const cartCount = mounted ? items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
-  const navItems: { label: string; href: string; children?: { label: string; href: string; emoji?: string; children?: { label: string; href: string; emoji?: string }[] }[] | null }[] = [
-    { 
-      label: t("common.home"), 
-      href: "/",
-      children: null 
-    },
-    { 
-      label: t("common.plans"), 
-      href: "/plans",
-      children: [
-        { label: t("header.allPlans"), href: "/plans" },
-        { label: "divider", href: "" },
-        { label: t("header.popularRegions"), href: "", children: regions.map((r: { id: string; name: string; emoji: string }) => ({ label: r.name, href: `/plans?regionId=${r.id}`, emoji: r.emoji })) },
-        { label: t("header.hotCountries"), href: "", children: hotCountries.map((c: { code: string; name: string; emoji: string }) => ({ label: c.name, href: `/plans?countryId=${c.code}`, emoji: c.emoji })) },
-      ]
-    },
-    { 
-      label: t("header.devices"), 
-      href: "/compatibility",
-      children: null
-    },
-    { 
-      label: t("common.blog"), 
-      href: "/blog",
-      children: null 
-    },
-    { 
-      label: t("header.support"), 
-      href: "/support",
-      children: null 
-    },
-  ];
+   const navItems: { label: string; href: string; children?: { label: string; href: string; emoji?: string; children?: { label: string; href: string; emoji?: string }[] }[] | null }[] = [
+     { 
+       label: t("common.home"), 
+       href: `/${locale}`,
+       children: null 
+     },
+     { 
+       label: t("common.plans"), 
+       href: `/${locale}/plans`,
+       children: [
+         { label: t("header.allPlans"), href: `/${locale}/plans` },
+         { label: "divider", href: "" },
+         { label: t("header.popularRegions"), href: "", children: regions.map((r: { id: string; name: string; emoji: string }) => ({ label: r.name, href: `/${locale}/plans?regionId=${r.id}`, emoji: r.emoji })) },
+         { label: t("header.hotCountries"), href: "", children: hotCountries.map((c: { code: string; name: string; emoji: string }) => ({ label: c.name, href: `/${locale}/plans?countryId=${c.code}`, emoji: c.emoji })) },
+       ]
+     },
+     { 
+       label: t("header.devices"), 
+       href: `/${locale}/compatibility`,
+       children: null
+     },
+     { 
+       label: t("common.blog"), 
+       href: `/${locale}/blog`,
+       children: null 
+     },
+     { 
+       label: t("header.support"), 
+       href: `/${locale}/support`,
+       children: null 
+     },
+   ];
 
   const userItems = mounted && user ? [
     { label: t("header.myOrders"), href: "/orders", children: null },

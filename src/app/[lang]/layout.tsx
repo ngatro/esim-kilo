@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_RATES, type ExchangeRates } from "@/lib/currency";
 import { I18nProvider } from "@/components/providers/I18nProvider";
@@ -28,14 +28,51 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "OW SIM — OpenWorld eSIM | Stay Connected Anywhere",
-  description: "Affordable eSIM data plans for international travel. Instant activation in 190+ countries. No roaming fees, no contracts.",
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
-};
+export async function generateMetadata({ params }: { params: { locale: string } }): Promise<Metadata> {
+  const locale = params.locale;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://domain.com';
+  
+  // Define URLs for each language
+  const urls = {
+    en: `${baseUrl}/en`,
+    de: `${baseUrl}/de`,
+    fr: `${baseUrl}/fr`,
+    vi: `${baseUrl}/vi`,
+  };
+
+  // Define title and description per locale
+  const titles: Record<string, string> = {
+    en: "OpenWorld eSIM | Travel eSIM for International Trips (190+ Countries)",
+    de: "OpenWorld eSIM | Reise-eSIM für internationale Reisen (190+ Länder)",
+    fr: "OpenWorld eSIM | eSIM de voyage pour voyages internationaux (190+ pays)",
+    vi: "OpenWorld eSIM | eSIM du lịch cho các chuyến đi quốc tế (190+ quốc gia)",
+  };
+
+  const descriptions: Record<string, string> = {
+    en: "Traveling abroad? Get eSIM data before you go. Avoid roaming fees and stay connected in 190+ countries with instant activation.",
+    de: "Reist du ins Ausland? Hol dir eSIM-Daten bevor du gehst. Vermeide Roaming-Gebühren und bleibe in 190+ Ländern verbunden mit sofortiger Aktivierung.",
+    fr: "Vous voyagez à l'étranger ? Obtenez des données eSIM avant votre départ. Évitez les frais d'itinérance et restez connecté dans plus de 190 pays avec une activation instantanée.",
+    vi: "Du lịch nước ngoài? Nhận dữ liệu eSIM trước khi đi. Tránh phí itinerant và duy trì kết nối trong 190+ quốc gia với kích hoạt ngay lập tức.",
+  };
+
+  return {
+    title: titles[locale] || titles.en,
+    description: descriptions[locale] || descriptions.en,
+    icons: {
+      icon: "/esim.svg",
+      apple: "/apple-touch-icon.png",
+    },
+    alternates: {
+      canonical: `${baseUrl}/${locale}`,
+      languages: {
+        en: urls.en,
+        de: urls.de,
+        fr: urls.fr,
+        vi: urls.vi,
+      },
+    },
+  };
+}
 
 async function getRates(): Promise<ExchangeRates> {
   try {
@@ -53,14 +90,16 @@ async function getRates(): Promise<ExchangeRates> {
 
 export default async function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { locale: string };
 }) {
   const rates = await getRates();
   const session = await getServerSession(authOptions);
   
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={params.locale} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

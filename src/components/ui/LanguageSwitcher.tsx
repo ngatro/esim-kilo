@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n, SUPPORTED_LOCALES, type Locale } from "@/components/providers/I18nProvider";
 
 export default function LanguageSwitcher() {
   const { locale, setLocale } = useI18n();
+  const router = useRouter();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -15,9 +18,22 @@ export default function LanguageSwitcher() {
   }, []);
 
   const handleLanguageChange = useCallback((newLocale: Locale) => {
+    // Update locale context
     setLocale(newLocale);
+    
+    // Get current pathname and remove any existing language prefix
+    const currentPathname = pathname;
+    const pathMatch = currentPathname.match(/^\/[a-z]{2}(.*)$/);
+    const basePath = pathMatch ? pathMatch[1] : currentPathname;
+    
+    // Construct new URL with the selected language prefix
+    const newPath = `/${newLocale}${basePath}`;
+    
+    // Navigate to the new URL
+    router.push(newPath);
+    
     setIsOpen(false);
-  }, [setLocale]);
+  }, [locale, pathname, router, setLocale]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

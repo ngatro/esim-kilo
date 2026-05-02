@@ -36,15 +36,38 @@ export function middleware(request: NextRequest) {
   const refCode = searchParams.get('ref');
   const hasRefCookie = request.cookies.has('simpal_ref');
 
+  // Redirect root to /en
+  if (pathname === '/') {
+    const response = NextResponse.redirect(new URL('/en', request.url), 301);
+    if (refCode && !hasRefCookie) {
+      response.cookies.set('simpal_ref', refCode, COOKIE_CONFIG);
+    }
+    return response;
+  }
+
+  // Handle paths with language prefix: /[lang]/*
+  const pathMatch = pathname.match(/^\/([a-z]{2})(.*)$/);
+  let langPrefix = '';
+  let restOfPath = pathname;
+  
+  if (pathMatch) {
+    const [, lang, rest] = pathMatch;
+    // Validate that lang is one of our supported languages
+    if (['en', 'de', 'fr', 'vi'].includes(lang)) {
+      langPrefix = `/${lang}`;
+      restOfPath = rest;
+    }
+  }
+
   // --- SEO Redirects (return immediately if matched) ---
 
-  // Plans slug redirect: /plans/{slug} -> /esim/{country}/{slug}
-  if (pathname.startsWith('/plans/')) {
-    const slugParam = pathname.split('/')[2];
+  // Plans slug redirect: /[lang]/plans/{slug} -> /[lang]/esim/{country}/{slug}
+  if (restOfPath.startsWith('/plans/')) {
+    const slugParam = restOfPath.split('/')[2];
     if (slugParam && !/^\d+$/.test(slugParam)) {
       const countryMatch = slugParam.match(/^esim-([a-z]+)-/);
       const country = countryMatch ? countryMatch[1] : slugParam.split('-')[0];
-      const response = NextResponse.redirect(new URL(`/esim/${country}/${slugParam}`, request.url), 301);
+      const response = NextResponse.redirect(new URL(`${langPrefix}/esim/${country}/${slugParam}`, request.url), 301);
       if (refCode && !hasRefCookie) {
         response.cookies.set('simpal_ref', refCode, COOKIE_CONFIG);
       }
@@ -52,13 +75,13 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Country code redirect: /esim/{2-char-code} -> /esim/{country-name}
-  if (pathname.startsWith('/esim/')) {
-    const segments = pathname.split('/');
+  // Country code redirect: /[lang]/esim/{2-char-code} -> /[lang]/esim/{country-name}
+  if (restOfPath.startsWith('/esim/')) {
+    const segments = restOfPath.split('/');
     if (segments.length === 3) {
       const code = segments[2];
       if (code.length === 2 && COUNTRY_LOOKUP[code]) {
-        const response = NextResponse.redirect(new URL(`/esim/${COUNTRY_LOOKUP[code]}`, request.url), 301);
+        const response = NextResponse.redirect(new URL(`${langPrefix}/esim/${COUNTRY_LOOKUP[code]}`, request.url), 301);
         if (refCode && !hasRefCookie) {
           response.cookies.set('simpal_ref', refCode, COOKIE_CONFIG);
         }
@@ -67,12 +90,12 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Query param redirects on /plans
-  if (pathname === '/plans') {
+  // Query param redirects on /[lang]/plans
+  if (restOfPath === '/plans') {
     const countryId = searchParams.get('countryId');
     if (countryId) {
       const slug = COUNTRY_LOOKUP[countryId] || countryId.toLowerCase();
-      const response = NextResponse.redirect(new URL(`/esim/${slug}`, request.url), 301);
+      const response = NextResponse.redirect(new URL(`${langPrefix}/esim/${slug}`, request.url), 301);
       if (refCode && !hasRefCookie) {
         response.cookies.set('simpal_ref', refCode, COOKIE_CONFIG);
       }
@@ -82,7 +105,7 @@ export function middleware(request: NextRequest) {
     const regionId = searchParams.get('regionId');
     if (regionId) {
       const slug = REGION_MAP[regionId] || regionId.toLowerCase();
-      const response = NextResponse.redirect(new URL(`/esim/${slug}`, request.url), 301);
+      const response = NextResponse.redirect(new URL(`${langPrefix}/esim/${slug}`, request.url), 301);
       if (refCode && !hasRefCookie) {
         response.cookies.set('simpal_ref', refCode, COOKIE_CONFIG);
       }

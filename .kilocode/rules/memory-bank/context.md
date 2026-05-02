@@ -273,3 +273,4 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-29 | Implemented order update flow: Checkout creates pending order before PayPal redirect, stores pendingOrderId; PayPal webhook updates existing pending order instead of creating duplicate, eliminating duplicate orders |
 | 2026-04-29 | Header redesign: replaced avatar with Welcome text, moved hamburger to left, added mobile language dropdown, mobile login button, removed duplicate login from mobile menu |
 | 2026-04-30 | Full cart system: API routes with validation, SWR integration, optimistic UI, localStorage sync on login, loading states in CartModal |
+| 2026-05-01 | Fixed language switching URL updates: Updated Header.tsx to use usePathname() hook instead of router.pathname for proper Next.js 16 App Router compatibility. LanguageSwitcher.tsx and middleware.ts already correctly handle language prefix updates. Verified with comprehensive tests. |
