@@ -101,14 +101,29 @@ export default function EsimDataTypeModal({
     }
   }, [config]);
   
-   // Use config values for computed data - wrap in useMemo to prevent stale closures
-   const topupPackages = useMemo(() => config?.topupPackages ?? [], [config?.topupPackages]);
-   const fupPlans = useMemo(() => config?.fupPlans ?? [], [config?.fupPlans]);
-   const regularPlans = useMemo(() => config?.regularPlans ?? [], [config?.regularPlans]);
-   const dataOptions = useMemo(() => config?.dataOptions ?? [], [config?.dataOptions]);
-   const fupDataOptions = useMemo(() => config?.fupDataOptions ?? [], [config?.fupDataOptions]);
-   const durationOptions = useMemo(() => config?.durationOptions ?? [], [config?.durationOptions]);
-   const fupDurationOptions = useMemo(() => config?.fupDurationOptions ?? [], [config?.fupDurationOptions]);
+    // Use config values for computed data - wrap in useMemo to prevent stale closures
+const topupPackages = useMemo(() => config?.topupPackages ?? [], [config?.topupPackages]);
+    const fupPlans = useMemo(() => config?.fupPlans ?? [], [config?.fupPlans]);
+    const regularPlans = useMemo(() => config?.regularPlans ?? [], [config?.regularPlans]);
+    const dataOptions = useMemo(() => config?.dataOptions ?? [], [config?.dataOptions]);
+    const fupDataOptions = useMemo(() => config?.fupDataOptions ?? [], [config?.fupDataOptions]);
+    // For FUP, durations are static; for regular, recompute based on selectedData
+    const fupDurationOptions = useMemo(() => config?.fupDurationOptions ?? [], [config?.fupDurationOptions]);
+    const regularDurationOptions = useMemo(() => {
+      if (!regularPlans.length) return [];
+      return Array.from(new Set(regularPlans.filter(p => p.dataAmount === selectedData).map(p => p.durationDays))).sort((a, b) => a - b);
+    }, [regularPlans, selectedData]);
+
+    // Auto-update duration when data changes in regular mode
+    useEffect(() => {
+      if (dataCategory === 'regular' && regularDurationOptions.length > 0) {
+        if (!regularDurationOptions.includes(selectedDuration)) {
+          setSelectedDuration(regularDurationOptions[0]);
+        }
+      }
+    }, [regularDurationOptions, selectedDuration, dataCategory]);
+
+    const allDurations = [1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 180];
   
   // Computed values that depend on selection
   const ALL_DURATIONS = [1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 180];
@@ -212,6 +227,17 @@ export default function EsimDataTypeModal({
     setNetworkList(networkListParsed);
     setLocationsList(locationsParsed);
   }, [basePlan]);
+
+  // Auto-adjust selectedDuration for regular plans when available durations change after data selection
+  useEffect(() => {
+    if (dataCategory === 'regular' && regularDurationOptions.length > 0) {
+      const maxAvailable = Math.max(...regularDurationOptions);
+      // If current selection is not in available options AND is <= max, reset to first option
+      if (!regularDurationOptions.includes(selectedDuration) && selectedDuration <= maxAvailable) {
+        setSelectedDuration(regularDurationOptions[0]);
+      }
+    }
+  }, [dataCategory, regularDurationOptions, selectedDuration]);
 
 
   // All durations are enabled - topup allows any duration
@@ -368,12 +394,12 @@ return (
                 <label className="text-[11px] font-bold text-slate-900 uppercase mb-4 block tracking-wider">{t("esimDataTypeModal.step2")}</label>
                 {dataCategory === 'fup' ? (
                   <div className="grid grid-cols-3 gap-2">
-                    {[1, 3, 5, 10, 15, 30].map((d) => (
+                    {fupDurationOptions.map((d) => (
                       <button
                         key={d}
                         onClick={() => setSelectedDuration(d)}
                         className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
-                          selectedDuration === d && [1, 3, 5, 10, 15, 30].includes(selectedDuration)
+                          selectedDuration === d && fupDurationOptions.includes(selectedDuration)
                             ? "border-orange-500 text-orange-600 bg-orange-50/30"
                             : "border-slate-100 text-slate-500 hover:border-slate-200"
                         }`}
@@ -385,7 +411,7 @@ return (
                       <input
                         type="number"
                         placeholder="Custom days..."
-                        value={[1, 3, 5, 10, 15, 30].includes(selectedDuration) ? "" : selectedDuration}
+                        value={fupDurationOptions.includes(selectedDuration) ? "" : selectedDuration}
                         onChange={(e) => {
                           const val = parseInt(e.target.value);
                           if (val > 0) setSelectedDuration(val);
@@ -396,21 +422,21 @@ return (
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300">{t("esimDataTypeModal.day")}</span>
                     </div>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-2">
-                    {durationOptions.map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => setSelectedDuration(d)}
-                        className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
-                          selectedDuration === d ? "border-orange-500 text-orange-600 bg-orange-50/30" : "border-slate-100 text-slate-500 hover:border-slate-200"
-                        }`}
-                      >
-                        {d}d
-                      </button>
-                    ))}
-                  </div>
-                )}
+                 ) : (
+                   <div className="grid grid-cols-3 gap-2">
+                     {regularDurationOptions.map((d) => (
+                       <button
+                         key={d}
+                         onClick={() => setSelectedDuration(d)}
+                         className={`py-3 rounded-xl text-sm font-semibold transition-all border-2 ${
+                           selectedDuration === d ? "border-orange-500 text-orange-600 bg-orange-50/30" : "border-slate-100 text-slate-500 hover:border-slate-200"
+                         }`}
+                       >
+                         {d}d
+                       </button>
+                     ))}
+                   </div>
+                 )}
               </div>
 
               {/* Quantity */}
