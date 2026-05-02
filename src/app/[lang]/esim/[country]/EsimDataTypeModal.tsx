@@ -271,33 +271,23 @@ return (
                 </div>
               </div>
 
-              {/* Coverage - show for multi-country plans */}
-              {(basePlan?.coverageCount || 0) >= 2 && networkList.length > 0 && (
-                <div>
-                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-5">{t("esimDataTypeModal.planSpecs")} - {networkList.length} {t("plans.countries")}</h3>
-                  <div className="space-y-4">
-                    {networkList.map((loc: any, idx: number) => (
-                      <div key={idx} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                        <p className="text-sm font-bold text-slate-800 mb-2">
-                          {(loc.locationName && t(`countries.${loc.locationCode}`) !== `countries.${loc.locationCode}`
-                            ? t(`countries.${loc.locationCode}`)
-                            : loc.locationName || loc.locationCode)}
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {loc.operatorList?.map((op: any, j: number) => (
-                            <span
-                              key={j}
-                              className="bg-white px-2.5 py-1 rounded-lg text-xs text-slate-600 border border-slate-100 font-medium"
-                            >
-                              {op.operatorName} {op.networkType}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+               {/* Coverage - show for multi-country plans */}
+               {(basePlan?.coverageCount || 0) >= 2 && networkList.length > 0 && (
+                 <div>
+                   <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">{t("esimDataTypeModal.planSpecs")} - {networkList.length} {t("plans.countries")}</h3>
+                   <div className="flex flex-wrap gap-2">
+                     {networkList.map((loc: any, idx: number) => (
+                       <div key={idx} className="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                         <p className="text-xs font-medium text-slate-700">
+                           {(loc.locationName && t(`countries.${loc.locationCode}`) !== `countries.${loc.locationCode}`
+                             ? t(`countries.${loc.locationCode}`)
+                             : loc.locationName || loc.locationCode)}
+                         </p>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
 
               {/* Coverage - show for single country plans with multiple operators */}
               {(basePlan?.coverageCount || 0) === 1 && networkList.length > 0 && (
