@@ -235,9 +235,11 @@ export default function PlansPage() {
                   <div className="absolute bottom-4 left-4 right-4">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-2xl">{dest.emoji}</span>
-                      <h3 className="text-xl font-bold text-white drop-shadow-lg">
-                        {t(`countries.${dest.id}`)}
-                      </h3>
+                       <h3 className="text-xl font-bold text-white drop-shadow-lg">
+                         {dest.id && t(`countries.${dest.id}`) !== `countries.${dest.id}`
+                           ? t(`countries.${dest.id}`)
+                           : dest.id || dest.name || "Unknown"}
+                       </h3>
                     </div>
                     <p className="text-white/80 text-sm font-medium drop-shadow">{dest.landmark}</p>
                   </div>

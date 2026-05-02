@@ -398,9 +398,11 @@ return (
         <p className="text-white/80 text-[10px] font-bold uppercase tracking-[0.4em] mb-3 drop-shadow-sm">
           {t("plans.premiumConnectivity")}
         </p>
-        <h1 className="text-5xl md:text-7xl font-medium text-white mb-2 tracking-tighter drop-shadow-xl">
-          {t(`countries.${displayNameId}`)}
-        </h1>
+         <h1 className="text-5xl md:text-7xl font-medium text-white mb-2 tracking-tighter drop-shadow-xl">
+           {displayNameId && t(`countries.${displayNameId}`) !== `countries.${displayNameId}`
+             ? t(`countries.${displayNameId}`)
+             : displayNameId || "Select Destination"}
+         </h1>
         <div className="h-1 w-12 bg-orange-500 rounded-full mb-4 shadow-lg shadow-orange-500/50" />
       </div>
     </div>

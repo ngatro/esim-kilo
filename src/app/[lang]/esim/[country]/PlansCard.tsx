@@ -265,9 +265,11 @@ export default function PlansCard({ group, onDetailClick }: PlansCardProps) {
         
         <div className="absolute bottom-4 left-6">
           <p className="text-slate-500 text-[8px] font-semibold uppercase tracking-[0.3em] mb-0.5">eSIM</p>
-          <h3 className="text-3xl font-medium text-slate-900 tracking-tighter leading-none">
-            {t(`countries.${countryId}`)}
-          </h3>
+           <h3 className="text-3xl font-medium text-slate-900 tracking-tighter leading-none">
+             {countryId && t(`countries.${countryId}`) !== `countries.${countryId}`
+               ? t(`countries.${countryId}`)
+               : countryId || destination || "Unknown"}
+           </h3>
         </div>
       </div>
 

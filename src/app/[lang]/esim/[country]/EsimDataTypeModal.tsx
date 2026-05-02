@@ -255,9 +255,13 @@ return (
             <div className="relative w-full aspect-video lg:aspect-[16/8] shrink-0">
               <Image src={heroImage} alt={countryName} fill className="object-cover" unoptimized />
               <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 lg:bottom-8 lg:left-10">
-                <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 tracking-tighter drop-shadow-sm">{t(`countries.${countryId}`)}</h2>
-              </div>
+                <div className="absolute bottom-6 left-6 lg:bottom-8 lg:left-10">
+                 <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 tracking-tighter drop-shadow-sm">
+                   {countryId && t(`countries.${countryId}`) !== `countries.${countryId}`
+                     ? t(`countries.${countryId}`)
+                     : countryId || countryName || "Unknown"}
+                 </h2>
+               </div>
             </div>
 
             <div className="px-6 lg:px-10 py-8 space-y-8">
@@ -279,9 +283,9 @@ return (
                      {networkList.map((loc: any, idx: number) => (
                        <div key={idx} className="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
                          <p className="text-xs font-medium text-slate-700">
-                           {(loc.locationName && t(`countries.${loc.locationCode}`) !== `countries.${loc.locationCode}`
+                           {loc.locationName && loc.locationCode && t(`countries.${loc.locationCode}`) !== `countries.${loc.locationCode}`
                              ? t(`countries.${loc.locationCode}`)
-                             : loc.locationName || loc.locationCode)}
+                             : loc.locationName || loc.locationCode || "Unknown"}
                          </p>
                        </div>
                      ))}
