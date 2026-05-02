@@ -170,8 +170,8 @@ export default function OrdersPage() {
       <div className="min-h-screen bg-orange-50 text-slate-800 py-12">
         <div className="max-w-md mx-auto px-4 text-center">
           <p className="text-5xl mb-4">📱</p>
-          <h1 className="text-2xl font-bold mb-3">View Your Orders</h1>
-          <p className="text-slate-600 text-sm mb-6">Enter the email you used during checkout</p>
+          <h1 className="text-2xl font-bold mb-3">{t("orders.viewYourOrders")}</h1>
+          <p className="text-slate-600 text-sm mb-6">{t("orders.emailPlaceholder")}</p>
           <div className="flex gap-2">
             <input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)}
               placeholder="your@email.com" onKeyDown={(e) => e.key === "Enter" && handleGuestSearch()}
@@ -192,7 +192,7 @@ export default function OrdersPage() {
       <div className="max-w-4xl mx-auto px-3 sm:px-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">My Orders</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">{t("orders.title")}</h1>
             <p className="text-slate-600 text-sm mt-1">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
           </div>
           <div className="flex gap-2">
@@ -209,8 +209,8 @@ export default function OrdersPage() {
             className="bg-green-500/20 border border-green-500/40 rounded-xl p-4 mb-4 flex items-center gap-3">
             <span className="text-2xl">🎉</span>
             <div>
-              <p className="text-green-400 font-medium">Your eSIM is ready!</p>
-              <p className="text-green-300/70 text-sm">Check your email or expand the order to view QR code.</p>
+              <p className="text-green-400 font-medium">{t("orders.esimReady")}</p>
+              <p className="text-green-300/70 text-sm">{t("orders.checkEmail")}</p>
             </div>
           </motion.div>
         )}
@@ -218,8 +218,8 @@ export default function OrdersPage() {
         {orders.length === 0 ? (
           <div className="bg-white/80 border border-slate-200 rounded-2xl p-12 sm:p-16 text-center">
             <p className="text-5xl mb-4">📱</p>
-            <h3 className="text-xl font-semibold text-slate-800 mb-2">No orders found</h3>
-            <p className="text-slate-600 mb-6 text-sm">Your eSIM orders will appear here after purchase</p>
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">{t("orders.noOrders")}</h3>
+            <p className="text-slate-600 mb-6 text-sm">{t("orders.noOrdersDesc")}</p>
             <Link href={`/${locale}/plans`}>
               <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
                 {t("common.browsePlans")}
@@ -239,7 +239,7 @@ export default function OrdersPage() {
                       <span className="text-lg sm:text-xl">{order.status === "completed" ? "✅" : "⏳"}</span>
                     </div>
                     <div>
-                      <p className="text-slate-800 font-semibold text-sm sm:text-base">Order #{10000 + order.id}</p>
+                      <p className="text-slate-800 font-semibold text-sm sm:text-base">{t("orders.order")} #{10000 + order.id}</p>
                       <p className="text-slate-500 text-xs sm:text-sm">
                         {new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
@@ -304,12 +304,12 @@ export default function OrdersPage() {
                                 </div>
                                 <div className="flex-1 space-y-2 sm:space-y-3 text-center sm:text-left">
                                   <div>
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Scan to Activate</p>
-                                    <p className="text-slate-500 text-xs sm:text-sm">Settings → Cellular → Add eSIM → Scan QR Code</p>
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">{t("orders.scanToActivate")}</p>
+                                    <p className="text-slate-500 text-xs sm:text-sm">{t("orders.scanInstructions")}</p>
                                   </div>
                                   {item.activationCode && (
                                     <div>
-                                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Manual Activation Code</p>
+                                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">{t("orders.manualActivationCode")}</p>
                                       <div className="bg-white border border-slate-200 rounded-lg p-2 sm:p-3">
                                         <code className="text-orange-500 text-[10px] sm:text-xs break-all">{item.activationCode}</code>
                                       </div>
@@ -317,7 +317,7 @@ export default function OrdersPage() {
                                   )}
                                   {item.esimLpaString && (
                                     <div>
-                                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">LPA String (Manual)</p>
+                                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">{t("orders.lpaString")}</p>
                                       <div className="bg-white border border-slate-200 rounded-lg p-2 sm:p-3">
                                         <code className="text-cyan-500 text-[10px] sm:text-xs break-all">{item.esimLpaString}</code>
                                       </div>
@@ -326,7 +326,7 @@ export default function OrdersPage() {
                                   {item.esimStatus && (
                                     <div className="mt-3 space-y-2">
                                       <div className="flex items-center justify-between">
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Status</p>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t("orders.status")}</p>
                                         {(() => {
                                           const status = getEsimStatusLabel(item);
                                           return (
@@ -367,7 +367,7 @@ export default function OrdersPage() {
                                           if (plan?.supportTopUpType === 1) {
                                             return (
                                               <div className="mt-3 text-center">
-                                                <span className="text-slate-400 text-xs">Top-up not available for this plan</span>
+                                                <span className="text-slate-400 text-xs">{t("orders.topUpNotAvailable")}</span>
                                               </div>
                                             );
                                           }
@@ -381,7 +381,7 @@ export default function OrdersPage() {
                             ) : (
                               <div className="text-center py-6">
                                 <div className="animate-spin w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full mx-auto mb-2" />
-                                <p className="text-slate-500 text-xs">Processing your eSIM...</p>
+                                <p className="text-slate-500 text-xs">{t("orders.processing")}</p>
                               </div>
                             )}
                           </div>
@@ -390,9 +390,9 @@ export default function OrdersPage() {
                         {/* Payment info */}
                         <div className="bg-slate-50/80 rounded-xl p-3 sm:p-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs">
-                            <div><p className="text-slate-500">Amount</p><p className="text-slate-800 font-semibold">{formatPrice(order.totalAmount)}</p></div>
-                            <div><p className="text-slate-500">Payment</p><p className={order.status === "completed" ? "text-green-600" : "text-yellow-600"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
-                            <div><p className="text-slate-500">eSIM</p>
+                            <div><p className="text-slate-500">{t("orders.amount")}</p><p className="text-slate-800 font-semibold">{formatPrice(order.totalAmount)}</p></div>
+                            <div><p className="text-slate-500">{t("orders.payment")}</p><p className={order.status === "completed" ? "text-green-600" : "text-yellow-600"}>{order.status === "completed" ? "✅ Paid" : order.status}</p></div>
+                            <div><p className="text-slate-500">{t("orders.esim")}</p>
                               {(() => {
                                 const labels = order.orderItems.map(i => getEsimStatusLabel(i).label);
                                 // Show status with correct priority (new orders should show Ready to Scan first)
@@ -411,7 +411,7 @@ export default function OrdersPage() {
                               })()}
                             </div>
                             {order.esimaccessOrderId && (
-                              <div><p className="text-slate-500">Order ID</p><p className="text-slate-600 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
+                              <div><p className="text-slate-500">{t("orders.orderId")}</p><p className="text-slate-600 font-mono text-[10px] truncate">{order.esimaccessOrderId}</p></div>
                             )}
                           </div>
                           {order.status === "pending" && (
@@ -434,7 +434,7 @@ export default function OrdersPage() {
                                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l3 3-3 3m0 0l-3-3 3-3" />
                                   </svg>
-                                  Pay Now
+                                  {t("orders.payNow")}
                                 </button>
                               );
                             })()

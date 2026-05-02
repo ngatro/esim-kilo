@@ -39,7 +39,9 @@
     "refundPolicy": "Politique de remboursement de 7 jours",
     "profile": "Profil",
     "wallet": "Portefeuille",
-    "browsePlans": "Parcourir les forfaits"
+    "browsePlans": "Parcourir les forfaits",
+    "findYourPlan": "Trouvez votre forfait",
+    "learnMore": "En savoir plus"
   },
   "header": {
     "login": "Connexion",
@@ -165,7 +167,8 @@
     "sslEncrypted": "Paiement crypté SSL",
     "globalCoverage": "190+ Pays",
     "noMatchingPlans": "Aucun forfait ne correspond",
-    "premiumConnectivity": "Konnektivité Premium"
+    "premiumConnectivity": "Konnektivité Premium",
+    "esimPlans": "Forfaits eSIM"
   },
   "countryPage": {
     "esimPlansAvailableDesc": "Restez connecté avec les forfaits eSIM disponibles dans ce pays. Découvrez notre sélection de forfaits locaux et régionaux pour trouver l’option idéale pour vos besoins de voyage.",
@@ -274,17 +277,31 @@
   },
   "orders": {
     "title": "Mes commandes",
-    "orderId": "ID Commande",
+    "viewYourOrders": "Voir vos commandes",
+    "emailPlaceholder": "Entrez l'e-mail que vous avez utilisé lors du checkout",
+    "esimReady": "Votre eSIM est prête !",
+    "checkEmail": "Vérifiez votre e-mail ou développez la commande pour voir le code QR.",
+    "noOrders": "Aucune commande trouvée",
+    "noOrdersDesc": "Vos commandes eSIM apparaîtront ici après achat",
+    "order": "Commande",
+    "scanToActivate": "Scanner pour activer",
+    "scanInstructions": "Paramètres → Cellulaire → Ajouter eSIM → Scanner le code QR",
+    "manualActivationCode": "Code d'activation manuel",
+    "lpaString": "Chaîne LPA (Manuelle)",
+    "topUpNotAvailable": "Recharge non disponible pour ce forfait",
+    "payment": "Paiement",
+    "esim": "eSIM",
+    "payNow": "Payer maintenant",
+
+    "orderId": "ID de la commande",
     "date": "Date",
     "status": "Statut",
     "amount": "Montant",
-    "noOrders": "Aucune commande trouvée",
-    "noOrdersDesc": "L'historique de vos commandes apparaîtra ici",
-    "completed": "terminé",
+    "completed": "terminée",
     "pending": "en attente",
-    "processing": "en cours",
-    "failed": "échoué",
-    "refunded": "remboursé",
+    "processing": "traitement de votre eSIM...",
+    "failed": "échouée",
+    "refunded": "remboursée",
     "viewDetails": "Voir les détails"
   },
   "admin": {

@@ -39,7 +39,9 @@
     "refundPolicy": "7-day refund policy",
     "profile": "Profile",
     "wallet": "Wallet",
-    "browsePlans": "Browse Plans"
+    "browsePlans": "Browse Plans",
+    "findYourPlan": "Find Your Plan",
+    "learnMore": "Learn More"
   },
   "header": {
     "login": "Login",
@@ -165,7 +167,8 @@
     "sslEncrypted": "SSL encrypted checkout",
     "globalCoverage": "190+ Countries",
     "noMatchingPlans": "No matching plans found",
-    "premiumConnectivity": "Premium Connectivity"
+    "premiumConnectivity": "Premium Connectivity",
+    "esimPlans": "eSIM Plans"
   },
   "countryPage": {
     "esimPlansAvailableDesc": "Stay connected with eSIM plans available in this country. Browse our selection of local and regional plans to find the perfect fit for your travel needs.",
@@ -274,15 +277,29 @@
   },
   "orders": {
     "title": "My Orders",
+    "viewYourOrders": "View Your Orders",
+    "emailPlaceholder": "Enter the email you used during checkout",
+    "esimReady": "Your eSIM is ready!",
+    "checkEmail": "Check your email or expand the order to view QR code.",
+    "noOrders": "No orders found",
+    "noOrdersDesc": "Your eSIM orders will appear here after purchase",
+    "order": "Order",
+    "scanToActivate": "Scan to Activate",
+    "scanInstructions": "Settings → Cellular → Add eSIM → Scan QR Code",
+    "manualActivationCode": "Manual Activation Code",
+    "lpaString": "LPA String (Manual)",
+    "topUpNotAvailable": "Top-up not available for this plan",
+    "payment": "Payment",
+    "esim": "eSIM",
+    "payNow": "Pay Now",
+
     "orderId": "Order ID",
     "date": "Date",
     "status": "Status",
     "amount": "Amount",
-    "noOrders": "No orders yet",
-    "noOrdersDesc": "Your order history will appear here",
     "completed": "completed",
     "pending": "pending",
-    "processing": "processing",
+    "processing": "processing your eSIM...",
     "failed": "failed",
     "refunded": "refunded",
     "viewDetails": "View Details"

@@ -39,7 +39,9 @@
     "refundPolicy": "7-Tage-Rückerstattungsrichtlinie",
     "profile": "Profil",
     "wallet": "Brieftasche",
-    "browsePlans": "Tarife durchsuchen"
+    "browsePlans": "Tarife durchsuchen",
+    "findYourPlan": "Finden Sie Ihren Tarif",
+    "learnMore": "Mehr erfahren"
   },
   "header": {
     "login": "Anmelden",
@@ -165,7 +167,8 @@
     "sslEncrypted": "SSL-verschlüsselt",
     "globalCoverage": "190+ Länder",
     "noMatchingPlans": "Keine passenden Tarife gefunden",
-    "premiumConnectivity": "Premium-Konnektivität"
+    "premiumConnectivity": "Premium-Konnektivität",
+    "esimPlans": "eSIM-Tarife"
   },
   "countryPage": {
     "esimPlansAvailableDesc": "Bleiben Sie mit eSIM-Tarifen in diesem Land verbunden. Entdecken Sie unsere Auswahl an lokalen und regionalen Tarifen, um die perfekte Lösung für Ihre Reisebedürfnisse zu finden.",
@@ -272,7 +275,35 @@
     "loginError": "Ungültige E-Mail oder Passwort",
     "registerError": "Registrierung fehlgeschlagen"
   },
+  "orders": {
+    "title": "Meine Bestellungen",
+    "viewYourOrders": "Ihre Bestellungen anzeigen",
+    "emailPlaceholder": "Geben Sie Ihre E-Mail-Adresse ein, um Ihre Bestellungen anzuzeigen",
+    "esimReady": "Ihre eSIM ist bereit!",
+    "checkEmail": "Überprüfen Sie Ihre E-Mail oder erweitern Sie die Bestellung, um den QR-Code anzuzeigen.",
+    "noOrders": "Keine Bestellungen gefunden",
+    "noOrdersDesc": "Ihre eSIM-Bestellungen werden hier angezeigt, nachdem Sie eine gekauft haben",
+    "order": "Bestellung",
+    "scanToActivate": "Scannen, um zu aktivieren",
+    "scanInstructions": "Einstellungen → Mobilfunk → eSIM hinzufügen → QR-Code scannen",
+    "manualActivationCode": "Manueller Aktivierungscode",
+    "lpaString": "LPA-String (Manuell)",
+    "topUpNotAvailable": "Aufladen nicht verfügbar für diesen Plan",
+    "payment": "Zahlung",
+    "esim": "eSIM",
+    "payNow": "Jetzt bezahlen",
 
+    "orderId": "Bestell-ID",
+    "date": "Datum",
+    "status": "Status",
+    "amount": "Betrag",
+    "completed": "abgeschlossen",
+    "pending": "ausstehend",
+    "processing": "Verarbeitung Ihres eSIM...",
+    "failed": "fehlgeschlagen",
+    "refunded": "zurückgezahlt",
+    "viewDetails": "Details anzeigen"
+  },
   "trust": {
     "countries": "Länder",
     "users": "Zufriedene Nutzer",

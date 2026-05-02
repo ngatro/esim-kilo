@@ -430,13 +430,13 @@ const userItems = mounted && user ? [
                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                            </svg>
-                           Affiliate
+                            {t("common.affiliate")}
                          </Link>
                          <Link href={`/${locale}/wallet`} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                            </svg>
-                           Wallet
+                           {t("common.wallet")}
                          </Link>
                       <div className="border-t border-slate-100 mt-1 pt-1">
                         <button
@@ -544,7 +544,8 @@ const userItems = mounted && user ? [
                                    {child.children.map((sub: { label: string; href: string; emoji?: string }, subIdx: number) => (
                                      <Link
                                        key={subIdx}
-                                       href={`${locale}${sub.href}`}
+                                       href={sub.href}
+                                       onClick={() => setMobileMenuOpen(false)}
                                        className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
                                      >
                                        {sub.emoji && <span>{sub.emoji}</span>}
@@ -554,12 +555,12 @@ const userItems = mounted && user ? [
                                  </div>
                                </div>
                              ) : (
-                               <Link
-                                 key={idx}
-                                 href={`${locale}${child.href}`}
-                                 onClick={() => setMobileMenuOpen(false)}
-                                 className="block py-1.5 text-sm text-slate-500"
-                               >
+<Link
+                                  key={idx}
+                                  href={child.href}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className="block py-1.5 text-sm text-slate-500"
+                                >
                                  {child.label}
                                </Link>
                              )}

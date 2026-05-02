@@ -78,7 +78,7 @@ interface Plan {
 }
 
 export default function PlansPage() {
-  const { t } = useI18n();
+  const { t,locale } = useI18n();
   const router = useRouter();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [regions, setRegions] = useState<DestinationRegion[]>([]);
@@ -173,7 +173,7 @@ export default function PlansPage() {
               {hotPlans.slice(0, 8).map((plan) => (
                 <Link
                   key={plan.id}
-                  href={`/esim/${plan.countryName?.toLowerCase().replace(/\s+/g, '-') || 'global'}/${plan.slug || plan.id}`}
+                  href={`/${locale}/esim/${plan.countryName?.toLowerCase().replace(/\s+/g, '-') || 'global'}/${plan.slug || plan.id}`}
                   className="group relative bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                 >
                   <div className="relative h-56 overflow-hidden">
@@ -181,7 +181,7 @@ export default function PlansPage() {
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center px-4">
                         <div className="text-3xl font-bold text-white drop-shadow-lg mb-2">{plan.dataAmount}GB</div>
-                        <div className="text-white/80 text-sm font-medium">{plan.durationDays} days</div>
+                        <div className="text-white/80 text-sm font-medium">{plan.durationDays} {t("plansCard.days")}</div>
                       </div>
                     </div>
                     <div className="absolute top-4 right-4 bg-white text-orange-600 font-bold px-4 py-1.5 rounded-full text-sm shadow-lg">
@@ -213,7 +213,7 @@ export default function PlansPage() {
             {destinations.slice(0, 16).map((dest) => (
               <Link
                 key={dest.id}
-                href={`/esim/${dest.slug}`}
+                href={`/${locale}/esim/${dest.slug}`}
                 className="group relative bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
               >
                 <div className="relative h-56 overflow-hidden">
@@ -256,7 +256,7 @@ export default function PlansPage() {
             {regions.map((region) => (
               <Link
                 key={region.id}
-                href={`/esim/${region.id}`}
+                href={`/${locale}/esim/${region.id}`}
                 className="group relative bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
               >
                 <div className="relative h-36 overflow-hidden">
@@ -277,7 +277,7 @@ export default function PlansPage() {
                           {region.name} {region.id}
                         </h3>
                         <p className="text-white/70 text-sm">
-                          {region._count?.plans || 3} eSIM plans
+                          {region._count?.plans || 3} {t("plans.esimPlans")}
                         </p>
                       </div>
                     </div>

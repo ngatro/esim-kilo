@@ -39,7 +39,9 @@
     "refundPolicy": "Chính sách hoàn tiền trong 7 ngày",
     "profile": "Hồ sơ",
     "wallet": "Ví",
-    "browsePlans": "Xem các gói cước"
+    "browsePlans": "Xem các gói cước",
+    "findYourPlan": "Tìm gói cước của bạn",
+    "learnMore": "Tìm hiểu thêm"
   },
   "header": {
     "login": "Đăng nhập",
@@ -165,7 +167,8 @@
     "sslEncrypted": "Thanh toán mã hóa SSL",
     "globalCoverage": "190+ Quốc gia",
     "noMatchingPlans": "Không tìm thấy gói cước phù hợp",
-    "premiumConnectivity": "Kết nối cao cấp"
+    "premiumConnectivity": "Kết nối cao cấp",
+    "esimPlans": "Gói eSIM"
   },
   "countryPage": {
     "esimPlansAvailableDesc": "Duy trì kết nối với các gói eSIM có sẵn tại quốc gia này. Khám phá các lựa chọn gói cước nội địa và khu vực để tìm giải pháp phù hợp nhất cho nhu cầu du lịch của bạn.",
@@ -274,18 +277,32 @@
   },
   "orders": {
     "title": "Đơn hàng của tôi",
-    "orderId": "Mã đơn hàng",
-    "date": "Ngày đặt",
+    "viewYourOrders": "Xem đơn hàng của tôi",
+    "emailPlaceholder": "Nhập email bạn đã sử dụng trong quá trình thanh toán",
+    "esimReady": "eSIM của bạn đã sẵn sàng!",
+    "checkEmail": "Kiểm tra email của bạn hoặc mở rộng đơn hàng để xem mã QR.",
+    "noOrders": "Không tìm thấy đơn hàng nào",
+    "noOrdersDesc": "Các đơn hàng eSIM của bạn sẽ xuất hiện ở đây sau khi mua hàng",
+    "order": "Đơn hàng",
+    "scanToActivate": "Quét để Kích hoạt",
+    "scanInstructions": "Cài đặt → Mạng di động → Thêm eSIM → Quét mã QR",
+    "manualActivationCode": "Mã kích hoạt thủ công",
+    "lpaString": "Chuỗi LPA (Thủ công)",
+    "topUpNotAvailable": "Nạp tiền không khả dụng cho gói này",
+    "payment": "Thanh toán",
+    "esim": "eSIM",
+    "payNow": "Thanh toán ngay",
+
+    "orderId": "ID Đơn hàng",
+    "date": "Ngày",
     "status": "Trạng thái",
     "amount": "Số tiền",
-    "noOrders": "Chưa có đơn hàng nào",
-    "noOrdersDesc": "Lịch sử đơn hàng của bạn sẽ xuất hiện tại đây",
-    "completed": "đã hoàn thành",
-    "pending": "đang chờ",
-    "processing": "đang xử lý",
-    "failed": "thất bại",
-    "refunded": "đã hoàn tiền",
-    "viewDetails": "Xem chi tiết"
+    "completed": "Hoàn tất",
+    "pending": "Đang chờ xử lý",
+    "processing": "Đang xử lý eSIM của bạn...",
+    "failed": "Thất bại",
+    "refunded": "Đã hoàn tiền",
+    "viewDetails": "Xem Chi tiết"
   },
   "admin": {
     "dashboard": "Bảng điều khiển Admin",
