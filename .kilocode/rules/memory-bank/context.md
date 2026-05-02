@@ -278,4 +278,12 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-29 | Header redesign: replaced avatar with Welcome text, moved hamburger to left, added mobile language dropdown, mobile login button, removed duplicate login from mobile menu |
 | 2026-04-30 | Full cart system: API routes with validation, SWR integration, optimistic UI, localStorage sync on login, loading states in CartModal |
 | 2026-05-01 | Fixed language switching URL updates: Updated Header.tsx to use usePathname() hook instead of router.pathname for proper Next.js 16 App Router compatibility. LanguageSwitcher.tsx and middleware.ts already correctly handle language prefix updates. Verified with comprehensive tests. |
-| 2026-05-02 | Fixed Next.js 16 async params type errors in `src/app/[lang]/layout.tsx` - Updated `generateMetadata` and `RootLayout` to use `Promise<{ lang: string }>` with `await` for resolving async params, ensuring TypeScript compatibility with Next.js 16's async server component params. |
+| 2026-05-03 | Multi-country plan display + operator info in EsimDataTypeModal + admin link locale prefix |
+   - Fixed admin link in Header.tsx to include locale prefix (`/${locale}/admin` instead of `/admin`) so admin dashboard is accessible with proper i18n routing
+   - Added country coverage and operator display to EsimDataTypeModal.tsx:
+     - Parses `locationNetworkList` JSON to extract country codes, names, and operator details (operatorName, networkType)
+     - Shows all countries covered by multi-country plans (coverageCount >= 2) with their supported operators
+     - Shows all operators for single-country plans (coverageCount === 1)
+     - Uses i18n translation for country names (falls back to country code if not found)
+   - Added `networkList` and `locationsList` state to track parsed location/operator data
+   - Added `useEffect` to parse locationNetworkList and locations whenever `basePlan` changes

@@ -83,6 +83,8 @@ export default function EsimDataTypeModal({
   const { t, formatPrice } = useI18n();
   const [imgError, setImgError] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [networkList, setNetworkList] = useState<any[]>([]);
+  const [locationsList, setLocationsList] = useState<string[]>([]);
   
   
   // Initialize state from config, but allow user to change selection in modal
@@ -187,6 +189,30 @@ export default function EsimDataTypeModal({
     return !exactPlan && supportTopUpType === 3 && canMultiply && basePlan !== null && topupPackage !== null;
   }, [exactPlan, supportTopUpType, canMultiply, basePlan, topupPackage]);
 
+  // Parse locationNetworkList and locations when basePlan changes
+  useEffect(() => {
+    let networkListParsed: any[] = [];
+    let locationsParsed: string[] = [];
+    try {
+      if (basePlan?.locationNetworkList) {
+        const networkData = typeof basePlan.locationNetworkList === 'string'
+          ? JSON.parse(basePlan.locationNetworkList)
+          : basePlan.locationNetworkList;
+        networkListParsed = Array.isArray(networkData) ? networkData : [];
+      }
+      if (basePlan?.locations) {
+        locationsParsed = Array.isArray(basePlan.locations)
+          ? basePlan.locations
+          : JSON.parse(basePlan.locations as string);
+      }
+    } catch {
+      networkListParsed = [];
+      locationsParsed = [];
+    }
+    setNetworkList(networkListParsed);
+    setLocationsList(locationsParsed);
+  }, [basePlan]);
+
 
   // All durations are enabled - topup allows any duration
   const isDurationDisabled = (_duration: number) => false;
@@ -244,6 +270,51 @@ return (
                   <SpecBoxSimple label={t("esimDataTypeModal.topUp")} value={exactPlan?.supportTopUp ? t("esimDataTypeModal.available") : t("esimDataTypeModal.no")} />
                 </div>
               </div>
+
+              {/* Coverage - show for multi-country plans */}
+              {(basePlan?.coverageCount || 0) >= 2 && networkList.length > 0 && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-5">{t("esimDataTypeModal.planSpecs")} - {networkList.length} {t("plans.countries")}</h3>
+                  <div className="space-y-4">
+                    {networkList.map((loc: any, idx: number) => (
+                      <div key={idx} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <p className="text-sm font-bold text-slate-800 mb-2">
+                          {(loc.locationName && t(`countries.${loc.locationCode}`) !== `countries.${loc.locationCode}`
+                            ? t(`countries.${loc.locationCode}`)
+                            : loc.locationName || loc.locationCode)}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {loc.operatorList?.map((op: any, j: number) => (
+                            <span
+                              key={j}
+                              className="bg-white px-2.5 py-1 rounded-lg text-xs text-slate-600 border border-slate-100 font-medium"
+                            >
+                              {op.operatorName} {op.networkType}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Coverage - show for single country plans with multiple operators */}
+              {(basePlan?.coverageCount || 0) === 1 && networkList.length > 0 && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-5">{t("plans.networkOperators")}</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {networkList[0]?.operatorList?.map((op: any, idx: number) => (
+                      <span
+                        key={idx}
+                        className="bg-slate-50 px-3 py-1.5 rounded-lg text-xs text-slate-600 border border-slate-100 font-medium"
+                      >
+                        {op.operatorName} {op.networkType}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
                 <div className="flex items-center gap-2 mb-3">
