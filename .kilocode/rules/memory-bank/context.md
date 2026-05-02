@@ -278,3 +278,4 @@ Create `src/app/api/[route]/route.ts`
 | 2026-04-29 | Header redesign: replaced avatar with Welcome text, moved hamburger to left, added mobile language dropdown, mobile login button, removed duplicate login from mobile menu |
 | 2026-04-30 | Full cart system: API routes with validation, SWR integration, optimistic UI, localStorage sync on login, loading states in CartModal |
 | 2026-05-01 | Fixed language switching URL updates: Updated Header.tsx to use usePathname() hook instead of router.pathname for proper Next.js 16 App Router compatibility. LanguageSwitcher.tsx and middleware.ts already correctly handle language prefix updates. Verified with comprehensive tests. |
+| 2026-05-02 | Fixed Next.js 16 async params type errors in `src/app/[lang]/layout.tsx` - Updated `generateMetadata` and `RootLayout` to use `Promise<{ lang: string }>` with `await` for resolving async params, ensuring TypeScript compatibility with Next.js 16's async server component params. |
