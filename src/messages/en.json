@@ -37,7 +37,9 @@
     "noHiddenFees": "No hidden fees",
     "instantDelivery": "Instant delivery",
     "refundPolicy": "7-day refund policy",
-    "profile": "Profile"
+    "profile": "Profile",
+    "wallet": "Wallet",
+    "browsePlans": "Browse Plans"
   },
   "header": {
     "login": "Login",

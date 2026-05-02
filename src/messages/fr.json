@@ -37,7 +37,9 @@
     "noHiddenFees": "Aucun frais caché",
     "instantDelivery": "Livraison instantanée",
     "refundPolicy": "Politique de remboursement de 7 jours",
-    "profile": "Profil"
+    "profile": "Profil",
+    "wallet": "Portefeuille",
+    "browsePlans": "Parcourir les forfaits"
   },
   "header": {
     "login": "Connexion",
@@ -50,7 +52,9 @@
     "devices": "Appareils",
     "allDevices": "Tous les appareils",
     "byDevice": "Par appareil",
-    "support": "Support"
+    "support": "Support",
+    "welcome": "Bienvenue",
+    "language": "Langue"
   },
   "hero": {
     "title": {
@@ -161,7 +165,7 @@
     "sslEncrypted": "Paiement crypté SSL",
     "globalCoverage": "190+ Pays",
     "noMatchingPlans": "Aucun forfait ne correspond",
-    "premiumConnectivity": "Konnektivität Premium"
+    "premiumConnectivity": "Konnektivité Premium"
   },
   "countryPage": {
     "esimPlansAvailableDesc": "Restez connecté avec les forfaits eSIM disponibles dans ce pays. Découvrez notre sélection de forfaits locaux et régionaux pour trouver l’option idéale pour vos besoins de voyage.",

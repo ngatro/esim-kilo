@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useI18n } from "@/components/providers/I18nProvider";
-import Footer from "@/components/layout/Footer";
 
 interface AffiliateStats {
   affiliateCode: string;
@@ -176,7 +175,6 @@ export default function AffiliatePage() {
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
           <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full"></div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -189,7 +187,6 @@ export default function AffiliatePage() {
             <p className="text-slate-600">Please login to view your affiliate dashboard.</p>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -474,7 +471,6 @@ export default function AffiliatePage() {
         </div>
       )}
 
-      <Footer />
     </>
   );
 }

@@ -30,8 +30,8 @@ const COOKIE_CONFIG = {
   path: '/',
 };
 
-// Middleware function
-export function middleware(request: NextRequest) {
+// Proxy function
+export async function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const refCode = searchParams.get('ref');
   const hasRefCookie = request.cookies.has('simpal_ref');

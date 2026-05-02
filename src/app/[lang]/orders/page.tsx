@@ -55,35 +55,6 @@ function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
   return { label: "Processing", color: "bg-yellow-500/20 text-yellow-600" };
 }
 
-// function getEsimStatusLabel(item: OrderItem): { label: string; color: string } {
-//   // 1. Final/terminal statuses from esimStatus (highest priority)
-//   if (item.esimStatus === "IN_USE") return { label: "In Use", color: "bg-green-500/20 text-green-600" };
-//   if (item.esimStatus === "USED_UP" || item.esimStatus === "USED_EXPIRED") return { label: "Depleted", color: "bg-red-500/20 text-red-600" };
-//   if (item.esimStatus === "UNUSED_EXPIRED") return { label: "Expired", color: "bg-slate-500/20 text-slate-600" };
-//   if (item.esimStatus === "CANCEL" || item.esimStatus === "REVOKED") return { label: "Terminated", color: "bg-slate-500/20 text-slate-600" };
-
-//   // 2. NEW ORDER - Ready to Scan (GOT_RESOURCE should show before smdpStatus changes)
-//   if (item.esimStatus === "GOT_RESOURCE") return { label: "Ready to Scan", color: "bg-blue-500/20 text-blue-600" };
-
-
-
-
-
-//   // 3. Real-time from smdpStatus (in progress - when customer is actively using)
-//   if (item.smdpStatus === "DOWNLOAD") return { label: "Downloading", color: "bg-yellow-500/20 text-yellow-600" };
-//   if (item.smdpStatus === "INSTALLATION") return { label: "Installing", color: "bg-yellow-500/20 text-yellow-600" };
-//   if (item.smdpStatus === "ENABLED") return { label: "Activating", color: "bg-yellow-500/20 text-yellow-600" };
-//   if (item.smdpStatus === "DISABLED") return { label: "Disabled", color: "bg-slate-500/20 text-slate-600" };
-//   if (item.smdpStatus === "DELETED") return { label: "Deleted", color: "bg-red-500/20 text-red-600" };
-  
-//     // 4. Issued - has QR but not yet activated
-//   if (item.esimQrImage || item.esimIccid) {
-//     return { label: "Issued", color: "bg-yellow-500/20 text-yellow-600" };
-//   }
-//   // 5. Fallback
-//   return { label: "Processing", color: "bg-yellow-500/20 text-yellow-600" };
-// }
-
 interface OrderItem {
   id: number;
   planId: string | null;
@@ -128,7 +99,7 @@ interface Order {
 
 export default function OrdersPage() {
   const { user } = useAuth();
-  const { formatPrice, locale } = useI18n();
+  const { formatPrice, t, locale } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

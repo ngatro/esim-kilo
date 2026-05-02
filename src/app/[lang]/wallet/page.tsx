@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
-import Footer from "@/components/layout/Footer";
 
 interface WalletData {
   walletBalance: number;
@@ -50,7 +49,6 @@ export default function WalletPage() {
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
           <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full"></div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -63,7 +61,6 @@ export default function WalletPage() {
             <p className="text-slate-600">Please login to view your wallet.</p>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -133,8 +130,6 @@ export default function WalletPage() {
           </div>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }

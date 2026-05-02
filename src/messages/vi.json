@@ -37,7 +37,9 @@
     "noHiddenFees": "Không phí ẩn",
     "instantDelivery": "Giao hàng tức thì",
     "refundPolicy": "Chính sách hoàn tiền trong 7 ngày",
-    "profile": "Hồ sơ"
+    "profile": "Hồ sơ",
+    "wallet": "Ví",
+    "browsePlans": "Xem các gói cước"
   },
   "header": {
     "login": "Đăng nhập",
@@ -90,6 +92,7 @@
     "regionPlans": "Khu vực (2+ Quốc gia)",
     "filterByRegion": "Lọc theo khu vực",
     "allRegions": "Tất cả",
+    "browseByRegions": "Parcourir by vùng",
     "duration": "Thời hạn",
     "durationDays": "ngày",
     "data": "Dữ liệu",
@@ -163,7 +166,6 @@
     "globalCoverage": "190+ Quốc gia",
     "noMatchingPlans": "Không tìm thấy gói cước phù hợp",
     "premiumConnectivity": "Kết nối cao cấp"
-
   },
   "countryPage": {
     "esimPlansAvailableDesc": "Duy trì kết nối với các gói eSIM có sẵn tại quốc gia này. Khám phá các lựa chọn gói cước nội địa và khu vực để tìm giải pháp phù hợp nhất cho nhu cầu du lịch của bạn.",

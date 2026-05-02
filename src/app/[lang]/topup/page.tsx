@@ -40,7 +40,7 @@ interface CurrentPlan {
 export default function TopUpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { formatPrice, currency, rates, locale } = useI18n();
+  const { formatPrice, t, currency, rates, locale } = useI18n();
   
   const initialIccid = searchParams.get("iccid") || "";
   const successParam = searchParams.get("success");

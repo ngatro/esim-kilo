@@ -37,7 +37,9 @@
     "noHiddenFees": "Keine versteckten Gebühren",
     "instantDelivery": "Sofortige Lieferung",
     "refundPolicy": "7-Tage-Rückerstattungsrichtlinie",
-    "profile": "Profil"
+    "profile": "Profil",
+    "wallet": "Brieftasche",
+    "browsePlans": "Tarife durchsuchen"
   },
   "header": {
     "login": "Anmelden",
@@ -50,7 +52,9 @@
     "devices": "Geräte",
     "allDevices": "Alle Geräte",
     "byDevice": "Nach Gerät",
-    "support": "Support"
+    "support": "Support",
+    "welcome": "Willkommen",
+    "language": "Sprache"
   },
   "hero": {
     "title": {
@@ -58,7 +62,7 @@
       "anywhere": "egal wo",
       "youGo": "Sie sind"
     },
-    "hero_subtitle": "Günstige eSIM-Datentarife für internationale Reisen",
+    "subtitle": "Günstige eSIM-Datentarife für internationale Reisen",
     "cta": "Jetzt starten",
     "countries": "Länder",
     "operators": "Anbieter",
@@ -268,147 +272,7 @@
     "loginError": "Ungültige E-Mail oder Passwort",
     "registerError": "Registrierung fehlgeschlagen"
   },
-  "orders": {
-    "title": "Meine Bestellungen",
-    "orderId": "Bestell-ID",
-    "date": "Datum",
-    "status": "Status",
-    "amount": "Betrag",
-    "noOrders": "Keine Bestellungen gefunden",
-    "noOrdersDesc": "Ihre Bestellhistorie wird hier angezeigt",
-    "completed": "Abgeschlossen",
-    "pending": "Ausstehend",
-    "processing": "In Bearbeitung",
-    "failed": "Fehlgeschlagen",
-    "refunded": "Erstattet",
-    "viewDetails": "Details anzeigen"
-  },
-  "admin": {
-    "dashboard": "Admin Dashboard",
-    "managePlans": "Tarife verwalten",
-    "manageOrders": "Bestellungen verwalten",
-    "manageUsers": "Benutzer verwalten",
-    "manageBlog": "Blog verwalten",
-    "syncPlans": "Tarife synchronisieren",
-    "syncing": "Synchronisierung...",
-    "syncSuccess": "{count} Tarife synchronisiert",
-    "syncError": "Synchronisierung fehlgeschlagen",
-    "stats": {
-      "users": "Benutzer",
-      "orders": "Bestellungen",
-      "activePlans": "Aktive Tarife",
-      "revenue": "Umsatz",
-      "balance": "Kontostand",
-      "totalPlans": "Tarife gesamt"
-    },
-    "recentOrders": "Letzte Bestellungen",
-    "customer": "Kunde",
-    "labels": "Labels",
-    "active": "Aktiv",
-    "inactive": "Inaktiv",
-    "editPrice": "Preis bearbeiten",
-    "savePrice": "Speichern",
-    "currencySettings": "Währungseinstellungen",
-    "currency": "Währung",
-    "exchangeRate": "Wechselkurs",
-    "plansManagement": "Tarifverwaltung",
-    "plansFromEsim": "Tarife von eSIM Access",
-    "showingOf": "Zeige {shown} von {total} Tarifen"
-  },
-  "blog": {
-    "title": "Blog",
-    "subtitle": "Reisetipps, eSIM-Anleitungen und Neuigkeiten",
-    "featured": "Hervorgehoben",
-    "latest": "Neueste Beiträge",
-    "readTime": "Min. Lesezeit",
-    "searchPlaceholder": "Beiträge suchen...",
-    "subscribe": "Newsletter abonnieren",
-    "subscribeDesc": "Holen Sie sich die neuesten Reisetipps und eSIM-Angebote",
-    "emailPlaceholder": "E-Mail eingeben",
-    "categories": {
-      "all": "Alle Beiträge",
-      "travel": "Reisetipps",
-      "esim": "eSIM-Anleitungen",
-      "tech": "Technik",
-      "deals": "Angebote",
-      "news": "News"
-    },
-    "readMore": "Mehr lesen",
-    "backToBlog": "Zurück zum Blog"
-  },
-  "footer": {
-    "description": "Bleiben Sie weltweit verbunden mit günstigen eSIM-Datentarifen für über 190 Länder.",
-    "copyright": "Alle Rechte vorbehalten.",
-    "madeFor": "Für Reisende gemacht. Unterstützt durch globale Netzwerke.",
-    "siteName": "OpenWorld eSIM",
-    "siteDomain": "openworldesim.com",
-    "plans": "Tarife",
-    "browseAllPlans": "Alle Tarife durchsuchen",
-    "globalPlans": "Globale Tarife",
-    "regionalPlans": "Regionale Tarife",
-    "countryPlans": "Ländertarife",
-    "support": "Support",
-    "faq": "FAQ",
-    "deviceCompatibility": "Gerätekompatibilität",
-    "contactUs": "Kontakt",
-    "company": "Unternehmen",
-    "about": "Über uns",
-    "blog": "Blog",
-    "privacy": "Datenschutz",
-    "terms": "AGB",
-    "refund": "Erstattung"
-  },
-  "coverage": {
-    "title": "Weltweite Abdeckung",
-    "subtitle": "Bleiben Sie in über 190 Ländern und Regionen weltweit verbunden",
-    "popular": "Beliebte Ziele",
-    "regions": {
-      "europe": "Europa",
-      "asia": "Asien",
-      "americas": "Amerika",
-      "middleEast": "Naher Osten",
-      "africa": "Afrika",
-      "oceania": "Ozeanien",
-      "global": "Global"
-    },
-    "countries": "Länder"
-  },
-  "device": {
-    "title": "Gerätekompatibilität",
-    "subtitle": "eSIM funktioniert mit den meisten modernen Smartphones. Prüfen Sie, ob Ihr Gerät die eSIM-Technologie unterstützt.",
-    "supported": "Unterstützt",
-    "notSupported": "Nicht unterstützt",
-    "notSure": "Unsicher, ob Ihr Gerät eSIM unterstützt?",
-    "checkList": "Vollständige Kompatibilitätsliste ansehen"
-  },
-  "comparison": {
-    "title": "Warum OpenWorld eSIM?",
-    "subtitle": "Vergleichen Sie OpenWorld eSIM mit herkömmlichem Roaming und sehen Sie, wie viel Sie sparen",
-    "recommended": "Empfohlen",
-    "ow-sim": "OpenWorld eSIM",
-    "roaming": "Klassisches Roaming",
-    "local": "Lokale SIM-Karte",
-    "features": {
-      "cheaper": "Bis zu 80% günstiger",
-      "instant": "Sofortige Aktivierung",
-      "noContract": "Kein Vertrag",
-      "countries": "190+ Länder",
-      "support": "24/7 Support",
-      "noFees": "Keine versteckten Gebühren",
-      "expensive": "Teure Tagesgebühren",
-      "slow": "Aktivierung in 24-48h",
-      "contract": "Langzeitvertrag",
-      "limited": "Eingeschränkte Abdeckung",
-      "limitedSupport": "Eingeschränkter Support",
-      "surprise": "Überraschende Kosten",
-      "store": "Physisches Geschäft nötig",
-      "language": "Sprachbarriere",
-      "oneCountry": "Nur für ein Land gültig",
-      "complex": "Komplexe Einrichtung",
-      "limitedData": "Begrenzte Datenoptionen",
-      "number": "Rufnummernprobleme"
-    }
-  },
+
   "trust": {
     "countries": "Länder",
     "users": "Zufriedene Nutzer",
