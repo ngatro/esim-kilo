@@ -123,6 +123,11 @@ export default function Header() {
        children: null 
      },
      { 
+       label: t("common.orders"), 
+       href: `/${locale}/orders`,
+       children: null 
+     },
+     { 
        label: t("header.support"), 
        href: `/${locale}/support`,
        children: null 
@@ -130,8 +135,8 @@ export default function Header() {
    ];
 
 const userItems = mounted && user ? [
-     { label: t("header.myOrders"), href: `/${locale}/orders`, children: null },
-     { label: t("common.affiliate"), href: `/${locale}/affiliate`, children: null },
+    //  { label: t("header.myOrders"), href: `/${locale}/orders`, children: null },
+     { label: t("common.affiliate"), href: `/${locale}/affiliate`, nchildren: null },
      { label: t("common.wallet"), href: `/${locale}/wallet`, children: null },
      ...(user.role === "admin" ? [{ label: t("common.admin"), href: `/${locale}/admin`, children: null }] : []),
    ] : [];
@@ -210,7 +215,7 @@ const userItems = mounted && user ? [
                       }`}
                     >
                       {item.href === "/plans" ? (
-<div className="px-4 pt-3">
+                          <div className="px-4 pt-3">
                            <Link href={`/${locale}/plans`} className="flex items-center justify-center gap-2 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors mb-3">
                              <span>🌐</span> {t("header.allPlans")}
                            </Link>
@@ -224,14 +229,14 @@ const userItems = mounted && user ? [
                             <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{t("header.popularRegions")}</p>
                             <div className="space-y-0.5">
                               {regions.map((r: { id: string; name: string; emoji: string }, idx: number) => (
-<Link
-                                       key={idx}
-                                       href={`/${locale}/plans?regionId=${r.id}`}
-                                       className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
-                                     >
-                                       {r.emoji && <span>{r.emoji}</span>}
-                                       {r.name}
-                                     </Link>
+                                <Link
+                                  key={idx}
+                                  href={`/${locale}/plans?regionId=${r.id}`}
+                                  className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
+                                >
+                                  {r.emoji && <span>{r.emoji}</span>}
+                                  {r.name}
+                                </Link>
                               ))}
                             </div>
                           </div>
@@ -239,14 +244,14 @@ const userItems = mounted && user ? [
                             <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{t("header.hotCountries")}</p>
                             <div className="space-y-0.5">
                               {hotCountries.map((c: { code: string; name: string; emoji: string }, idx: number) => (
-<Link
-                                       key={idx}
-                                       href={`/${locale}/plans?countryId=${c.code}`}
-                                       className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
-                                     >
-                                       {c.emoji && <span>{c.emoji}</span>}
-                                       {c.name}
-                                     </Link>
+                                <Link
+                                  key={idx}
+                                  href={`/${locale}/plans?countryId=${c.code}`}
+                                  className="flex items-center gap-2 py-1.5 text-sm text-slate-600 hover:text-orange-500 transition-colors"
+                                >
+                                  {c.emoji && <span>{c.emoji}</span>}
+                                  {c.name}
+                                </Link>
                               ))}
                             </div>
                           </div>
@@ -414,7 +419,7 @@ const userItems = mounted && user ? [
                         <p className="text-sm font-medium text-slate-800 truncate">{user.name}</p>
                         <p className="text-xs text-slate-500 truncate">{user.email}</p>
                       </div>
-<Link href={`/${locale}/profile`} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
+                          <Link href={`/${locale}/profile`} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-500">
                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                            </svg>
@@ -580,15 +585,34 @@ const userItems = mounted && user ? [
                 </div>
               ))}
 
+              {/* Admin Section - Only visible to admin role */}
+              {mounted && !authLoading && user?.role === 'admin' && (
+                <div className="pt-2 mt-2 border-t border-slate-100">
+                  <p className="px-0 text-xs font-semibold text-orange-500 uppercase mb-2">
+                    Management
+                  </p>
+                  <Link
+                    href={`/${locale}/admin`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2.5 text-slate-700 font-bold hover:text-orange-600"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Admin Dashboard
+                  </Link>
+                </div>
+              )}
+
               {mounted && !authLoading && user && (
                 <button
                   onClick={() => {
                     logout();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full py-2.5 text-left text-slate-600 font-medium"
-                >
-                  Logout
+                className="w-full mt-2 py-2.5 px-4 text-center text-orange-500 font-semibold border border-orange-500 rounded-lg hover:bg-orange-500 hover:text-white transition-all duration-200"                >
+                  {t("header.logout")}
                 </button>
               )}
             </div>
