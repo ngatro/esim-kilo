@@ -20,11 +20,11 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 }
 
 function BlogCard({ post, featured = false }: { post: BlogPost; featured?: boolean }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const category = BLOG_CATEGORIES.find(c => c.id === post.category);
   
   return (
-    <Link href={`/blog/${post.slug}`}>
+    <Link href={`/${locale}/blog/${post.slug}`}>
       <motion.article 
         className={`bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-orange-400 hover:shadow-lg transition-all hover:-translate-y-1 ${featured ? 'md:grid md:grid-cols-2 md:gap-6' : ''}`}
         whileHover={{ scale: 1.01 }}
