@@ -1,448 +1,168 @@
-"use client";
+import { Metadata } from "next";
+import EsimCountryClient from "./EsimCountryClient";
+import fs from "fs";
+import path from "path";
 
-import { useEffect, useState, useMemo, use } from "react";
-import { notFound } from "next/navigation";
-import Image from "next/image";
-import { getDestinationImage } from "@/lib/unsplash";
-import { useI18n } from "@/components/providers/I18nProvider";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
-import EsimDataTypeModal from "./EsimDataTypeModal";
-import WifiLoader from "@/components/animations/WifiLoader";
-import FadeIn from "@/components/animations/FadeIn";
-import PlansCard, { PlanCardConfig } from "./PlansCard";
-import Countries from "@/data/country-to-region.json"
-interface OperatorInfo {
-  operatorName: string;
-  networkType: string;
+type Props = {
+  params: Promise<{ country: string; lang: string }>; // Lưu ý: Nếu URL của bạn là [lang]
+};
+
+// Hàm đọc file JSON thủ công ở Server
+async function getTranslationServer(locale: string, key: string, variables: Record<string, string>) {
+  try {
+    // Tìm đường dẫn đến thư mục messages
+    const filePath = path.join(process.cwd(), "src/messages", `${locale}.json`);
+    const fileContent = fs.readFileSync(filePath, "utf8");
+    const messages = JSON.parse(fileContent);
+
+    // Lấy giá trị từ key (ví dụ: "metadata.title")
+    const keys = key.split(".");
+    let value = messages;
+    for (const k of keys) {
+      value = value?.[k];
+    }
+
+    if (typeof value !== "string") return key;
+
+    // Thay thế biến {country}
+    let finalString = value;
+    Object.entries(variables).forEach(([k, v]) => {
+      finalString = finalString.replace(`{${k}}`, v);
+    });
+
+    return finalString;
+  } catch (error) {
+    console.error("Translation Error:", error);
+    return key;
+  }
 }
 
+const formatCountryName = (slug: string) => {
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
-interface LocationNetwork {
-  locationCode: string;
-  locationLogo: string;
-  locationName: string;
-  operatorList: OperatorInfo[];
-}
-
-interface Plan {
-  id: string;
-  name: string;
-  slug: string | null;
-  packageCode: string;
-  destination: string;
-  dataAmount: number;
-  dataVolume: number;
-  durationDays: number;
-  priceUsd: number;
-  retailPriceUsd: number;
-  speed: string | null;
-  networkType: string | null;
-  dataType: number;
-  coverageCount: number;
-  countryId: string | null;
-  countryName: string | null;
-  regionId: string | null;
-  regionName: string | null;
-  locations: unknown;
-  ipExport: string | null;
-  supportTopUp: boolean;
-  unusedValidTime: number;
-  isPopular: boolean;
-  isBestSeller: boolean;
-  isHot: boolean;
-  badge: string | null;
-  locationNetworkList: unknown;
-  fupPolicy: string | null;
-  smsStatus: number;
-  activeType: number;
-  supportTopUpType: number;
-  topupPackageId?: number;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { country, lang } = await params;
+  const locale = lang || "en"; // Default về en nếu không tìm thấy
   
+  const countryName = formatCountryName(country);
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://owsim.com";
 
+  // Gọi hàm dịch thủ công
+  const title = await getTranslationServer(locale, "metadata.title", { country: countryName });
+  const description = await getTranslationServer(locale, "metadata.description", { country: countryName });
 
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      url: `${baseUrl}/${locale}/esim/${country}`,
+      images: [`${baseUrl}/api/og?country=${country}`],
+    },
+  };
 }
 
-// Grouped plan for display
-interface GroupedPlan {
-  key: string;
-  destination: string;
-  countryId?: string | undefined | null;
-  fupPolicy: string | null;
-  plans: Plan[];
-  minPrice: number;
-  maxPrice: number;
-  dataType: number;
-}
 
-const regions = ["global", "asia", "europe", "americas", "oceania"];
 
-const countryNameToSlug = (str: string) =>
-  str
-    .toLowerCase()
-    .normalize("NFD") // xử lý dấu
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-const slugToCodeMap: Record<string, string> = Object.entries(Countries)
-  .reduce((acc, [code, value]) => {
-    const slug = countryNameToSlug(value.countryName);
-    acc[slug] = code;
-    return acc;
-  }, {} as Record<string, string>);
-
-// Map slug to ISO country code
-// const slugToCodeMap: Record<string, string> = {
-//   "united-arab-emirates": "AE",
-//   "united-kingdom": "GB",
-//   "united-states": "US",
-//   "south-korea": "KR",
-//   "hong-kong": "HK",
-//   "czech-republic": "CZ",
-//   "new-zealand": "NZ",
-//   "saudi-arabia": "SA",
-//   "germany": "DE",
-//   "japan": "JP",
-//   "france": "FR",
-//   "italy": "IT",
-//   "spain": "ES",
-//   "thailand": "TH",
-//   "singapore": "SG",
-//   "australia": "AU",
-//   "india": "IN",
-//   "china": "CN",
-//   "vietnam": "VN",
-//   "taiwan": "TW",
-//   "malaysia": "MY",
-//   "indonesia": "ID",
-//   "philippines": "PH",
-//   "mexico": "MX",
-//   "brazil": "BR",
-//   "argentina": "AR",
-//   "canada": "CA",
-//   "russia": "RU",
-//   "turkey": "TR",
-//   "egypt": "EG",
-//   "south-africa": "ZA",
-//   "netherlands": "NL",
-//   "switzerland": "CH",
-//   "austria": "AT",
-//   "belgium": "BE",
-//   "sweden": "SE",
-//   "norway": "NO",
-//   "denmark": "DK",
-//   "finland": "FI",
-//   "portugal": "PT",
-//   "greece": "GR",
-//   "poland": "PL",
-//   "ireland": "IE",
-//   "luxembourg": "LU",
-//   "israel": "IL",
-//   "qatar": "QA",
-//   "kuwait": "KW",
-//   "bahrain": "BH",
-//   "oman": "OM",
-//   "jordan": "JO",
-//   "lebanon": "LB",
-//   "pakistan": "PK",
-//   "bangladesh": "BD",
-//   "sri-lanka": "LK",
-//   "nepal": "NP",
-//   "cambodia": "KH",
-//   "myanmar": "MM",
-//   "laos": "LA",
-//   "brunei": "BN",
+// // Hàm hỗ trợ format tên quốc gia từ slug (ví dụ: united-kingdom -> United Kingdom)
+// const formatCountryName = (slug: string) => {
+//   return slug
+//     .split("-")
+//     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+//     .join(" ");
 // };
 
-async function loadPlans(countrySlug: string): Promise<Plan[]> {
-   const normalizedSlug = countryNameToSlug(countrySlug);
-  const isRegion = regions.includes(countrySlug.toLowerCase());
-  const countryCode =
-    slugToCodeMap[normalizedSlug] ??
-    (normalizedSlug.length === 2 ? normalizedSlug.toUpperCase() : undefined);
-
-  if (!isRegion && !countryCode) {
-    throw new Error(`Invalid country slug: ${countrySlug}`);
-  }
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const url = isRegion 
-    ? `${baseUrl}/api/plans?regionId=${countrySlug.toLowerCase()}`
-    : `${baseUrl}/api/plans?countryId=${countryCode}`;
+// export async function generateMetadata({ params }: Props): Promise<Metadata> {
+//   const { country, locale } = await params;
   
-  const res = await fetch(url);
-  if (!res.ok) {
-    console.error('Failed to fetch plans:', res.status, res.statusText);
-    return [];
-  }
-  const data = await res.json();
-  return data.plans || [];
-}
+//   // Gọi bản dịch từ namespace "metadata" trong file JSON của bạn
+//   const t = await getTranslations({ locale, namespace: "metadata" });
+  
+//   const countryName = formatCountryName(country);
+//   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://owsim.com";
+//   const pageUrl = `${baseUrl}/${locale}/esim/${country}`;
 
-// Fetch dynamic image from Unsplash API
-async function fetchUnsplashImage(countryName: string): Promise<string> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/unsplash?q=${encodeURIComponent(countryName)}`);
-    if (res.ok) {
-      const data = await res.json();
-      return data.url;
-    }
-  } catch (error) {
-    console.error("Failed to fetch Unsplash image:", error);
-  }
-  return getDestinationImage(countryName.toLowerCase().replace(/\s+/g, '-'));
-}
+//   // Sử dụng biến {country} trong file JSON để truyền tên quốc gia vào
+//   const title = t("title", { country: countryName });
+//   const description = t("description", { country: countryName });
 
-// function formatData(gb: number, volume?: number): string {
-//   const dataValue = gb > 0 ? gb : (volume ? Math.round((volume / (1024 * 1024 * 1024)) * 10) / 10 : 0);
-//   if (dataValue >= 999) return "Unlimited";
-//   if (dataValue < 1 && dataValue > 0) return `${Math.round(dataValue * 1024)}MB`;
-//   if (dataValue === 0) return "N/A";
-//   return `${dataValue}GB`;
+//   return {
+//     title: title,
+//     description: description,
+//     alternates: {
+//       canonical: pageUrl,
+//       languages: {
+//         en: `${baseUrl}/en/esim/${country}`,
+//         vi: `${baseUrl}/vi/esim/${country}`,
+//         fr: `${baseUrl}/fr/esim/${country}`,
+//         de: `${baseUrl}/de/esim/${country}`,
+//       },
+//     },
+//     openGraph: {
+//       title: title,
+//       description: description,
+//       url: pageUrl,
+//       siteName: "OpenWorld eSIM",
+//       type: "website",
+//       images: [
+//         {
+//           url: `${baseUrl}/api/og?country=${country}`, // Route tạo ảnh preview tự động
+//           width: 1200,
+//           height: 630,
+//           alt: `eSIM ${countryName}`,
+//         },
+//       ],
+//     },
+//     twitter: {
+//       card: "summary_large_image",
+//       title: title,
+//       description: description,
+//       images: [`${baseUrl}/api/og?country=${country}`],
+//     },
+//     robots: {
+//       index: true,
+//       follow: true,
+//     },
+//   };
 // }
 
-// function getDataTypeLabel(type: number): string {
-//   switch (type) {
-//     case 1: return "Fixed Data";
-//     case 2: return "Daily Limit (Speed Reduced)";
-//     case 3: return "Daily Limit (Service Cut-off)";
-//     case 4: return "Daily Unlimited";
-//     default: return "Data Plan";
-//   }
-// }
+export default async function Page({ params }: Props) {
+  const resolvedParams = await params;
+  const { country, lang } = resolvedParams;
+  const countryName = formatCountryName(country);
 
-export default function EsimCountryPage({ params }: { params: Promise<{ country: string }> }) {
-  const resolvedParams = use(params);
-  const { t, formatPrice } = useI18n();
-  const [country, setCountry] = useState<string>("");
-  const [countryCode, setCountryCode] = useState<string | null>(null);
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [heroImage, setHeroImage] = useState<string>(getDestinationImage("global"));
-  
-  const [selectedDuration, setSelectedDuration] = useState<string>("all");
-  const [selectedData, setSelectedData] = useState<string>("all");
-
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-
-  // New DataType Modal state
-  const [isDataTypeModalOpen, setIsDataTypeModalOpen] = useState(false);
-  const [selectedDataType, setSelectedDataType] = useState<number>(0);
-  const [plansForDataType, setPlansForDataType] = useState<Plan[]>([]);
-  const [activeConfig, setActiveConfig] = useState<PlanCardConfig | null>(null);
-
-useEffect(() => {
-  const slug = countryNameToSlug(country);
-
-  setCountryCode(slugToCodeMap[slug]);
-}, [country]);
-
-useEffect(() => {
-  async function load() {
-    const c = resolvedParams.country;
-    setCountry(c);
-    setLoading(true); // Đảm bảo bật loading khi bắt đầu
-
-    // Tạo một cái "hẹn giờ" 1.5 giây
-    const minDelay = new Promise(resolve => setTimeout(resolve, 1500));
-    
-    try {
-      // Chạy song song: vừa lấy ảnh, vừa lấy plans, vừa đợi 1.5s
-      const [imageUrl, data] = await Promise.all([
-        fetchUnsplashImage(c),
-        loadPlans(c),
-        minDelay // Cái này sẽ giữ chân setLoading(false) ít nhất 1.5s
-      ]);
-
-      setHeroImage(imageUrl);
-      setPlans(data);
-      
-    } catch (error) {
-      console.error("Lỗi load data:", error);
-    } finally {
-      // Sau khi data xong VÀ đã đợi đủ 1.5s thì mới tắt loading
-      setLoading(false);
+  // Structured Data (JSON-LD) giúp Google hiện Rich Snippets (Giá, Sản phẩm)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": `eSIM ${countryName} - OpenWorld`,
+    "description": `Digital eSIM card for travelers in ${countryName}. High-speed 4G/5G data.`,
+    "brand": {
+      "@type": "Brand",
+      "name": "OpenWorld eSIM"
+    },
+    "offers": {
+      "@type": "AggregateOffer",
+      "priceCurrency": "USD",
+      "lowPrice": "4.50",
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": "https://schema.org/InStock"
     }
-  }
-  load();
-}, [resolvedParams]);
-
-
-  // Duration options
-  const durationOptions = useMemo(() => {
-    const plansToConsider = selectedData !== "all" 
-      ? plans.filter(p => p.dataAmount === parseInt(selectedData))
-      : plans;
-    
-    const durations = new Set<number>();
-    plansToConsider.forEach(plan => {
-      if (plan.durationDays) durations.add(plan.durationDays);
-    });
-    return Array.from(durations).sort((a, b) => a - b);
-  }, [plans, selectedData]);
-
-  
-
-  // Data options
-  const dataOptions = useMemo(() => {
-    const plansToConsider = selectedDuration !== "all"
-      ? plans.filter(p => p.durationDays === parseInt(selectedDuration))
-      : plans;
-    
-    const dataAmounts = new Set<number>();
-    plansToConsider.forEach(plan => {
-      if (plan.dataAmount) dataAmounts.add(plan.dataAmount);
-    });
-    return Array.from(dataAmounts).sort((a, b) => a - b);
-  }, [plans, selectedDuration]);
-
-  // Combined filter
-  const filteredPlans = useMemo(() => {
-    return plans.filter(plan => {
-      if (selectedDuration !== "all" && plan.durationDays !== parseInt(selectedDuration)) return false;
-      if (selectedData !== "all" && plan.dataAmount !== parseInt(selectedData)) return true;
-      return true;
-    });
-  }, [plans, selectedDuration, selectedData]);
-
-  // Filter to only Fixed and Daily plans, then group by dataType only (for single country page)
-  const displayPlans = useMemo(() => {
-    // First filter only dataType 1 (Fixed) and 2 (Daily)
-    const relevantPlans = filteredPlans.filter(p => p.dataType === 1 || p.dataType === 2);
-    const groups: Record<string, GroupedPlan> = {};
-    relevantPlans.forEach(plan => {
-      // Group by dataType only: "fixed" or "daily"
-      const dataTypeKey = plan.dataType === 1 ? "fixed" : "daily";
-      const key = dataTypeKey; // Single key per dataType
-      if (!groups[key]) {
-        groups[key] = {
-          key,
-          destination: country.charAt(0).toUpperCase() + country.slice(1), // Use URL country param
-          countryId: plan.countryId,
-          fupPolicy: plan.fupPolicy,
-          
-          plans: [],
-          minPrice: plan.retailPriceUsd || plan.priceUsd,
-          maxPrice: plan.retailPriceUsd || plan.priceUsd,
-          dataType: plan.dataType,
-        };
-      }
-      groups[key].plans.push(plan);
-      const price = plan.retailPriceUsd || plan.priceUsd;
-      if (price < groups[key].minPrice) groups[key].minPrice = price;
-      if (price > groups[key].maxPrice) groups[key].maxPrice = price;
-    });
-    // Return sorted: Fixed first (dataType=1), then Daily (dataType=2)
-    return Object.values(groups).sort((a, b) => {
-      if (a.dataType === 1 && b.dataType !== 1) return -1;
-      if (b.dataType === 1 && a.dataType !== 1) return 1;
-      return a.minPrice - b.minPrice;
-    });
-  }, [filteredPlans, country]);
-
-  const displayNameId = plans.length > 0 ? plans[0].countryId || country : country;
-  
-
-  // if (!loading && plans.length === 0) {
-  //   return (
-  //     <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
-  //       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-  //     </div>
-  //         );
-  //       }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-      </div>
-    );
-  }
-
-  const handleDataTypeClick = (dataType: number, groupPlans: Plan[], config?: PlanCardConfig) => {
-    setSelectedDataType(dataType);
-    setPlansForDataType(groupPlans);
-    if (config) {
-      setActiveConfig(config);
-    }
-    setIsDataTypeModalOpen(true);
   };
 
-  const handleCloseDataTypeModal = () => {
-    setIsDataTypeModalOpen(false);
-    setSelectedDataType(0);
-    setPlansForDataType([]);
-  };
-
-
-
-return (
-  <div className="min-h-screen bg-white"> {/* Đổi sang nền trắng cho sạch */}
-    {/* Header Section: Gọn gàng, khoe ảnh nhưng không chiếm chỗ */}
-    <div className="relative w-full h-[45vh] lg:h-[40vh] overflow-hidden">
-      <Image
-        src={heroImage}
-        alt={displayNameId}
-        fill
-        className="object-cover"
-        priority
-        unoptimized
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* Gradient dốc từ trong suốt sang trắng để hòa tan vào phần nội dung bên dưới */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-black/30" />
-      
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-        <p className="text-white/80 text-[10px] font-bold uppercase tracking-[0.4em] mb-3 drop-shadow-sm">
-          {t("plans.premiumConnectivity")}
-        </p>
-         <h1 className="text-5xl md:text-7xl font-medium text-white mb-2 tracking-tighter drop-shadow-xl">
-           {displayNameId && t(`countries.${displayNameId}`) !== `countries.${displayNameId}`
-             ? t(`countries.${displayNameId}`)
-             : displayNameId || "Select Destination"}
-         </h1>
-        <div className="h-1 w-12 bg-orange-500 rounded-full mb-4 shadow-lg shadow-orange-500/50" />
-      </div>
-    </div>
-
-    {/* Content Section: Đẩy Grid lên sát hơn */}
-    <div className="max-w-7xl mx-auto px-6 -mt-24 relative z-10">
-      {/* Plans Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 pb-12">
-        {displayPlans.map((group, index) => (
-          <FadeIn key={group.key}> 
-            {/* Thêm wrapper để căn chỉnh card chuẩn hơn */}
-            <div className="h-full flex flex-col">
-              <PlansCard 
-                group={group} 
-                onDetailClick={(config) => handleDataTypeClick(group.dataType, group.plans, config)} 
-              />
-            </div>
-          </FadeIn>
-        ))}
-
-       
-      </div>
-    </div>
-
-    {/* Footer trang - Nếu cần thông tin thêm thì để ở đây nhẹ nhàng */}
-    <div className="max-w-2xl mx-auto text-center pb-20 px-6">
-      <p className="text-slate-400 text-sm leading-relaxed">
-        {t("countryPage.esimPlansAvailableDesc")}
-      </p>
-    </div>
-
-    {/* Modal */}
-    <EsimDataTypeModal
-      dataType={selectedDataType}
-      countryName={country}
-      countryId={countryCode!}
-      isOpen={isDataTypeModalOpen}
-      onClose={handleCloseDataTypeModal}
-      config={activeConfig}
-    />
-  </div>
-);
+      {/* Truyền params vào Client Component để xử lý logic filter và hiển thị */}
+      <EsimCountryClient params={Promise.resolve(resolvedParams)} />
+    </>
+  );
 }
